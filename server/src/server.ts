@@ -1,8 +1,10 @@
-import app from './app';
 import dotenv from 'dotenv';
 
-// 加载环境变量
+// 先加载环境变量
 dotenv.config();
+
+// 再导入 app
+import app from './app';
 
 const PORT = process.env.PORT || 3000;
 

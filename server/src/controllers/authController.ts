@@ -1,11 +1,18 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { UserModel } from '../models/User';
 
 // 定义注册请求体接口
 interface RegisterBody {
   email: string;
   username: string;
+  password: string;
+}
+
+// 定义登录请求体接口
+interface LoginBody {
+  email: string;
   password: string;
 }
 
@@ -75,6 +82,66 @@ export async function register(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('注册失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
+/**
+ * 用户登录
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function login(req: Request, res: Response): Promise<void> {
+  try {
+    // 从请求体解构参数
+    const { email, password } = req.body as LoginBody;
+
+    // 验证邮箱格式
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ message: '邮箱格式不正确' });
+      return;
+    }
+
+    // 验证密码
+    if (!password || password.length < 1) {
+      res.status(400).json({ message: '密码不能为空' });
+      return;
+    }
+
+    // 查找用户
+    const user = await UserModel.findUserByEmail(email);
+    if (!user) {
+      res.status(401).json({ message: '邮箱或密码错误' });
+      return;
+    }
+
+    // 验证密码
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({ message: '邮箱或密码错误' });
+      return;
+    }
+
+    // 生成 JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, username: user.username },
+      process.env.JWT_SECRET || 'default-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    // 返回成功响应
+    res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+        bio: user.bio
+      }
+    });
+  } catch (error) {
+    console.error('登录失败:', error);
     res.status(500).json({ message: '服务器内部错误' });
   }
 }

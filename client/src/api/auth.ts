@@ -1,13 +1,4 @@
-import axios from 'axios';
-
-// 创建 axios 实例
-const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+import api from './index';
 
 // 定义注册请求类型
 export interface RegisterRequest {
@@ -26,6 +17,24 @@ export interface RegisterResponse {
 // 定义错误响应类型
 export interface ErrorResponse {
   message: string;
+}
+
+// 定义登录请求类型
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+// 定义登录响应类型
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: number;
+    email: string;
+    username: string;
+    avatar: string | null;
+    bio: string | null;
+  };
 }
 
 /**
@@ -47,11 +56,35 @@ export async function register(
       password
     });
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
+  } catch (error: any) {
+    if (error.response && error.response.data) {
       throw error.response.data as ErrorResponse;
     }
     throw { message: '注册失败' } as ErrorResponse;
+  }
+}
+
+/**
+ * 用户登录
+ * @param email 邮箱
+ * @param password 密码
+ * @returns 登录成功的 token 和用户信息
+ */
+export async function login(
+  email: string,
+  password: string
+): Promise<LoginResponse> {
+  try {
+    const response = await api.post<LoginResponse>('/auth/login', {
+      email,
+      password
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data as ErrorResponse;
+    }
+    throw { message: '登录失败' } as ErrorResponse;
   }
 }
 

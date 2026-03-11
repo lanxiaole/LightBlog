@@ -24,11 +24,12 @@ export default defineConfigWithVueTs(
 
   skipFormatting,
 
-  // 允许单单词组件名称
+  // 允许单单词组件名称和 any 类型
   {
     rules: {
       'vue/multi-word-component-names': 'off',
-      'unicorn/filename-case': 'off'
+      'unicorn/filename-case': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     }
   }
 )

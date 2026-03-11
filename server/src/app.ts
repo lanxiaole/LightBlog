@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { testConnection } from './config/db';
+import authRouter from './routes/auth';
 
 const app = express();
 
@@ -12,6 +13,9 @@ app.use(express.json());
 if (process.env.NODE_ENV !== 'production') {
   testConnection();
 }
+
+// 认证路由
+app.use('/api/auth', authRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

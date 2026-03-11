@@ -14,10 +14,10 @@ const router = createRouter({
         { path: 'category/:name', name: 'category', component: () => import('@/views/category/List.vue') },
         { path: 'tag/:name', name: 'tag', component: () => import('@/views/tag/List.vue') },
         { path: 'search', name: 'search', component: () => import('@/views/search/Search.vue') },
-        { path: 'settings', name: 'settings', component: () => import('@/views/settings/Settings.vue') },
-        { path: 'write', name: 'write', component: () => import('@/views/article/Write.vue') },
-        { path: 'edit/:id', name: 'edit', component: () => import('@/views/article/Edit.vue') },
-        { path: 'notifications', name: 'notifications', component: () => import('@/views/notifications/Notifications.vue') }
+        { path: 'settings', name: 'settings', component: () => import('@/views/settings/Settings.vue'), meta: { requiresAuth: true } },
+        { path: 'write', name: 'write', component: () => import('@/views/article/Write.vue'), meta: { requiresAuth: true } },
+        { path: 'edit/:id', name: 'edit', component: () => import('@/views/article/Edit.vue'), meta: { requiresAuth: true } },
+        { path: 'notifications', name: 'notifications', component: () => import('@/views/notifications/Notifications.vue'), meta: { requiresAuth: true } }
       ]
     },
     {
@@ -33,6 +33,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: () => import('@/views/layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true },
       children: [
         { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/Dashboard.vue') },
         { path: 'users', name: 'admin-users', component: () => import('@/views/admin/Users.vue') },
@@ -44,5 +45,27 @@ const router = createRouter({
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error/NotFound.vue') }
   ]
 })
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  // 检查是否需要登录
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+  // 检查是否有 token
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+  // 如果需要登录但没有 token，跳转到登录页
+  if (requiresAuth && !token) {
+    next('/login');
+  }
+  // 如果已经登录但访问登录或注册页，跳转到首页
+  else if ((to.path === '/login' || to.path === '/register') && token) {
+    next('/');
+  }
+  // 其他情况正常跳转
+  else {
+    next();
+  }
+});
 
 export default router

@@ -101,7 +101,8 @@ const handleLogin = async () => {
         // 调用 user store 的 login 方法
         await userStore.login({
           email: form.email,
-          password: form.password
+          password: form.password,
+          rememberMe: form.rememberMe
         });
 
         // 登录成功

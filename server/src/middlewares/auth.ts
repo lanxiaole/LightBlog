@@ -33,7 +33,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
     };
     
     // 将解码后的用户信息附加到 req.user 上
-    req.user = {
+    (req as any).user = {
       id: decoded.id,
       email: decoded.email,
       username: decoded.username
@@ -42,6 +42,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
     // 继续处理请求
     next();
   } catch (error) {
+    // 记录错误信息
+    console.error('JWT 验证失败:', error);
     // 验证失败
     res.status(401).json({ message: '无效的令牌' });
   }

@@ -1,0 +1,79 @@
+import { Request, Response } from 'express';
+import { ArticleModel } from '../models/Article';
+
+/**
+ * 创建新文章
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function createArticle(req: Request, res: Response): Promise<void> {
+  try {
+    // 从请求体获取文章信息
+    const { title, content, cover } = req.body;
+    
+    // 从 req.user 中获取作者 ID
+    const authorId = (req as any).user?.id;
+    
+    // 验证 author_id 是否存在（确保已通过 auth 中间件）
+    if (!authorId) {
+      res.status(401).json({ message: '未授权' });
+      return;
+    }
+    
+    // 验证 title 和 content 不能为空
+    if (!title || !content) {
+      res.status(400).json({ message: '标题和内容不能为空' });
+      return;
+    }
+    
+    // 调用模型创建文章
+    const articleId = await ArticleModel.createArticle({
+      title,
+      content,
+      cover,
+      author_id: authorId
+    });
+    
+    // 返回 201 状态码和新文章 id
+    res.status(201).json({ id: articleId });
+  } catch (error) {
+    // 记录错误信息
+    console.error('创建文章失败:', error);
+    // 返回 500 状态码和错误信息
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
+/**
+ * 获取文章列表（分页）
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function getArticles(req: Request, res: Response): Promise<void> {
+  try {
+    // 从查询参数获取 page 和 pageSize
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    
+    // 调用模型获取分页数据
+    const { list, total } = await ArticleModel.getArticles(page, pageSize);
+    
+    // 返回 200 状态码和分页数据
+    res.status(200).json({
+      list,
+      total,
+      page,
+      pageSize
+    });
+  } catch (error) {
+    // 记录错误信息
+    console.error('获取文章列表失败:', error);
+    // 返回 500 状态码和错误信息
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
+export default {
+  createArticle,
+  getArticles
+};

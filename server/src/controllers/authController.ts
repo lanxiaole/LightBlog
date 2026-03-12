@@ -145,3 +145,40 @@ export async function login(req: Request, res: Response): Promise<void> {
     res.status(500).json({ message: '服务器内部错误' });
   }
 }
+
+/**
+ * 获取当前登录用户信息
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function getCurrentUser(req: Request, res: Response): Promise<void> {
+  try {
+    // 从 req.user 中获取用户 ID
+    const userId = (req as any).user?.id;
+    
+    // 验证用户 ID 是否存在（确保已通过 auth 中间件）
+    if (!userId) {
+      res.status(401).json({ message: '未授权' });
+      return;
+    }
+    
+    // 查找用户
+    const user = await UserModel.findUserById(userId);
+    if (!user) {
+      res.status(404).json({ message: '用户不存在' });
+      return;
+    }
+    
+    // 返回用户信息
+    res.status(200).json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      avatar: user.avatar,
+      bio: user.bio
+    });
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}

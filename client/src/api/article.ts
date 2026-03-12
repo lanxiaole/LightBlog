@@ -68,3 +68,20 @@ export async function getArticleDetail(id: number): Promise<Article> {
     throw new Error('获取文章详情失败');
   }
 }
+
+/**
+ * 创建文章
+ * @param data 文章数据
+ * @returns 新文章ID
+ */
+export async function createArticle(data: { title: string; content: string; cover?: string }): Promise<{ id: number }> {
+  try {
+     const response = await api.post<{ id: number }>('/articles', data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`创建文章失败: ${error.message}`);
+    }
+    throw new Error('创建文章失败');
+  }
+}

@@ -47,7 +47,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   // 检查是否需要登录
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
@@ -56,16 +56,14 @@ router.beforeEach((to, from, next) => {
 
   // 如果需要登录但没有 token，跳转到登录页
   if (requiresAuth && !token) {
-    next('/login');
+    return '/login';
   }
   // 如果已经登录但访问登录或注册页，跳转到首页
   else if ((to.path === '/login' || to.path === '/register') && token) {
-    next('/');
+    return '/';
   }
   // 其他情况正常跳转
-  else {
-    next();
-  }
+  return true;
 });
 
 export default router

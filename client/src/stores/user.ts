@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { login } from '@/api/auth';
+import { login, getCurrentUser } from '@/api/auth';
 
 // 定义用户信息类型
 interface UserInfo {
@@ -66,6 +66,23 @@ export const useUserStore = defineStore('user', {
       this.setToken(response.token, credentials.rememberMe);
       this.setUserInfo(response.user);
       return response;
+    },
+
+    /**
+     * 初始化用户信息
+     * 当页面刷新后，从服务器获取用户信息
+     */
+    async initUserInfo() {
+      if (this.token && !this.userInfo) {
+        try {
+          const userInfo = await getCurrentUser();
+          this.setUserInfo(userInfo);
+        } catch (error) {
+          console.error('初始化用户信息失败:', error);
+          // 如果获取失败，清除 token
+          this.logout();
+        }
+      }
     },
 
     /**

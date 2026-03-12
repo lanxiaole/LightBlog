@@ -56,5 +56,18 @@ export const UserModel = {
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [username]);
     const users = rows as User[];
     return users.length > 0 ? users[0] : null;
+  },
+  
+  /**
+   * 根据ID查找用户
+   * @param id 用户ID
+   * @returns 用户对象或 null
+   */
+  async findUserById(id: number): Promise<User | null> {
+    const sql = 'SELECT * FROM users WHERE id = ?';
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(sql, [id]);
+    const users = rows as User[];
+    return users.length > 0 ? users[0] : null;
   }
 };

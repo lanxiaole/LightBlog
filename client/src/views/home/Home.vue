@@ -118,8 +118,10 @@ const formatDate = (dateString: string): string => {
 
 // 获取文章摘要
 const getSummary = (content: string): string => {
+  // 去除HTML标签
+  const plainText = content.replace(/<[^>]*>/g, '');
   // 简单截取前100字作为摘要
-  return content.length > 100 ? content.substring(0, 100) + '...' : content;
+  return plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText;
 };
 
 // 跳转到文章详情页

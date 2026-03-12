@@ -51,9 +51,9 @@ const breadcrumbItems = computed(() => {
         </el-menu-item>
 
         <!-- 登录后显示 -->
-        <template v-if="userStore.isLoggedIn && userStore.userInfo">
+        <template v-if="userStore.isLoggedIn">
           <!-- 个人中心 -->
-          <el-menu-item :index="`/user/${userStore.userInfo.username}`">
+          <el-menu-item :index="`/user/${userStore.userInfo?.username || ''}`">
             <el-icon><User /></el-icon>
             <span>个人中心</span>
           </el-menu-item>
@@ -114,26 +114,26 @@ const breadcrumbItems = computed(() => {
           </el-icon>
 
           <!-- 登录后显示 -->
-        <template v-if="userStore.isLoggedIn && userStore.userInfo">
+        <template v-if="userStore.isLoggedIn">
           <el-dropdown>
             <span class="el-dropdown-link" style="display: flex; align-items: center; cursor: pointer;">
               <el-avatar
                 size="small"
                 style="margin-right: 10px;"
-                :src="userStore.userInfo.avatar"
+                :src="userStore.userInfo?.avatar"
               >
                 <template #default>
                   <el-icon><UserFilled /></el-icon>
                 </template>
               </el-avatar>
-              <span style="margin-right: 5px;">{{ userStore.userInfo.username }}</span>
+              <span style="margin-right: 5px;">{{ userStore.userInfo?.username || '' }}</span>
               <el-icon class="el-icon--right">
                 <ArrowDown />
               </el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="router.push(`/user/${userStore.userInfo.username}`)">个人中心</el-dropdown-item>
+                <el-dropdown-item @click="router.push(`/user/${userStore.userInfo?.username || ''}`)">个人中心</el-dropdown-item>
                 <el-dropdown-item @click="router.push('/settings')">设置</el-dropdown-item>
                 <el-dropdown-item divided @click="userStore.logout()">退出登录</el-dropdown-item>
               </el-dropdown-menu>

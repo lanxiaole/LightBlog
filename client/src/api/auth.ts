@@ -88,4 +88,20 @@ export async function login(
   }
 }
 
+/**
+ * 获取当前登录用户信息
+ * @returns 用户信息
+ */
+export async function getCurrentUser(): Promise<LoginResponse['user']> {
+  try {
+    const response = await api.get<LoginResponse['user']>('/auth/me');
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data as ErrorResponse;
+    }
+    throw { message: '获取用户信息失败' } as ErrorResponse;
+  }
+}
+
 export default api;

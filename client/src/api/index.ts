@@ -13,8 +13,8 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    // 从 localStorage 获取 token
-    const token = localStorage.getItem('token');
+    // 从 localStorage 或 sessionStorage 获取 token
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     // 如果 token 存在，设置请求头
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -34,8 +34,9 @@ api.interceptors.response.use(
   (error) => {
     // 处理 401 错误（未授权）
     if (error.response && error.response.status === 401) {
-      // 清除 localStorage 中的 token
+      // 清除所有存储中的 token
       localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
       // 跳转到登录页
       router.push('/login');
     }

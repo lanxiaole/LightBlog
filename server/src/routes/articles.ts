@@ -1,6 +1,6 @@
 import express from 'express';
 import authMiddleware from '../middlewares/auth';
-import { createArticle, getArticles } from '../controllers/articleController';
+import { createArticle, getArticles, getArticleById } from '../controllers/articleController';
 
 const router = express.Router();
 
@@ -9,5 +9,8 @@ router.post('/', authMiddleware, createArticle);
 
 // GET /api/articles - 获取文章列表（无需登录）
 router.get('/', getArticles);
+
+// GET /api/articles/:id - 获取文章详情（无需登录）
+router.get('/:id', getArticleById);
 
 export default router;

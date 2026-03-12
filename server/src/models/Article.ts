@@ -1,6 +1,13 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
 
+// 定义作者接口
+export interface Author {
+  id: number;
+  username: string;
+  avatar: string | null;
+}
+
 // 定义 Article 接口
 export interface Article {
   id: number;
@@ -13,6 +20,7 @@ export interface Article {
   likes: number;
   created_at: Date;
   updated_at: Date;
+  author?: Author;
 }
 
 // 导出 ArticleModel 对象
@@ -83,5 +91,49 @@ export const ArticleModel = {
     const total = (countResult[0] as RowDataPacket[])[0].total as number;
 
     return { list, total };
+  },
+
+  /**
+   * 根据文章 id 查询单条文章记录
+   * @param id 文章 id
+   * @returns 包含作者信息的文章对象，如果不存在返回 null
+   */
+  async getArticleById(id: number): Promise<Article | null> {
+    const sql = `
+      SELECT 
+        a.*, 
+        u.id as author_id, 
+        u.username, 
+        u.avatar 
+      FROM articles a
+      JOIN users u ON a.author_id = u.id
+      WHERE a.id = ?
+    `;
+
+    const [result] = await pool.execute<RowDataPacket[]>(sql, [id]);
+    
+    if (result.length === 0) {
+      return null;
+    }
+
+    const article = result[0] as any;
+    
+    return {
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      cover: article.cover,
+      author_id: article.author_id,
+      status: article.status,
+      views: article.views,
+      likes: article.likes,
+      created_at: article.created_at,
+      updated_at: article.updated_at,
+      author: {
+        id: article.author_id,
+        username: article.username,
+        avatar: article.avatar
+      }
+    };
   }
 };

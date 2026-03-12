@@ -73,7 +73,43 @@ export async function getArticles(req: Request, res: Response): Promise<void> {
   }
 }
 
+/**
+ * 根据ID获取文章详情
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function getArticleById(req: Request, res: Response): Promise<void> {
+  try {
+    // 从路由参数获取id并转换为数字
+    const id = parseInt(req.params.id as string);
+    
+    // 验证id是否有效
+    if (isNaN(id) || id <= 0) {
+      res.status(400).json({ message: '无效的文章ID' });
+      return;
+    }
+    
+    // 调用模型获取文章数据
+    const article = await ArticleModel.getArticleById(id);
+    
+    // 如果文章不存在，返回404
+    if (!article) {
+      res.status(404).json({ message: '文章不存在' });
+      return;
+    }
+    
+    // 返回200和文章对象
+    res.status(200).json(article);
+  } catch (error) {
+    // 记录错误信息
+    console.error('获取文章详情失败:', error);
+    // 返回500状态码和错误信息
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
 export default {
   createArticle,
-  getArticles
+  getArticles,
+  getArticleById
 };

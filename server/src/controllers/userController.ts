@@ -59,3 +59,57 @@ export async function getUserArticles(req: Request, res: Response): Promise<void
     res.status(500).json({ message: '服务器内部错误' });
   }
 }
+
+/**
+ * 更新用户资料
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function updateProfile(req: Request, res: Response): Promise<void> {
+  try {
+    // 从 req.user 获取当前用户 ID
+    const userId = (req as any).user?.id;
+    
+    // 验证用户 ID 是否存在（确保已通过 auth 中间件）
+    if (!userId) {
+      res.status(401).json({ message: '未授权' });
+      return;
+    }
+    
+    // 从请求体获取要更新的字段
+    const { username, bio, avatar } = req.body;
+     
+    // 构建更新数据对象
+    const updateData: { username?: string; bio?: string; avatar?: string } = {};
+    
+    if (username !== undefined) {
+      // 检查新用户名是否已被其他用户使用
+      const existingUser = await UserModel.findUserByUsername(username);
+      if (existingUser && existingUser.id !== userId) {
+        res.status(400).json({ message: '用户名已被使用' });
+        return;
+      }
+      updateData.username = username;
+    }
+    
+    if (bio !== undefined) {
+      updateData.bio = bio;
+    }
+    
+    if (avatar !== undefined) {
+      updateData.avatar = avatar;
+    }
+    
+    // 调用模型方法更新用户资料
+    const success = await UserModel.updateUserProfile(userId, updateData);
+    
+    if (success) {
+      res.status(200).json({ message: '更新成功' });
+    } else {
+      res.status(404).json({ message: '用户不存在' });
+    }
+  } catch (error) {
+    console.error('更新用户资料失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}

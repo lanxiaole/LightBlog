@@ -82,5 +82,57 @@ export const UserModel = {
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [username]);
     const users = rows as Omit<User, 'password'>[];
     return users.length > 0 ? users[0] : null;
+  },
+  
+  /**
+   * 更新用户资料
+   * @param userId 用户 ID
+   * @param data 要更新的字段
+   * @returns 更新成功返回 true
+   */
+  async updateUserProfile(userId: number, data: { username?: string; bio?: string; avatar?: string }): Promise<boolean> {
+    // 构建 SET 子句和参数
+    const setClauses: string[] = [];
+    const params: any[] = [];
+    
+    // 动态添加要更新的字段
+    if (data.username !== undefined) {
+      setClauses.push('username = ?');
+      params.push(data.username);
+    }
+    
+    if (data.bio !== undefined) {
+      setClauses.push('bio = ?');
+      params.push(data.bio);
+    }
+    
+    if (data.avatar !== undefined) {
+      setClauses.push('avatar = ?');
+      params.push(data.avatar);
+    }
+    
+    // 如果没有要更新的字段，直接返回 true
+    if (setClauses.length === 0) {
+      return true;
+    }
+    
+    // 添加 updated_at 字段
+    setClauses.push('updated_at = NOW()');
+    
+    // 添加 userId 到参数列表
+    params.push(userId);
+    
+    // 构建完整的 SQL 语句
+    const sql = `
+      UPDATE users
+      SET ${setClauses.join(', ')}
+      WHERE id = ?
+    `;
+    
+    // 执行更新
+    const [result] = await pool.execute<RowDataPacket[]>(sql, params);
+    
+    // 检查是否更新成功
+    return (result as any).affectedRows > 0;
   }
 };

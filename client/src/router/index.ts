@@ -17,32 +17,33 @@ const router = createRouter({
         { path: 'settings', name: 'settings', component: () => import('@/views/settings/Settings.vue'), meta: { requiresAuth: true, title: '设置' } },
         { path: 'write', name: 'write', component: () => import('@/views/article/Write.vue'), meta: { requiresAuth: true, title: '写文章' } },
         { path: 'edit/:id', name: 'edit', component: () => import('@/views/article/Edit.vue'), meta: { requiresAuth: true, title: '编辑文章' } },
-        { path: 'notifications', name: 'notifications', component: () => import('@/views/notifications/Notifications.vue'), meta: { requiresAuth: true, title: '消息中心' } }
+        { path: 'notifications', name: 'notifications', component: () => import('@/views/notifications/Notifications.vue'), meta: { requiresAuth: true, title: '消息中心' } },
+        // 用户个人主页相关路由
+        {
+          path: 'user/:username',
+          children: [
+            { path: '', name: 'user-profile', component: () => import('@/views/user/Profile.vue'), meta: { title: '个人主页' } },
+            { path: 'followers', name: 'user-followers', component: () => import('@/views/user/Followers.vue'), meta: { title: '关注者' } },
+            { path: 'following', name: 'user-following', component: () => import('@/views/user/Following.vue'), meta: { title: '关注' } },
+            { path: 'about', name: 'user-about', component: () => import('@/views/user/About.vue'), meta: { title: '关于' } }
+          ]
+        },
+        // 后台管理相关路由
+        {
+          path: 'admin',
+          meta: { requiresAuth: true, title: '后台管理' },
+          children: [
+            { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/Dashboard.vue'), meta: { title: '仪表盘' } },
+            { path: 'users', name: 'admin-users', component: () => import('@/views/admin/Users.vue'), meta: { title: '用户管理' } },
+            { path: 'articles', name: 'admin-articles', component: () => import('@/views/admin/Articles.vue'), meta: { title: '文章管理' } },
+            { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/Categories.vue'), meta: { title: '分类管理' } },
+            { path: 'tags', name: 'admin-tags', component: () => import('@/views/admin/Tags.vue'), meta: { title: '标签管理' } }
+          ]
+        },
+        // 404 页面
+        { path: ':pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error/NotFound.vue'), meta: { title: '404' } }
       ]
-    },
-    {
-      path: '/user/:username',
-      component: () => import('@/views/layouts/UserLayout.vue'),
-      children: [
-        { path: '', name: 'user-profile', component: () => import('@/views/user/Profile.vue'), meta: { title: '个人主页' } },
-        { path: 'followers', name: 'user-followers', component: () => import('@/views/user/Followers.vue'), meta: { title: '关注者' } },
-        { path: 'following', name: 'user-following', component: () => import('@/views/user/Following.vue'), meta: { title: '关注' } },
-        { path: 'about', name: 'user-about', component: () => import('@/views/user/About.vue'), meta: { title: '关于' } }
-      ]
-    },
-    {
-      path: '/admin',
-      component: () => import('@/views/layouts/AdminLayout.vue'),
-      meta: { requiresAuth: true, title: '后台管理' },
-      children: [
-        { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/Dashboard.vue'), meta: { title: '仪表盘' } },
-        { path: 'users', name: 'admin-users', component: () => import('@/views/admin/Users.vue'), meta: { title: '用户管理' } },
-        { path: 'articles', name: 'admin-articles', component: () => import('@/views/admin/Articles.vue'), meta: { title: '文章管理' } },
-        { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/Categories.vue'), meta: { title: '分类管理' } },
-        { path: 'tags', name: 'admin-tags', component: () => import('@/views/admin/Tags.vue'), meta: { title: '标签管理' } }
-      ]
-    },
-    { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error/NotFound.vue'), meta: { title: '404' } }
+    }
   ]
 })
 

@@ -3,6 +3,7 @@ import cors from 'cors';
 import { testConnection } from './config/db';
 import authRouter from './routes/auth';
 import articleRouter from './routes/articles';
+import userRouter from './routes/users';
 
 const app = express();
 
@@ -20,6 +21,9 @@ app.use('/api/auth', authRouter);
 
 // 文章路由
 app.use('/api/articles', articleRouter);
+
+// 用户路由
+app.use('/api/users', userRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

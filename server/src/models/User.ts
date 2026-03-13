@@ -69,5 +69,18 @@ export const UserModel = {
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [id]);
     const users = rows as User[];
     return users.length > 0 ? users[0] : null;
+  },
+  
+  /**
+   * 根据用户名查询用户，返回除密码外的所有字段
+   * @param username 用户名
+   * @returns 除密码外的用户对象或 null
+   */
+  async getPublicUserByUsername(username: string): Promise<Omit<User, 'password'> | null> {
+    const sql = 'SELECT id, email, username, avatar, bio, created_at, updated_at FROM users WHERE username = ?';
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(sql, [username]);
+    const users = rows as Omit<User, 'password'>[];
+    return users.length > 0 ? users[0] : null;
   }
 };

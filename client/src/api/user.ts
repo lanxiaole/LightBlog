@@ -59,3 +59,20 @@ export async function getUserArticles(username: string, params?: { page?: number
     throw new Error('获取用户文章列表失败');
   }
 }
+
+/**
+ * 更新用户资料
+ * @param data 要更新的字段
+ * @returns 响应信息
+ */
+export async function updateUserProfile(data: { username?: string; bio?: string; avatar?: string }): Promise<{ message: string }> {
+  try {
+    const response = await api.put<{ message: string }>('/users/profile', data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`更新用户资料失败: ${error.message}`);
+    }
+    throw new Error('更新用户资料失败');
+  }
+}

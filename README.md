@@ -512,3 +512,45 @@ const breadcrumbItems = computed(() => { return route.matched.filter (item => it
 2. 所有页面都已经正确配置在 DefaultLayout.vue 下
 3. 路由配置中不再引用 AdminLayout.vue
    这种情况在开发过程中很常见，特别是当我们对项目结构或配置进行较大修改时。如果遇到类似问题，重启 IDE 或清除缓存通常是最直接有效的解决方法。
+
+问题出在 el-input 组件的 rows 属性上，当使用 rows="4" 时， 4 被解析为字符串类型，而 Element Plus 期望的是数字类型。
+
+修复方法是使用 Vue 的绑定语法，将 rows="4" 改为 :rows="4" ，这样 4 就会被解析为数字类型。
+
+问题出在 formRef 变量没有定义，导致在模板中使用 formRef 时出现了类型错误。
+
+修复方法是在 script 部分添加 formRef 的定义，使用 ref() 函数来创建一个响应式引用，这样就可以在模板中使用它来引用表单元素。
+
+用户输入
+↓
+[v-model 双向绑定]
+↓
+form 响应式数据
+↓
+[点击提交按钮]
+↓
+handleSubmit 函数
+↓
+[表单验证]
+↓
+updateUserProfile API 函数
+↓
+[axios PUT 请求]
+↓
+后端路由 /api/users/profile
+↓
+[authMiddleware 身份验证]
+↓
+updateProfile 控制器
+↓
+[req.body 提取数据]
+↓
+UserModel.updateUserProfile
+↓
+[构建 SQL 并执行]
+↓
+数据库更新
+↓
+返回响应给前端
+↓
+更新 userStore 并跳转页面

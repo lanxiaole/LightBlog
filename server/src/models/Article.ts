@@ -201,6 +201,54 @@ export const ArticleModel = {
 
     return { list, total };
   },
+
+  /**
+   * 更新文章信息
+   * @param id 文章 ID
+   * @param data 要更新的字段（可选字段）
+   * @returns 是否更新成功
+   */
+  async updateArticle(id: number, data: { title?: string; content?: string; cover?: string; category_id?: number }): Promise<boolean> {
+    const updates: string[] = [];
+    const values: any[] = [];
+    
+    if (data.title !== undefined) {
+      updates.push('title = ?');
+      values.push(data.title);
+    }
+    
+    if (data.content !== undefined) {
+      updates.push('content = ?');
+      values.push(data.content);
+    }
+    
+    if (data.cover !== undefined) {
+      updates.push('cover = ?');
+      values.push(data.cover);
+    }
+    
+    if (data.category_id !== undefined) {
+      updates.push('category_id = ?');
+      values.push(data.category_id);
+    }
+    
+    if (updates.length === 0) {
+      return false;
+    }
+    
+    updates.push('updated_at = NOW()');
+    values.push(id);
+    
+    const sql = `
+      UPDATE articles
+      SET ${updates.join(', ')}
+      WHERE id = ?
+    `;
+    
+    const [result] = await pool.execute<RowDataPacket[]>(sql, values);
+    
+    return (result as any).affectedRows > 0;
+  },
   
   /**
    * 为文章添加标签

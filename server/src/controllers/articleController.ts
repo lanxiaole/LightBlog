@@ -185,10 +185,75 @@ export async function getArticlesByTag(req: Request, res: Response): Promise<voi
   }
 }
 
+/**
+ * 更新文章信息
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function updateArticle(req: Request, res: Response): Promise<void> {
+  try {
+    const articleId = parseInt(req.params.id);
+    const userId = (req as any).user?.id;
+    const { title, content, cover, category_id, tags } = req.body;
+    
+    if (isNaN(articleId) || articleId <= 0) {
+      res.status(400).json({ message: '无效的文章ID' });
+      return;
+    }
+    
+    if (!userId) {
+      res.status(401).json({ message: '未授权' });
+      return;
+    }
+    
+    const article = await ArticleModel.getArticleById(articleId);
+    
+    if (!article) {
+      res.status(404).json({ message: '文章不存在' });
+      return;
+    }
+    
+    if (article.author_id !== userId) {
+      res.status(403).json({ message: '无权限修改此文章' });
+      return;
+    }
+    
+    const updateSuccess = await ArticleModel.updateArticle(articleId, {
+      title,
+      content,
+      cover,
+      category_id
+    });
+    
+    if (!updateSuccess) {
+      res.status(500).json({ message: '更新失败' });
+      return;
+    }
+    
+    if (tags && Array.isArray(tags)) {
+      await ArticleModel.removeArticleTags(articleId);
+      
+      const tagIds = await Promise.all(
+        tags.map(async (tagName: string) => {
+          return await TagModel.getOrCreateTag(tagName);
+        })
+      );
+      
+      await ArticleModel.addArticleTags(articleId, tagIds);
+    }
+    
+    res.status(200).json({ message: '更新成功' });
+  } catch (error) {
+    console.error('更新文章失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
 export default {
   createArticle,
   getArticles,
   getArticleById,
   getArticlesByCategory,
-  getArticlesByTag
+  getArticlesByTag,
+  updateArticle
 };

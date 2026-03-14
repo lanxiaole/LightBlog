@@ -251,5 +251,81 @@ export const ArticleModel = {
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [articleId]);
     const tags = rows as Tag[];
     return tags;
+  },
+  
+  /**
+   * 根据分类名称查询文章（分页）
+   * @param categoryName 分类名称
+   * @param page 页码，默认 1
+   * @param pageSize 每页数量，默认 10
+   * @returns 包含文章列表和总记录数的对象
+   */
+  async getArticlesByCategory(categoryName: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
+    const validPage = Math.max(1, Number(page));
+    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
+    const offset = (validPage - 1) * validPageSize;
+
+    const listSql = `
+      SELECT a.* FROM articles a
+      JOIN categories c ON a.category_id = c.id
+      WHERE c.name = ? AND a.status = 'published'
+      ORDER BY a.created_at DESC
+      LIMIT ${validPageSize} OFFSET ${offset}
+    `;
+
+    const countSql = `
+      SELECT COUNT(*) as total FROM articles a
+      JOIN categories c ON a.category_id = c.id
+      WHERE c.name = ? AND a.status = 'published'
+    `;
+
+    const [listResult, countResult] = await Promise.all([
+      pool.execute<RowDataPacket[]>(listSql, [categoryName]),
+      pool.execute<RowDataPacket[]>(countSql, [categoryName])
+    ]);
+
+    const list = listResult[0] as Article[];
+    const total = (countResult[0] as RowDataPacket[])[0].total as number;
+
+    return { list, total };
+  },
+  
+  /**
+   * 根据标签名称查询文章（分页）
+   * @param tagName 标签名称
+   * @param page 页码，默认 1
+   * @param pageSize 每页数量，默认 10
+   * @returns 包含文章列表和总记录数的对象
+   */
+  async getArticlesByTag(tagName: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
+    const validPage = Math.max(1, Number(page));
+    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
+    const offset = (validPage - 1) * validPageSize;
+
+    const listSql = `
+      SELECT a.* FROM articles a
+      JOIN article_tags at ON a.id = at.article_id
+      JOIN tags t ON at.tag_id = t.id
+      WHERE t.name = ? AND a.status = 'published'
+      ORDER BY a.created_at DESC
+      LIMIT ${validPageSize} OFFSET ${offset}
+    `;
+
+    const countSql = `
+      SELECT COUNT(*) as total FROM articles a
+      JOIN article_tags at ON a.id = at.article_id
+      JOIN tags t ON at.tag_id = t.id
+      WHERE t.name = ? AND a.status = 'published'
+    `;
+
+    const [listResult, countResult] = await Promise.all([
+      pool.execute<RowDataPacket[]>(listSql, [tagName]),
+      pool.execute<RowDataPacket[]>(countSql, [tagName])
+    ]);
+
+    const list = listResult[0] as Article[];
+    const total = (countResult[0] as RowDataPacket[])[0].total as number;
+
+    return { list, total };
   }
 };

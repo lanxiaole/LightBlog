@@ -123,8 +123,72 @@ export async function getArticleById(req: Request, res: Response): Promise<void>
   }
 }
 
+/**
+ * 根据分类名称获取文章列表
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function getArticlesByCategory(req: Request, res: Response): Promise<void> {
+  try {
+    const { name } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    
+    if (!name) {
+      res.status(400).json({ message: '分类名称不能为空' });
+      return;
+    }
+    
+    const { list, total } = await ArticleModel.getArticlesByCategory(name, page, pageSize);
+    
+    res.status(200).json({
+      list,
+      total,
+      page,
+      pageSize,
+      categoryName: name
+    });
+  } catch (error) {
+    console.error('获取分类文章失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
+/**
+ * 根据标签名称获取文章列表
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function getArticlesByTag(req: Request, res: Response): Promise<void> {
+  try {
+    const { name } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    
+    if (!name) {
+      res.status(400).json({ message: '标签名称不能为空' });
+      return;
+    }
+    
+    const { list, total } = await ArticleModel.getArticlesByTag(name, page, pageSize);
+    
+    res.status(200).json({
+      list,
+      total,
+      page,
+      pageSize,
+      tagName: name
+    });
+  } catch (error) {
+    console.error('获取标签文章失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
 export default {
   createArticle,
   getArticles,
-  getArticleById
+  getArticleById,
+  getArticlesByCategory,
+  getArticlesByTag
 };

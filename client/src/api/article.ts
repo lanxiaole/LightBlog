@@ -74,7 +74,7 @@ export async function getArticleDetail(id: number): Promise<Article> {
  * @param data 文章数据
  * @returns 新文章ID
  */
-export async function createArticle(data: { title: string; content: string; cover?: string }): Promise<{ id: number }> {
+export async function createArticle(data: { title: string; content: string; cover?: string; category_id?: number; tags?: string[] }): Promise<{ id: number }> {
   try {
      const response = await api.post<{ id: number }>('/articles', data);
     return response.data;

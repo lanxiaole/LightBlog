@@ -32,6 +32,39 @@ KEY `author_id` (`author_id`),
 CONSTRAINT `articles_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 分类表
+CREATE TABLE `categories` (
+`id` int NOT NULL AUTO_INCREMENT,
+`name` varchar(50) NOT NULL,
+`description` varchar(255) DEFAULT NULL,
+`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 标签表
+CREATE TABLE `tags` (
+`id` int NOT NULL AUTO_INCREMENT,
+`name` varchar(50) NOT NULL,
+`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 文章-标签关联表
+CREATE TABLE `article_tags` (
+`article_id` int NOT NULL,
+`tag_id` int NOT NULL,
+PRIMARY KEY (`article_id`, `tag_id`),
+KEY `tag_id` (`tag_id`),
+CONSTRAINT `article_tags_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
+CONSTRAINT `article_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 为 articles 表增加 category_id 字段（允许为空）
+ALTER TABLE `articles` ADD COLUMN `category_id` int DEFAULT NULL AFTER `author_id`;
+ALTER TABLE `articles` ADD CONSTRAINT `articles_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL;
+
 问题 1：不要使用旧版 volar 只使用 vue official！！
 问题 2：使用 element 自动导入，不要手动导入！！！
 问题 3：配置 tsconfig.app.json 中 "noImplicitAny": false,

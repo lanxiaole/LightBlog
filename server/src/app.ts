@@ -4,6 +4,7 @@ import { testConnection } from './config/db';
 import authRouter from './routes/auth';
 import articleRouter from './routes/articles';
 import userRouter from './routes/users';
+import categoryRouter from './routes/categories';
 
 const app = express();
 
@@ -24,6 +25,9 @@ app.use('/api/articles', articleRouter);
 
 // 用户路由
 app.use('/api/users', userRouter);
+
+// 分类路由
+app.use('/api/categories', categoryRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

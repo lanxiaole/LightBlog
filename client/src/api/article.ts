@@ -139,3 +139,21 @@ export async function getArticlesByTag(tagName: string, params?: { page?: number
     throw new Error('获取标签文章失败');
   }
 }
+
+/**
+ * 更新文章
+ * @param id 文章ID
+ * @param data 要更新的数据
+ * @returns 更新结果
+ */
+export async function updateArticle(id: number, data: { title?: string; content?: string; cover?: string; category_id?: number; tags?: string[] }): Promise<{ message: string }> {
+  try {
+    const response = await api.put<{ message: string }>(`/articles/${id}`, data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`更新文章失败: ${error.message}`);
+    }
+    throw new Error('更新文章失败');
+  }
+}

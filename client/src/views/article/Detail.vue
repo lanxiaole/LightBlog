@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty, ElTag, ElLink } from 'element-plus';
 import { Star, Message, View } from '@element-plus/icons-vue';
 import { getArticleDetail } from '@/api/article';
 import type { Article } from '@/api/article';
+import { useUserStore } from '@/stores/user';
 
 // 获取路由实例
 const route = useRoute();
+
+// 用户 store
+const userStore = useUserStore();
 
 // 文章数据
 const article = ref<Article | null>(null);
@@ -15,6 +19,11 @@ const article = ref<Article | null>(null);
 const loading = ref(true);
 // 错误状态
 const error = ref('');
+
+// 判断是否为文章作者
+const isAuthor = computed(() => {
+  return article.value && userStore.userInfo && article.value.author_id === userStore.userInfo.id;
+});
 
 // 从路由参数获取文章id
 const getArticleId = (): number => {
@@ -103,6 +112,9 @@ onMounted(() => {
             <span>{{ article.views }}</span>
           </span>
         </div>
+        <el-button v-if="isAuthor" type="primary" size="small" @click="$router.push(`/edit/${article.id}`)">
+          编辑
+        </el-button>
       </div>
 
       <!-- 分类和标签 -->
@@ -247,6 +259,10 @@ onMounted(() => {
   color: #909399;
 }
 
+.author-info .el-button {
+  margin-left: 20px;
+}
+
 .article-content {
   font-size: 16px;
   line-height: 1.8;
@@ -293,6 +309,10 @@ onMounted(() => {
   .article-stats {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .author-info .el-button {
+    width: 100%;
   }
 }
 </style>

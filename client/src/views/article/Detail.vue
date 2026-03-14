@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty, ElTag, ElLink, ElMessageBox, ElMessage } from 'element-plus';
+import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty, ElTag, ElLink, ElMessageBox, ElMessage, ElInput, ElPagination } from 'element-plus';
 import { Star, Message, View } from '@element-plus/icons-vue';
 import { getArticleDetail, deleteArticle } from '@/api/article';
 import type { Article } from '@/api/article';
+import { getComments, createComment, deleteComment as apiDeleteComment } from '@/api/comment';
+import type { Comment } from '@/api/comment';
 import { useUserStore } from '@/stores/user';
 
 // 获取路由实例
@@ -28,6 +30,16 @@ const isAuthor = computed(() => {
 
 // 删除状态
 const deleting = ref(false);
+
+// 评论相关数据
+const comments = ref<Comment[]>([]);
+const totalComments = ref(0);
+const commentPage = ref(1);
+const commentPageSize = ref(10);
+const newComment = ref('');
+const replyTo = ref<number | null>(null);
+const submitting = ref(false);
+const commentLoading = ref(false);
 
 // 删除文章
 const handleDelete = async () => {
@@ -81,9 +93,127 @@ const fetchArticleDetail = async () => {
   }
 };
 
-// 组件挂载时获取文章详情
-onMounted(() => {
-  fetchArticleDetail();
+// 获取评论列表
+const fetchComments = async () => {
+  const articleId = getArticleId();
+  if (articleId <= 0) return;
+
+  try {
+    commentLoading.value = true;
+    const response = await getComments(articleId, {
+      page: commentPage.value,
+      pageSize: commentPageSize.value
+    });
+    comments.value = response.list;
+    totalComments.value = response.total;
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取评论失败');
+  } finally {
+    commentLoading.value = false;
+  }
+};
+
+// 发表评论
+const handleCreateComment = async () => {
+  const articleId = getArticleId();
+  if (articleId <= 0) return;
+
+  if (!newComment.value.trim()) {
+    ElMessage.warning('评论内容不能为空');
+    return;
+  }
+
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    submitting.value = true;
+    await createComment(articleId, {
+      content: newComment.value.trim(),
+      parent_id: replyTo.value || undefined
+    });
+    ElMessage.success('评论成功');
+    // 重新获取评论
+    commentPage.value = 1;
+    await fetchComments();
+    // 清空输入和回复状态
+    newComment.value = '';
+    replyTo.value = null;
+  } catch (error: any) {
+    ElMessage.error(error.message || '发表评论失败');
+  } finally {
+    submitting.value = false;
+  }
+};
+
+// 删除评论
+const handleDeleteComment = async (commentId: number) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这条评论吗？',
+      '删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    );
+
+    await apiDeleteComment(commentId);
+    ElMessage.success('删除成功');
+    // 重新获取评论
+    await fetchComments();
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败');
+    }
+  }
+};
+
+// 回复评论
+const handleReply = (commentId: number) => {
+  replyTo.value = commentId;
+  // 聚焦输入框
+  setTimeout(() => {
+    const input = document.querySelector('.comment-input textarea') as HTMLTextAreaElement;
+    if (input) {
+      input.focus();
+    }
+  }, 100);
+};
+
+// 取消回复
+const handleCancelReply = () => {
+  replyTo.value = null;
+};
+
+// 分页切换
+const handlePageChange = (page: number) => {
+  commentPage.value = page;
+  fetchComments();
+};
+
+// 计算属性：评论树结构
+const commentTree = computed(() => {
+  // 先按 parent_id 分组
+  const commentMap = new Map<number, Comment[]>();
+  comments.value.forEach(comment => {
+    const parentId = comment.parent_id || 0;
+    if (!commentMap.has(parentId)) {
+      commentMap.set(parentId, []);
+    }
+    commentMap.get(parentId)!.push(comment);
+  });
+  return commentMap.get(0) || [];
+});
+
+// 组件挂载时获取文章详情和评论
+onMounted(async () => {
+  await fetchArticleDetail();
+  await fetchComments();
 });
 </script>
 
@@ -131,7 +261,7 @@ onMounted(() => {
         <div class="article-stats">
           <span class="stat-item">
             <el-icon><Message /></el-icon>
-            <span>0</span>
+            <span>{{ totalComments }}</span>
           </span>
           <span class="stat-item">
             <el-icon><Star /></el-icon>
@@ -183,7 +313,133 @@ onMounted(() => {
       <!-- 评论区 -->
       <div class="comment-section">
         <h3>评论</h3>
-        <el-empty description="评论功能开发中" />
+
+        <!-- 评论输入 -->
+        <div class="comment-input">
+          <el-avatar v-if="userStore.userInfo" :src="userStore.userInfo.avatar || undefined" size="small">
+            {{ userStore.userInfo.username?.charAt(0) || 'U' }}
+          </el-avatar>
+          <el-avatar v-else size="small">U</el-avatar>
+          <div class="input-area">
+            <div v-if="replyTo" class="reply-info">
+              回复评论 #{{ replyTo }}
+              <el-button type="text" size="small" @click="handleCancelReply">取消</el-button>
+            </div>
+            <el-input
+              v-model="newComment"
+              type="textarea"
+              :rows="3"
+              placeholder="写下你的评论..."
+              :disabled="!userStore.isLoggedIn"
+            />
+            <div class="input-actions">
+              <el-button
+                type="primary"
+                @click="handleCreateComment"
+                :loading="submitting"
+                :disabled="!userStore.isLoggedIn || !newComment.trim()"
+              >
+                发表评论
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 评论列表 -->
+        <div class="comment-list">
+          <div v-if="commentLoading" class="comment-loading">
+            <el-skeleton animated>
+              <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 10px;"></el-skeleton-item>
+              <el-skeleton-item variant="text" style="width: 60%; margin-bottom: 10px;"></el-skeleton-item>
+              <el-skeleton-item variant="text" style="width: 70%; margin-bottom: 20px;"></el-skeleton-item>
+            </el-skeleton>
+          </div>
+          <el-empty v-else-if="totalComments === 0" description="暂无评论" />
+          <div v-else>
+            <!-- 一级评论 -->
+            <div v-for="comment in commentTree" :key="comment.id" class="comment-item">
+              <div class="comment-header">
+                <el-avatar :src="comment.author?.avatar || undefined" size="small">
+                  {{ comment.author?.username?.charAt(0) || 'U' }}
+                </el-avatar>
+                <div class="comment-meta">
+                  <span class="comment-author">{{ comment.author?.username || '未知用户' }}</span>
+                  <span class="comment-time">{{ new Date(comment.created_at).toLocaleString('zh-CN') }}</span>
+                </div>
+                <div class="comment-actions">
+                  <el-button
+                    v-if="userStore.isLoggedIn"
+                    type="text"
+                    size="small"
+                    @click="handleReply(comment.id)"
+                  >
+                    回复
+                  </el-button>
+                  <el-button
+                    v-if="userStore.isLoggedIn && userStore.userInfo?.id === comment.user_id"
+                    type="text"
+                    size="small"
+                    @click="handleDeleteComment(comment.id)"
+                    style="color: #f56c6c;"
+                  >
+                    删除
+                  </el-button>
+                </div>
+              </div>
+              <div class="comment-content">{{ comment.content }}</div>
+
+              <!-- 回复评论 -->
+              <div class="replies">
+                <div
+                  v-for="reply in comments.filter(c => c.parent_id === comment.id)"
+                  :key="reply.id"
+                  class="reply-item"
+                >
+                  <div class="comment-header">
+                    <el-avatar :src="reply.author?.avatar || undefined" size="small">
+                      {{ reply.author?.username?.charAt(0) || 'U' }}
+                    </el-avatar>
+                    <div class="comment-meta">
+                      <span class="comment-author">{{ reply.author?.username || '未知用户' }}</span>
+                      <span class="comment-time">{{ new Date(reply.created_at).toLocaleString('zh-CN') }}</span>
+                    </div>
+                    <div class="comment-actions">
+                      <el-button
+                        v-if="userStore.isLoggedIn"
+                        type="text"
+                        size="small"
+                        @click="handleReply(reply.id)"
+                      >
+                        回复
+                      </el-button>
+                      <el-button
+                        v-if="userStore.isLoggedIn && userStore.userInfo?.id === reply.user_id"
+                        type="text"
+                        size="small"
+                        @click="handleDeleteComment(reply.id)"
+                        style="color: #f56c6c;"
+                      >
+                        删除
+                      </el-button>
+                    </div>
+                  </div>
+                  <div class="comment-content">{{ reply.content }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <div v-if="totalComments > commentPageSize" class="comment-pagination">
+          <el-pagination
+            v-model:current-page="commentPage"
+            :page-size="commentPageSize"
+            :total="totalComments"
+            layout="prev, pager, next"
+            @current-change="handlePageChange"
+          />
+        </div>
       </div>
     </el-card>
 
@@ -322,6 +578,148 @@ onMounted(() => {
   font-weight: 600;
   margin-bottom: 20px;
   color: #303133;
+}
+
+/* 评论输入区 */
+.comment-input {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.input-area {
+  flex: 1;
+}
+
+.reply-info {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.input-actions {
+  text-align: right;
+  margin-top: 10px;
+}
+
+/* 评论列表 */
+.comment-list {
+  margin-bottom: 30px;
+}
+
+.comment-loading {
+  margin: 20px 0;
+}
+
+.comment-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-meta {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.comment-author {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 2px;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #909399;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.comment-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #303133;
+  margin-bottom: 10px;
+  padding-left: 34px;
+}
+
+/* 回复评论 */
+.replies {
+  margin-top: 15px;
+  margin-left: 34px;
+  padding-left: 15px;
+  border-left: 2px solid #f0f0f0;
+}
+
+.reply-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+.reply-item:last-child {
+  border-bottom: none;
+}
+
+.reply-item .comment-content {
+  padding-left: 0;
+}
+
+/* 分页 */
+.comment-pagination {
+  text-align: center;
+  margin-top: 30px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .comment-input {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .comment-meta {
+    margin-left: 0;
+  }
+
+  .comment-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .comment-content {
+    padding-left: 0;
+  }
+
+  .replies {
+    margin-left: 0;
+    padding-left: 10px;
+  }
 }
 
 @media (max-width: 768px) {

@@ -65,7 +65,13 @@ export const CommentModel = {
     // 查询评论列表，关联用户信息
     const listSql = `
       SELECT 
-        c.*, 
+        c.id,
+        c.content,
+        c.article_id,
+        c.user_id,
+        c.parent_id,
+        c.created_at,
+        c.updated_at,
         u.id as author_id, 
         u.username, 
         u.avatar
@@ -73,7 +79,7 @@ export const CommentModel = {
       JOIN users u ON c.user_id = u.id
       WHERE c.article_id = ?
       ORDER BY c.parent_id ASC, c.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${validPageSize} OFFSET ${offset}
     `;
 
     // 查询总记录数
@@ -84,7 +90,7 @@ export const CommentModel = {
 
     // 并行执行两个查询
     const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [articleId, validPageSize, offset]),
+      pool.execute<RowDataPacket[]>(listSql, [articleId]),
       pool.execute<RowDataPacket[]>(countSql, [articleId])
     ]);
 

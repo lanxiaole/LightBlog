@@ -5,6 +5,7 @@ import authRouter from './routes/auth';
 import articleRouter from './routes/articles';
 import userRouter from './routes/users';
 import categoryRouter from './routes/categories';
+import tagRouter from './routes/tags';
 
 const app = express();
 
@@ -28,6 +29,9 @@ app.use('/api/users', userRouter);
 
 // 分类路由
 app.use('/api/categories', categoryRouter);
+
+// 标签路由
+app.use('/api/tags', tagRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

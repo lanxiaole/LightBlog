@@ -587,3 +587,113 @@ UserModel.updateUserProfile
 返回响应给前端
 ↓
 更新 userStore 并跳转页面
+
+### 一、本次对话实现的功能 1. 后端 API 扩展
+
+- 在 server/src/controllers/articleController.ts 中添加了两个新方法：
+
+  - getArticlesByCategory - 根据分类名称获取文章列表
+  - getArticlesByTag - 根据标签名称获取文章列表
+
+- 在 server/src/models/Article.ts 中添加了对应的查询方法：
+
+  - getArticlesByCategory - 联表查询分类文章
+  - getArticlesByTag - 联表查询标签文章
+
+- 在 server/src/routes/articles.ts 中添加了两个路由：
+
+  - GET /api/articles/category/:name
+  - GET /api/articles/tag/:name 2. 前端 API 封装
+
+- 在 client/src/api/article.ts 中添加了两个函数：
+  - getArticlesByCategory(categoryName, params)
+  - getArticlesByTag(tagName, params) 3. 页面组件开发
+- 创建了 client/src/views/category/List.vue - 分类文章列表页面
+- 创建了 client/src/views/tag/List.vue - 标签文章列表页面 4. 侧边栏功能增强
+- 修改了 client/src/views/layouts/DefaultLayout.vue ：
+
+  - 添加分类和标签数据的动态获取
+  - 将静态菜单改为动态子菜单，显示所有分类和标签
+  - 为每个分类和标签添加对应的路由链接
+
+- 修改了 client/src/views/home/Home.vue ：
+
+  - 添加分类和标签数据的动态获取
+  - 将静态的分类列表改为动态列表
+  - 添加标签列表显示
+  - 为分类和标签添加点击跳转功能
+
+### 二、遇到的问题及解决方案 问题 1：分类/标签文章无法显示（最严重的问题）
+
+现象：
+
+- 访问 /category/技术 或 /tag/Vue 时返回 404 或错误数据
+  原因： Express 路由匹配顺序问题。原来的路由定义顺序是：
+
+```
+router.get('/:id', 
+getArticleById);           // 先定义
+router.get('/category/:name', 
+getArticlesByCategory);  // 后定义
+router.get('/tag/:name', 
+getArticlesByTag);            // 后
+定义
+```
+
+当访问 /api/articles/category/技术 时，Express 会按顺序匹配，先匹配到 /:id ，将 category 当作文章 ID，导致请求被错误路由。
+
+解决方案： 调整路由顺序，将具体路由放在通用路由之前：
+
+````
+router.get('/category/:name', 
+getArticlesByCategory);  // 先定义具
+体路由
+router.get('/tag/:name', 
+getArticlesByTag);            // 先
+定义具体路由
+router.get('/:id', 
+getArticleById);                    
+// 后定义通用路由
+``` 问题 2：切换分类/标签不刷新数据
+现象：
+
+- 从 /category/技术 切换到 /category/生活 时，页面显示的还是"技术"分类的文章
+- 必须手动刷新页面才能显示正确数据
+原因： Vue Router 的组件复用机制。当路由参数变化时（从 /category/技术 到 /category/生活 ），Vue 会复用同一个组件实例，不会重新挂载，因此 onMounted 钩子不会再次执行，数据不会重新获取。
+
+解决方案： 使用 watch 监听路由参数变化：
+
+````
+
+import { watch } from 'vue';
+
+//  监听路由参数变化
+watch(() => route.params.name, 
+(newName, oldName) => {
+  if (newName !== oldName) {
+    //  重置分页
+    currentPage.value = 1;
+    pageSize.value = 10;
+    //  重新获取文章列表
+    fetchArticles();
+  }
+});
+
+```
+在 category/List.vue 和 tag/List.vue 中都添加了这个监听。
+ 问题 3：侧边栏分类/标签无对应路由
+现象：
+
+- 左侧边栏的"分类"和"标签"按钮点击后没有反应或跳转错误
+原因：
+
+- 原来的菜单项是静态的，没有绑定正确的路由
+- 没有动态加载分类和标签数据
+解决方案：
+
+1. 将 el-menu-item 改为 el-sub-menu ，显示所有分类和标签
+2. 在 onMounted 中调用 getCategories() 和 getTags() 获取数据
+3. 为每个分类和标签生成对应的路由链接：
+   - 分类： /category/${category.name}
+   - 标签： /tag/${tag.name}
+```

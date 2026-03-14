@@ -93,3 +93,49 @@ export async function createArticle(data: { title: string; content: string; cove
     throw new Error('创建文章失败');
   }
 }
+
+/**
+ * 根据分类获取文章列表
+ * @param categoryName 分类名称
+ * @param params 查询参数
+ * @returns 文章列表和分页信息
+ */
+export async function getArticlesByCategory(categoryName: string, params?: { page?: number; pageSize?: number }): Promise<GetArticlesResponse & { categoryName: string }> {
+  try {
+    const response = await api.get<GetArticlesResponse & { categoryName: string }>(`/articles/category/${categoryName}`, {
+      params: {
+        page: params?.page || 1,
+        pageSize: params?.pageSize || 10
+      }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`获取分类文章失败: ${error.message}`);
+    }
+    throw new Error('获取分类文章失败');
+  }
+}
+
+/**
+ * 根据标签获取文章列表
+ * @param tagName 标签名称
+ * @param params 查询参数
+ * @returns 文章列表和分页信息
+ */
+export async function getArticlesByTag(tagName: string, params?: { page?: number; pageSize?: number }): Promise<GetArticlesResponse & { tagName: string }> {
+  try {
+    const response = await api.get<GetArticlesResponse & { tagName: string }>(`/articles/tag/${tagName}`, {
+      params: {
+        page: params?.page || 1,
+        pageSize: params?.pageSize || 10
+      }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`获取标签文章失败: ${error.message}`);
+    }
+    throw new Error('获取标签文章失败');
+  }
+}

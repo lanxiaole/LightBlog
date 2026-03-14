@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/user';
 import { useRoute, useRouter } from 'vue-router';
+import { getCategories } from '@/api/category';
+import { getTags } from '@/api/tag';
+import type { Category } from '@/api/category';
+import type { Tag } from '@/api/tag';
 
 // 获取用户 store
 const userStore = useUserStore();
@@ -10,6 +14,10 @@ const userStore = useUserStore();
 const route = useRoute();
 // 获取路由实例
 const router = useRouter();
+
+// 分类和标签数据
+const categories = ref<Category[]>([]);
+const tags = ref<Tag[]>([]);
 
 // 生成面包屑数据
 const breadcrumbItems = computed(() => {
@@ -28,6 +36,26 @@ const breadcrumbItems = computed(() => {
       path: item.path
     };
   });
+});
+
+// 获取分类和标签数据
+const fetchCategoriesAndTags = async () => {
+  try {
+    // 获取分类
+    const categoryList = await getCategories();
+    categories.value = categoryList;
+
+    // 获取标签
+    const tagList = await getTags();
+    tags.value = tagList;
+  } catch (error) {
+    console.error('获取分类和标签失败:', error);
+  }
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchCategoriesAndTags();
 });
 </script>
 
@@ -77,17 +105,33 @@ const breadcrumbItems = computed(() => {
           </el-menu-item>
         </template>
 
-        <!-- 分类（占位） -->
-        <el-menu-item index="/category">
-          <el-icon><Menu /></el-icon>
-          <span>分类</span>
-        </el-menu-item>
+        <!-- 分类 -->
+        <el-sub-menu index="/category">
+          <template #title>
+            <el-icon><Menu /></el-icon>
+            <span>分类</span>
+          </template>
+          <el-menu-item v-for="category in categories" :key="category.id" :index="`/category/${category.name}`">
+            {{ category.name }}
+          </el-menu-item>
+          <el-menu-item v-if="categories.length === 0" disabled>
+            暂无分类
+          </el-menu-item>
+        </el-sub-menu>
 
-        <!-- 标签（占位） -->
-        <el-menu-item index="/tag">
-          <el-icon><CollectionTag /></el-icon>
-          <span>标签</span>
-        </el-menu-item>
+        <!-- 标签 -->
+        <el-sub-menu index="/tag">
+          <template #title>
+            <el-icon><CollectionTag /></el-icon>
+            <span>标签</span>
+          </template>
+          <el-menu-item v-for="tag in tags" :key="tag.id" :index="`/tag/${tag.name}`">
+            {{ tag.name }}
+          </el-menu-item>
+          <el-menu-item v-if="tags.length === 0" disabled>
+            暂无标签
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 

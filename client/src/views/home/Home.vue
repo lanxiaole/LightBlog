@@ -77,11 +77,33 @@
             <div class="sidebar-title">分类</div>
           </template>
           <div class="sidebar-content">
-            <p>技术</p>
-            <p>生活</p>
-            <p>工作</p>
-            <p>学习</p>
-            <p>其他</p>
+            <p v-for="category in categories" :key="category.id" @click="navigateToCategory(category.name)">
+              {{ category.name }}
+            </p>
+            <p v-if="categories.length === 0" class="no-data">
+              暂无分类
+            </p>
+          </div>
+        </el-card>
+
+        <el-card class="sidebar-card" style="margin-top: 20px;">
+          <template #header>
+            <div class="sidebar-title">标签</div>
+          </template>
+          <div class="sidebar-content">
+            <el-tag
+              v-for="tag in tags"
+              :key="tag.id"
+              size="small"
+              type="info"
+              @click="navigateToTag(tag.name)"
+              class="tag-item"
+            >
+              {{ tag.name }}
+            </el-tag>
+            <p v-if="tags.length === 0" class="no-data">
+              暂无标签
+            </p>
           </div>
         </el-card>
       </div>
@@ -95,7 +117,11 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { Loading } from '@element-plus/icons-vue';
 import { getArticles } from '@/api/article';
+import { getCategories } from '@/api/category';
+import { getTags } from '@/api/tag';
 import type { Article } from '@/api/article';
+import type { Category } from '@/api/category';
+import type { Tag } from '@/api/tag';
 
 // 路由实例
 const router = useRouter();
@@ -105,6 +131,10 @@ const articles = ref<Article[]>([]);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
+
+// 分类和标签数据
+const categories = ref<Category[]>([]);
+const tags = ref<Tag[]>([]);
 
 // 加载状态
 const loading = ref(false);
@@ -127,6 +157,16 @@ const getSummary = (content: string): string => {
 // 跳转到文章详情页
 const navigateToArticle = (id: number) => {
   router.push(`/article/${id}`);
+};
+
+// 跳转到分类页面
+const navigateToCategory = (name: string) => {
+  router.push(`/category/${name}`);
+};
+
+// 跳转到标签页面
+const navigateToTag = (name: string) => {
+  router.push(`/tag/${name}`);
 };
 
 // 处理分页大小变化
@@ -162,9 +202,25 @@ const fetchArticles = async () => {
   }
 };
 
-// 组件挂载时获取文章列表
+// 获取分类和标签数据
+const fetchCategoriesAndTags = async () => {
+  try {
+    // 获取分类
+    const categoryList = await getCategories();
+    categories.value = categoryList;
+
+    // 获取标签
+    const tagList = await getTags();
+    tags.value = tagList;
+  } catch (error) {
+    console.error('获取分类和标签失败:', error);
+  }
+};
+
+// 组件挂载时获取数据
 onMounted(() => {
   fetchArticles();
+  fetchCategoriesAndTags();
 });
 </script>
 
@@ -293,6 +349,21 @@ onMounted(() => {
 
 .sidebar-content p:hover {
   color: #409eff;
+}
+
+.no-data {
+  color: #909399;
+  font-style: italic;
+}
+
+.tag-item {
+  margin: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tag-item:hover {
+  transform: scale(1.05);
 }
 
 @media (max-width: 768px) {

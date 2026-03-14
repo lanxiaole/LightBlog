@@ -1,6 +1,14 @@
 import express from 'express';
 import authMiddleware from '../middlewares/auth';
-import { createArticle, getArticles, getArticleById, getArticlesByCategory, getArticlesByTag, updateArticle } from '../controllers/articleController';
+import { 
+  createArticle,
+  getArticles,
+  getArticleById,
+  getArticlesByCategory,
+  getArticlesByTag,
+  updateArticle,
+   deleteArticle 
+  } from '../controllers/articleController';
 
 const router = express.Router();
 
@@ -23,5 +31,8 @@ router.get('/:id', getArticleById);
 
 // PUT /api/articles/:id - 更新文章信息（需要登录）
 router.put('/:id', authMiddleware, updateArticle);
+
+// DELETE /api/articles/:id - 删除文章（需要登录）
+router.delete('/:id', authMiddleware, deleteArticle);
 
 export default router;

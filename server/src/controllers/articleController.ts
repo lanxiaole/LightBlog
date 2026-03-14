@@ -249,11 +249,58 @@ export async function updateArticle(req: Request, res: Response): Promise<void> 
   }
 }
 
+/**
+ * 删除文章
+ * @param req 请求对象
+ * @param res 响应对象
+ */
+export async function deleteArticle(req: Request, res: Response): Promise<void> {
+  try {
+    const articleId = parseInt(req.params.id);
+    const userId = (req as any).user?.id;
+    
+    if (isNaN(articleId) || articleId <= 0) {
+      res.status(400).json({ message: '无效的文章ID' });
+      return;
+    }
+    
+    if (!userId) {
+      res.status(401).json({ message: '未授权' });
+      return;
+    }
+    
+    const article = await ArticleModel.getArticleById(articleId);
+    
+    if (!article) {
+      res.status(404).json({ message: '文章不存在' });
+      return;
+    }
+    
+    if (article.author_id !== userId) {
+      res.status(403).json({ message: '无权限删除此文章' });
+      return;
+    }
+    
+    const deleteSuccess = await ArticleModel.deleteArticle(articleId);
+    
+    if (!deleteSuccess) {
+      res.status(500).json({ message: '删除失败' });
+      return;
+    }
+    
+    res.status(200).json({ message: '删除成功' });
+  } catch (error) {
+    console.error('删除文章失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
 export default {
   createArticle,
   getArticles,
   getArticleById,
   getArticlesByCategory,
   getArticlesByTag,
-  updateArticle
+  updateArticle,
+  deleteArticle
 };

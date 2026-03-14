@@ -249,6 +249,19 @@ export const ArticleModel = {
     
     return (result as any).affectedRows > 0;
   },
+
+  /**
+   * 删除文章
+   * @param id 文章 ID
+   * @returns 是否删除成功
+   */
+  async deleteArticle(id: number): Promise<boolean> {
+    const sql = 'DELETE FROM articles WHERE id = ?';
+    
+    const [result] = await pool.execute<RowDataPacket[]>(sql, [id]);
+    
+    return (result as any).affectedRows > 0;
+  },
   
   /**
    * 为文章添加标签

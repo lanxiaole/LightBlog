@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty, ElTag, ElLink } from 'element-plus';
+import { useRoute, useRouter } from 'vue-router';
+import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty, ElTag, ElLink, ElMessageBox, ElMessage } from 'element-plus';
 import { Star, Message, View } from '@element-plus/icons-vue';
-import { getArticleDetail } from '@/api/article';
+import { getArticleDetail, deleteArticle } from '@/api/article';
 import type { Article } from '@/api/article';
 import { useUserStore } from '@/stores/user';
 
 // 获取路由实例
 const route = useRoute();
+const router = useRouter();
 
 // 用户 store
 const userStore = useUserStore();
@@ -24,6 +25,35 @@ const error = ref('');
 const isAuthor = computed(() => {
   return article.value && userStore.userInfo && article.value.author_id === userStore.userInfo.id;
 });
+
+// 删除状态
+const deleting = ref(false);
+
+// 删除文章
+const handleDelete = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这篇文章吗？此操作不可撤销',
+      '删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    );
+
+    deleting.value = true;
+    await deleteArticle(article.value!.id);
+    ElMessage.success('删除成功');
+    router.push('/');
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败');
+    }
+  } finally {
+    deleting.value = false;
+  }
+};
 
 // 从路由参数获取文章id
 const getArticleId = (): number => {
@@ -114,6 +144,9 @@ onMounted(() => {
         </div>
         <el-button v-if="isAuthor" type="primary" size="small" @click="$router.push(`/edit/${article.id}`)">
           编辑
+        </el-button>
+        <el-button v-if="isAuthor" type="danger" size="small" @click="handleDelete" :loading="deleting">
+          删除
         </el-button>
       </div>
 

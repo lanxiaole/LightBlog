@@ -157,3 +157,20 @@ export async function updateArticle(id: number, data: { title?: string; content?
     throw new Error('更新文章失败');
   }
 }
+
+/**
+ * 删除文章
+ * @param id 文章ID
+ * @returns 删除结果
+ */
+export async function deleteArticle(id: number): Promise<{ message: string }> {
+  try {
+    const response = await api.delete<{ message: string }>(`/articles/${id}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`删除文章失败: ${error.message}`);
+    }
+    throw new Error('删除文章失败');
+  }
+}

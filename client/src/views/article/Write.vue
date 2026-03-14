@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElUpload } from 'element-plus';
+import { ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElUpload, ElSelect, ElOption } from 'element-plus';
 
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
 import '@wangeditor/editor/dist/css/style.css';
 import { createArticle } from '@/api/article';
+import { getCategories } from '@/api/category';
+import { getTags } from '@/api/tag';
+import type { Category } from '@/api/category';
+import type { Tag } from '@/api/tag';
 
 // 路由实例
 const router = useRouter();
@@ -14,8 +18,14 @@ const router = useRouter();
 const form = ref({
   title: '',
   content: '',
-  cover: ''
+  cover: '',
+  category_id: undefined as number | undefined,
+  tags: [] as string[]
 });
+
+// 分类和标签数据
+const categories = ref<Category[]>([]);
+const tags = ref<Tag[]>([]);
 
 // 加载状态
 const loading = ref(false);
@@ -75,7 +85,9 @@ const submitForm = async () => {
     const result = await createArticle({
       title: form.value.title,
       content: form.value.content,
-      cover: form.value.cover
+      cover: form.value.cover,
+      category_id: form.value.category_id,
+      tags: form.value.tags
     });
     // 跳转到文章详情页
     router.push(`/article/${result.id}`);
@@ -88,8 +100,16 @@ const submitForm = async () => {
 };
 
 // 组件挂载时初始化
-onMounted(() => {
+onMounted(async () => {
   // 编辑器已在模板中初始化
+  try {
+    // 获取分类列表
+    categories.value = await getCategories();
+    // 获取标签列表
+    tags.value = await getTags();
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取分类和标签失败');
+  }
 });
 
 // 组件卸载前销毁编辑器
@@ -113,6 +133,41 @@ onBeforeUnmount(() => {
           :maxlength="100"
           show-word-limit
         />
+      </el-form-item>
+
+      <!-- 分类 -->
+      <el-form-item label="分类">
+        <el-select
+          v-model="form.category_id"
+          placeholder="请选择分类"
+          clearable
+        >
+          <el-option
+            v-for="category in categories"
+            :key="category.id"
+            :label="category.name"
+            :value="category.id"
+          />
+        </el-select>
+      </el-form-item>
+
+      <!-- 标签 -->
+      <el-form-item label="标签">
+        <el-select
+          v-model="form.tags"
+          multiple
+          filterable
+          allow-create
+          default-first-option
+          placeholder="请选择或输入标签"
+        >
+          <el-option
+            v-for="tag in tags"
+            :key="tag.id"
+            :label="tag.name"
+            :value="tag.name"
+          />
+        </el-select>
       </el-form-item>
 
       <!-- 封面图 -->

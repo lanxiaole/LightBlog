@@ -48,7 +48,7 @@ export const ArticleModel = {
   }): Promise<number> {
     const sql = `
       INSERT INTO articles (title, content, cover, author_id, category_id, status, views, likes, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, 0, NOW(), NOW())
+      VALUES (?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())
     `;
     
     const [result] = await pool.execute<RowDataPacket[]>(sql, [

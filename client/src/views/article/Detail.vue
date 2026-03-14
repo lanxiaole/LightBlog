@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty } from 'element-plus';
+import { ElCard, ElSkeleton, ElSkeletonItem, ElAvatar, ElButton, ElDivider, ElBacktop, ElEmpty, ElTag, ElLink } from 'element-plus';
 import { Star, Message, View } from '@element-plus/icons-vue';
 import { getArticleDetail } from '@/api/article';
 import type { Article } from '@/api/article';
@@ -105,6 +105,29 @@ onMounted(() => {
         </div>
       </div>
 
+      <!-- 分类和标签 -->
+      <div v-if="article.category || (article.tags && article.tags.length > 0)" class="meta-info">
+        <div v-if="article.category" class="category-info">
+          <span class="label">分类：</span>
+          <el-link type="primary" @click="$router.push(`/category/${article.category.name}`)">
+            {{ article.category.name }}
+          </el-link>
+        </div>
+        <div v-if="article.tags && article.tags.length > 0" class="tags-info">
+          <span class="label">标签：</span>
+          <el-tag
+            v-for="tag in article.tags"
+            :key="tag.id"
+            type="info"
+            size="small"
+            style="margin-right: 8px; margin-bottom: 8px; cursor: pointer;"
+            @click="$router.push(`/tag/${tag.name}`)"
+          >
+            {{ tag.name }}
+          </el-tag>
+        </div>
+      </div>
+
       <el-divider />
 
       <!-- 文章正文 -->
@@ -188,6 +211,32 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.meta-info {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.category-info,
+.tags-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.category-info:last-child,
+.tags-info:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 14px;
+  color: #606266;
+  margin-right: 8px;
+  font-weight: 500;
 }
 
 .stat-item {

@@ -1,4 +1,5 @@
 import api from './index';
+import type { Tag } from './tag';
 
 // 定义作者类型
 export interface Author {
@@ -14,12 +15,19 @@ export interface Article {
   content: string;
   cover: string | null;
   author_id: number;
+  category_id: number | null;
   status: string;
   views: number;
   likes: number;
   created_at: string;
   updated_at: string;
   author?: Author;
+  category?: {
+    id: number;
+    name: string;
+    description: string | null;
+  };
+  tags?: Tag[];
 }
 
 // 定义获取文章列表的响应类型

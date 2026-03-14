@@ -1,5 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
+import { Tag } from './Tag';
 
 // 定义作者接口
 export interface Author {
@@ -15,12 +16,19 @@ export interface Article {
   content: string;
   cover: string | null;
   author_id: number;
+  category_id: number | null;
   status: string;
   views: number;
   likes: number;
   created_at: Date;
   updated_at: Date;
   author?: Author;
+  category?: {
+    id: number;
+    name: string;
+    description: string | null;
+  };
+  tags?: Tag[];
 }
 
 // 导出 ArticleModel 对象
@@ -35,10 +43,11 @@ export const ArticleModel = {
     content: string;
     cover?: string;
     author_id: number;
+    category_id?: number;
     status?: string;
   }): Promise<number> {
     const sql = `
-      INSERT INTO articles (title, content, cover, author_id, status, views, likes, created_at, updated_at)
+      INSERT INTO articles (title, content, cover, author_id, category_id, status, views, likes, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, 0, 0, NOW(), NOW())
     `;
     
@@ -47,6 +56,7 @@ export const ArticleModel = {
       article.content,
       article.cover || null,
       article.author_id,
+      article.category_id || null,
       article.status || 'published'
     ]);
     
@@ -96,7 +106,7 @@ export const ArticleModel = {
   /**
    * 根据文章 id 查询单条文章记录
    * @param id 文章 id
-   * @returns 包含作者信息的文章对象，如果不存在返回 null
+   * @returns 包含作者、分类和标签信息的文章对象，如果不存在返回 null
    */
   async getArticleById(id: number): Promise<Article | null> {
     const sql = `
@@ -104,9 +114,13 @@ export const ArticleModel = {
         a.*, 
         u.id as author_id, 
         u.username, 
-        u.avatar 
+        u.avatar,
+        c.id as category_id,
+        c.name as category_name,
+        c.description as category_description
       FROM articles a
       JOIN users u ON a.author_id = u.id
+      LEFT JOIN categories c ON a.category_id = c.id
       WHERE a.id = ?
     `;
 
@@ -118,12 +132,16 @@ export const ArticleModel = {
 
     const article = result[0] as any;
     
+    // 获取文章的标签
+    const tags = await this.getArticleTags(id);
+    
     return {
       id: article.id,
       title: article.title,
       content: article.content,
       cover: article.cover,
       author_id: article.author_id,
+      category_id: article.category_id,
       status: article.status,
       views: article.views,
       likes: article.likes,
@@ -133,7 +151,13 @@ export const ArticleModel = {
         id: article.author_id,
         username: article.username,
         avatar: article.avatar
-      }
+      },
+      category: article.category_id ? {
+        id: Number(article.category_id),
+        name: String(article.category_name),
+        description: article.category_description as string | null
+      } : undefined,
+      tags: tags
     };
   },
   
@@ -176,5 +200,56 @@ export const ArticleModel = {
     const total = (countResult[0] as RowDataPacket[])[0].total as number;
 
     return { list, total };
+  },
+  
+  /**
+   * 为文章添加标签
+   * @param articleId 文章 ID
+   * @param tagIds 标签 ID 数组
+   */
+  async addArticleTags(articleId: number, tagIds: number[]): Promise<void> {
+    if (tagIds.length === 0) {
+      return;
+    }
+    
+    // 构建批量插入的 SQL 语句
+    const placeholders = tagIds.map(() => '(?, ?)').join(', ');
+    const values = tagIds.flatMap(tagId => [articleId, tagId]);
+    
+    const sql = `
+      INSERT INTO article_tags (article_id, tag_id)
+      VALUES ${placeholders}
+    `;
+    
+    await pool.execute<RowDataPacket[]>(sql, values);
+  },
+  
+  /**
+   * 删除文章的所有标签
+   * @param articleId 文章 ID
+   */
+  async removeArticleTags(articleId: number): Promise<void> {
+    const sql = 'DELETE FROM article_tags WHERE article_id = ?';
+    
+    await pool.execute<RowDataPacket[]>(sql, [articleId]);
+  },
+  
+  /**
+   * 获取文章的所有标签
+   * @param articleId 文章 ID
+   * @returns 标签列表
+   */
+  async getArticleTags(articleId: number): Promise<Tag[]> {
+    const sql = `
+      SELECT t.*
+      FROM tags t
+      JOIN article_tags at ON t.id = at.tag_id
+      WHERE at.article_id = ?
+      ORDER BY t.name ASC
+    `;
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(sql, [articleId]);
+    const tags = rows as Tag[];
+    return tags;
   }
 };

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ArticleModel } from '../models/Article';
+import { TagModel } from '../models/Tag';
 
 /**
  * 创建新文章
@@ -9,7 +10,7 @@ import { ArticleModel } from '../models/Article';
 export async function createArticle(req: Request, res: Response): Promise<void> {
   try {
     // 从请求体获取文章信息
-    const { title, content, cover } = req.body;
+    const { title, content, cover, category_id, tags } = req.body;
     
     // 从 req.user 中获取作者 ID
     const authorId = (req as any).user?.id;
@@ -31,8 +32,22 @@ export async function createArticle(req: Request, res: Response): Promise<void> 
       title,
       content,
       cover,
-      author_id: authorId
+      author_id: authorId,
+      category_id
     });
+    
+    // 如果有 tags 数组，处理标签关联
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      // 对每个标签调用 getOrCreateTag 获取标签 id
+      const tagIds = await Promise.all(
+        tags.map(async (tagName: string) => {
+          return await TagModel.getOrCreateTag(tagName);
+        })
+      );
+      
+      // 调用 Article 模型的 addArticleTags 关联文章和标签
+      await ArticleModel.addArticleTags(articleId, tagIds);
+    }
     
     // 返回 201 状态码和新文章 id
     res.status(201).json({ id: articleId });

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ArticleListPage from '@/components/article/ArticleListPage.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import Sidebar from '@/components/common/Sidebar.vue';
 import { getArticles } from '@/api/article';
 import { getCategories } from '@/api/category';
 import { getTags } from '@/api/tag';

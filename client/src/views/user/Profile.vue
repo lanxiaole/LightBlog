@@ -3,7 +3,7 @@ import { ElSkeleton, ElCard, ElDivider } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { useUserProfile } from '@/composables/user/useUserProfile';
 import UserInfoCard from '@/components/user/UserInfoCard.vue';
-import ArticleList from '@/components/ArticleList.vue';
+import ArticleList from '@/components/common/ArticleList.vue';
 
 /**
  * 用户资料页面

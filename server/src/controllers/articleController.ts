@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ArticleModel } from '../models/Article';
 import { TagModel } from '../models/Tag';
 import { LikeModel } from '../models/Like';
+import { FavoriteModel } from '../models/Favorite';
 
 /**
  * 创建新文章
@@ -124,11 +125,22 @@ export async function getArticleById(req: Request, res: Response): Promise<void>
       liked = await LikeModel.hasUserLiked(userId, id);
     }
 
-    // 返回200和文章对象（包含点赞信息）
+    // 获取收藏总数
+    const favoritesCount = await FavoriteModel.getFavoritesCount(id);
+
+    // 如果用户已登录，查询是否已收藏
+    let favorited = false;
+    if (userId) {
+      favorited = await FavoriteModel.hasUserFavorited(userId, id);
+    }
+
+    // 返回200和文章对象（包含点赞和收藏信息）
     res.status(200).json({
       ...article,
       liked,
-      likesCount
+      likesCount,
+      favorited,
+      favoritesCount
     });
   } catch (error) {
     // 记录错误信息

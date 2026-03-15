@@ -2,8 +2,8 @@
 import { onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElCard, ElSkeleton, ElSkeletonItem, ElDivider, ElBacktop, ElEmpty, ElPagination } from 'element-plus';
-import { useArticle } from '@/composables/useArticle';
-import { useComments } from '@/composables/useComments';
+import { useArticle } from '@/composables/article/useArticle';
+import { useComments } from '@/composables/comment/useComments';
 import ArticleHeader from '@/components/article/ArticleHeader.vue';
 import CommentInput from '@/components/comment/CommentInput.vue';
 import CommentItem from '@/components/comment/CommentItem.vue';

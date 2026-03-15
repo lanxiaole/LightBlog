@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption } from 'element-plus';
 import { getArticleDetail, updateArticle } from '@/api/article';
-import { useArticleForm } from '@/composables/useArticleForm';
+import { useArticleForm } from '@/composables/article/useArticleForm';
 import ArticleEditor from '@/components/article/ArticleEditor.vue';
 import CoverUpload from '@/components/article/CoverUpload.vue';
 

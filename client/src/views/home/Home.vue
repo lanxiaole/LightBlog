@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElIcon, ElCard, ElAlert, ElButton, ElPagination } from 'element-plus';
 import { Loading } from '@element-plus/icons-vue';
-import { useHome } from '@/composables/useHome';
+import { useHome } from '@/composables/home/useHome';
 import Sidebar from '@/components/Sidebar.vue';
 
 /**

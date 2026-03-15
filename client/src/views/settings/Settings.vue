@@ -2,7 +2,7 @@
 import { ElCard, ElIcon } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { ArrowLeft } from '@element-plus/icons-vue';
-import { useSettings } from '@/composables/useSettings';
+import { useSettings } from '@/composables/user/useSettings';
 import AvatarUpload from '@/components/user/AvatarUpload.vue';
 import ProfileForm from '@/components/user/ProfileForm.vue';
 

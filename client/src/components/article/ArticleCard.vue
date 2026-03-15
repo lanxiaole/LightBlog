@@ -1,20 +1,21 @@
 <script setup lang="ts">
+import { ElCard } from 'element-plus';
 import type { Article } from '@/api/article';
 
 /**
- * 文章卡片列表组件
- * 展示文章卡片列表
+ * 文章卡片组件
+ * 展示单个文章的基本信息
  */
 
 interface Props {
-  /** 文章列表 */
-  articles: Article[];
+  /** 文章数据 */
+  article: Article;
 }
 
 defineProps<Props>();
 
 const emit = defineEmits<{
-  /** 点击文章卡片 */
+  /** 点击卡片 */
   click: [id: number];
 }>();
 
@@ -42,33 +43,23 @@ const getSummary = (content: string): string => {
 </script>
 
 <template>
-  <div class="article-items">
-    <el-card
-      v-for="article in articles"
-      :key="article.id"
-      class="article-card"
-      @click="emit('click', article.id)"
-    >
-      <template #header>
-        <div class="article-header">
-          <h3 class="article-title">{{ article.title }}</h3>
-          <span class="article-date">{{ formatDate(article.created_at) }}</span>
-        </div>
-      </template>
-      <div class="article-content">
-        {{ getSummary(article.content) }}
+  <ElCard
+    class="article-card"
+    @click="emit('click', article.id)"
+  >
+    <template #header>
+      <div class="article-header">
+        <h3 class="article-title">{{ article.title }}</h3>
+        <span class="article-date">{{ formatDate(article.created_at) }}</span>
       </div>
-    </el-card>
-  </div>
+    </template>
+    <div class="article-summary">
+      {{ getSummary(article.content) }}
+    </div>
+  </ElCard>
 </template>
 
 <style scoped>
-.article-items {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .article-card {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -83,7 +74,6 @@ const getSummary = (content: string): string => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .article-title {
@@ -98,10 +88,8 @@ const getSummary = (content: string): string => {
   color: #909399;
 }
 
-.article-content {
-  font-size: 14px;
-  line-height: 1.6;
+.article-summary {
   color: #606266;
-  margin: 0;
+  line-height: 1.6;
 }
 </style>

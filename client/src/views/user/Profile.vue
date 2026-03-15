@@ -3,7 +3,7 @@ import { ElSkeleton, ElCard, ElDivider } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { useUserProfile } from '@/composables/user/useUserProfile';
 import UserInfoCard from '@/components/user/UserInfoCard.vue';
-import ArticleList from '@/components/common/ArticleList.vue';
+import ArticleListPage from '@/components/article/ArticleListPage.vue';
 
 /**
  * 用户资料页面
@@ -20,6 +20,18 @@ const {
   handlePageChange,
   goToSettings
 } = useUserProfile();
+
+/**
+ * 获取文章列表数据
+ * @param params 分页参数
+ */
+const fetchArticles = async (params: { page: number; pageSize: number }) => {
+  handlePageChange(params.page, params.pageSize);
+  return {
+    list: articles.value.list,
+    total: articles.value.total
+  };
+};
 </script>
 
 <template>
@@ -59,12 +71,13 @@ const {
       <ElDivider>文章列表</ElDivider>
 
       <!-- 文章列表 -->
-      <ArticleList
-        :articles="articles"
-        :loading="loading"
-        @page-change="handlePageChange"
-        @page-size-change="(size) => handlePageChange(1, size)"
-      />
+      <div class="articles-section">
+        <ArticleListPage
+          :show-sidebar="false"
+          :fetch-data="fetchArticles"
+          empty-text="该用户还没有发布文章"
+        />
+      </div>
     </template>
   </div>
 </template>

@@ -5,7 +5,7 @@ import type { Article } from '@/api/article';
 import LoadingState from '@/components/common/LoadingState.vue';
 import ErrorState from '@/components/common/ErrorState.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
-import ArticleItemList from './ArticleItemList.vue';
+import ArticleCard from './ArticleCard.vue';
 
 /**
  * 文章列表页面通用组件
@@ -24,18 +24,22 @@ interface FetchResult {
 
 interface Props {
   /** 页面标题 */
-  title: string;
+  title?: string;
   /** 数据获取函数 */
   fetchData: (params: FetchParams) => Promise<FetchResult>;
   /** 空状态提示文本 */
   emptyText?: string;
   /** 是否显示分页 */
   showPagination?: boolean;
+  /** 是否显示侧边栏 */
+  showSidebar?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  title: '',
   emptyText: '暂无文章',
-  showPagination: true
+  showPagination: true,
+  showSidebar: true
 });
 
 const router = useRouter();
@@ -110,11 +114,11 @@ defineExpose({
 </script>
 
 <template>
-  <div class="article-list-page">
+  <div class="article-list-page" :class="{ 'no-sidebar': !showSidebar }">
     <div class="main-content">
       <!-- 左侧文章列表 -->
       <div class="article-list">
-        <h2 class="page-title">{{ title }}</h2>
+        <h2 v-if="title" class="page-title">{{ title }}</h2>
 
         <!-- 加载状态 -->
         <LoadingState v-if="loading" />
@@ -133,11 +137,14 @@ defineExpose({
         />
 
         <!-- 文章列表 -->
-        <ArticleItemList
-          v-else
-          :articles="articles"
-          @click="navigateToArticle"
-        />
+        <div v-else class="article-items">
+          <ArticleCard
+            v-for="article in articles"
+            :key="article.id"
+            :article="article"
+            @click="navigateToArticle"
+          />
+        </div>
 
         <!-- 分页组件 -->
         <div v-if="showPagination && !loading && !error && total > 0" class="pagination-container">
@@ -155,7 +162,7 @@ defineExpose({
       </div>
 
       <!-- 右侧侧边栏插槽 -->
-      <div class="sidebar">
+      <div v-if="showSidebar" class="sidebar">
         <slot name="sidebar" />
       </div>
     </div>
@@ -198,6 +205,12 @@ defineExpose({
   margin-top: 30px;
   display: flex;
   justify-content: center;
+}
+
+.article-items {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 @media (max-width: 768px) {

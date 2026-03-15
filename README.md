@@ -94,6 +94,17 @@ CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON D
 CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+收藏表
+CREATE TABLE `favorites` (
+`user_id` int NOT NULL,
+`article_id` int NOT NULL,
+`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`user_id`, `article_id`),
+KEY `article_id` (`article_id`),
+CONSTRAINT `favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+CONSTRAINT `favorites_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 问题 1：不要使用旧版 volar 只使用 vue official！！
 问题 2：使用 element 自动导入，不要手动导入！！！
 问题 3：配置 tsconfig.app.json 中 "noImplicitAny": false,
@@ -987,3 +998,14 @@ defineOptions({
 - 区分 loading 、 empty 、 error 三种状态
 - 使用骨架屏（Skeleton）提升感知性能
 - 用户知道系统正在工作，减少焦虑感
+
+2. 页面刷新后点赞状态丢失
+   问题 ： GET /articles/:id 路由没有使用认证中间件，即使用户已登录也无法获取点赞状态 解决方案 ：
+
+- 创建了 optionalAuthMiddleware 可选认证中间件
+- 在获取文章详情的路由上使用该中间件，既支持未登录用户访问，又能为已登录用户返回点赞状态 3. 点赞数量显示问题
+  问题 ： ArticleHeader 组件显示的是 article.likes 字段，而不是实时的 likesCount 解决方案 ：
+
+- 修改 ArticleHeader 组件，添加 likesCount prop
+- 优先显示传入的 likesCount ，其次使用 article.likes
+- 在 ArticleContent 和 Detail.vue 中传递 likesCount

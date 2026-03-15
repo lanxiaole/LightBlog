@@ -17,6 +17,8 @@ defineProps<{
   isAuthor: boolean;
   /** 评论总数（可选） */
   totalComments?: number;
+  /** 点赞数量（可选，优先使用） */
+  likesCount?: number;
 }>();
 
 /**
@@ -49,7 +51,7 @@ const emit = defineEmits<{
         </span>
         <span class="stat-item">
           <el-icon><Star /></el-icon>
-          <span>{{ article.likes }}</span>
+          <span>{{ likesCount ?? article.likes ?? 0 }}</span>
         </span>
         <span class="stat-item">
           <el-icon><View /></el-icon>

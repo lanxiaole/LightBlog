@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElButton, ElBacktop } from 'element-plus';
+import { ElButton, ElBacktop, ElIcon } from 'element-plus';
+import { Star, StarFilled } from '@element-plus/icons-vue';
 import { useArticle } from '@/composables/article/useArticle';
 import { useComments } from '@/composables/comment/useComments';
 import ArticleContent from './components/ArticleContent.vue';
@@ -15,7 +16,7 @@ const articleId = computed(() => {
   return typeof id === 'string' ? parseInt(id) : 0;
 });
 
-const { article, loading, error, isAuthor, fetchArticleDetail, handleDelete } = useArticle();
+const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
 const {
   comments,
   totalComments,
@@ -62,9 +63,25 @@ onMounted(async () => {
       :error="error"
       :is-author="isAuthor"
       :total-comments="totalComments"
+      :likes-count="likesCount"
       @edit="handleEdit"
       @delete="handleDelete"
     />
+
+    <!-- 点赞按钮 -->
+    <div v-if="!loading && !error && article" class="like-section">
+      <el-button
+        :type="liked ? 'primary' : 'default'"
+        :loading="liking"
+        @click="handleLike"
+      >
+        <el-icon>
+          <star-filled v-if="liked" />
+          <star v-else />
+        </el-icon>
+        <span class="like-count">{{ likesCount }}</span>
+      </el-button>
+    </div>
 
     <!-- 评论区域 -->
     <CommentSection
@@ -99,6 +116,19 @@ onMounted(async () => {
 
 .back-button {
   margin-bottom: 20px;
+}
+
+.like-section {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+  padding: 20px 0;
+  border-top: 1px solid #e4e7ed;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.like-count {
+  margin-left: 8px;
 }
 
 @media (max-width: 768px) {

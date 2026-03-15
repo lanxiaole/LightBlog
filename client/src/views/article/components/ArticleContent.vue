@@ -20,6 +20,8 @@ interface Props {
   isAuthor: boolean;
   /** 评论总数 */
   totalComments: number;
+  /** 点赞数量（可选） */
+  likesCount?: number;
 }
 
 defineProps<Props>();
@@ -59,6 +61,7 @@ const router = useRouter();
       :article="article"
       :is-author="isAuthor"
       :total-comments="totalComments"
+      :likes-count="likesCount"
       @edit="emit('edit')"
       @delete="emit('delete')"
     />

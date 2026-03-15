@@ -28,6 +28,9 @@ export interface Article {
     description: string | null;
   };
   tags?: Tag[];
+  // 点赞相关字段（仅在详情接口返回）
+  liked?: boolean;
+  likesCount?: number;
 }
 
 // 定义获取文章列表的响应类型

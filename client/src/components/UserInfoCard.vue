@@ -20,7 +20,7 @@ interface Props {
 }
 
 // 定义组件属性并设置默认值
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   followersCount: 0,
   followingCount: 0
 });

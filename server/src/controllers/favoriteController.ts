@@ -10,7 +10,7 @@ import { ArticleModel } from '../models/Article';
 export async function favoriteArticle(req: Request, res: Response): Promise<void> {
   try {
     // 从 req.user 获取当前用户 id
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: '未授权' });
       return;
@@ -56,7 +56,7 @@ export async function favoriteArticle(req: Request, res: Response): Promise<void
 export async function unfavoriteArticle(req: Request, res: Response): Promise<void> {
   try {
     // 从 req.user 获取当前用户 id
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: '未授权' });
       return;
@@ -100,7 +100,7 @@ export async function unfavoriteArticle(req: Request, res: Response): Promise<vo
 export async function getUserFavorites(req: Request, res: Response): Promise<void> {
   try {
     // 从 req.user 获取当前用户 id
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: '未授权' });
       return;

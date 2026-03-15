@@ -4,7 +4,7 @@
  * 显示文章标题、作者信息、统计数据、分类标签等
  */
 import { ElAvatar, ElButton, ElDivider, ElTag, ElLink } from 'element-plus';
-import { Star, Message, View } from '@element-plus/icons-vue';
+import { Star, StarFilled, Message, View } from '@element-plus/icons-vue';
 import type { Article } from '@/api/article';
 
 /**
@@ -19,6 +19,12 @@ defineProps<{
   totalComments?: number;
   /** 点赞数量（可选，优先使用） */
   likesCount?: number;
+  /** 是否已收藏 */
+  favorited?: boolean;
+  /** 收藏数量 */
+  favoritesCount?: number;
+  /** 收藏操作加载状态 */
+  favoriting?: boolean;
 }>();
 
 /**
@@ -29,6 +35,8 @@ const emit = defineEmits<{
   edit: [];
   /** 删除文章 */
   delete: [];
+  /** 切换收藏 */
+  favorite: [];
 }>();
 </script>
 
@@ -52,6 +60,13 @@ const emit = defineEmits<{
         <span class="stat-item">
           <el-icon><Star /></el-icon>
           <span>{{ likesCount ?? article.likes ?? 0 }}</span>
+        </span>
+        <span class="stat-item">
+          <el-icon :style="{ color: favorited ? '#f90' : '' }">
+            <StarFilled v-if="favorited" />
+            <Star v-else />
+          </el-icon>
+          <span>{{ favoritesCount || 0 }}</span>
         </span>
         <span class="stat-item">
           <el-icon><View /></el-icon>

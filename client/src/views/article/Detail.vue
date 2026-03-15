@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ElButton, ElBacktop, ElIcon } from 'element-plus';
 import { Star, StarFilled } from '@element-plus/icons-vue';
 import { useArticle } from '@/composables/article/useArticle';
+import { useFavorite } from '@/composables/article/useFavorite';
 import { useComments } from '@/composables/comment/useComments';
 import ArticleContent from './components/ArticleContent.vue';
 import CommentSection from './components/CommentSection.vue';
@@ -17,6 +18,7 @@ const articleId = computed(() => {
 });
 
 const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
+const { favorited, favoritesCount, favoriting, toggleFavorite } = useFavorite(articleId);
 const {
   comments,
   totalComments,
@@ -64,22 +66,37 @@ onMounted(async () => {
       :is-author="isAuthor"
       :total-comments="totalComments"
       :likes-count="likesCount"
+      :favorited="favorited"
+      :favorites-count="favoritesCount"
+      :favoriting="favoriting"
       @edit="handleEdit"
       @delete="handleDelete"
     />
 
-    <!-- 点赞按钮 -->
+    <!-- 点赞和收藏按钮 -->
     <div v-if="!loading && !error && article" class="like-section">
       <el-button
         :type="liked ? 'primary' : 'default'"
         :loading="liking"
         @click="handleLike"
+        style="margin-right: 20px;"
       >
         <el-icon>
           <star-filled v-if="liked" />
           <star v-else />
         </el-icon>
         <span class="like-count">{{ likesCount }}</span>
+      </el-button>
+      <el-button
+        :type="favorited ? 'warning' : 'default'"
+        :loading="favoriting"
+        @click="toggleFavorite"
+      >
+        <el-icon>
+          <star-filled v-if="favorited" />
+          <star v-else />
+        </el-icon>
+        <span class="like-count">{{ favoritesCount }}</span>
       </el-button>
     </div>
 

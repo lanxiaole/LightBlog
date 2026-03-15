@@ -22,6 +22,12 @@ interface Props {
   totalComments: number;
   /** 点赞数量（可选） */
   likesCount?: number;
+  /** 是否已收藏 */
+  favorited?: boolean;
+  /** 收藏数量 */
+  favoritesCount?: number;
+  /** 收藏操作加载状态 */
+  favoriting?: boolean;
 }
 
 defineProps<Props>();
@@ -62,6 +68,9 @@ const router = useRouter();
       :is-author="isAuthor"
       :total-comments="totalComments"
       :likes-count="likesCount"
+      :favorited="favorited"
+      :favorites-count="favoritesCount"
+      :favoriting="favoriting"
       @edit="emit('edit')"
       @delete="emit('delete')"
     />

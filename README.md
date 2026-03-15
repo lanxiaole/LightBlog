@@ -65,6 +65,37 @@ CONSTRAINT `article_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`)
 ALTER TABLE `articles` ADD COLUMN `category_id` int DEFAULT NULL AFTER `author_id`;
 ALTER TABLE `articles` ADD CONSTRAINT `articles_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL;
 
+
+评论表
+CREATE TABLE `comments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `content` text NOT NULL,
+  `article_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `parent_id` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `article_id` (`article_id`),
+  KEY `user_id` (`user_id`),
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+点赞表
+CREATE TABLE `likes` (
+  `user_id` int NOT NULL,
+  `article_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `article_id`),
+  KEY `article_id` (`article_id`),
+  CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 问题 1：不要使用旧版 volar 只使用 vue official！！
 问题 2：使用 element 自动导入，不要手动导入！！！
 问题 3：配置 tsconfig.app.json 中 "noImplicitAny": false,
@@ -722,3 +753,112 @@ watch(() => route.params.name, 
 ### 6. 编辑器内容同步问题
 
 问题 ：编辑页面加载文章内容时，编辑器内容显示异常 原因 ：编辑器实例未完全初始化就尝试设置内容 解决方案 ：使用 nextTick() 确保 DOM 更新后再设置编辑器内容，避免操作未初始化的实例
+
+
+
+
+
+
+# 对话总结：评论系统实现与问题解决
+## 完成的工作
+1. 服务器端实现 ：
+   
+   - 创建了 server/src/models/Comment.ts 评论模型，包含评论的 CRUD 操作
+   - 实现了 server/src/controllers/commentController.ts 控制器，处理评论相关 HTTP 请求
+   - 配置了 server/src/routes/comments.ts 路由，定义评论相关 API 接口
+2. 客户端实现 ：
+   
+   - 封装了 client/src/api/comment.ts API 模块，提供评论相关 API 函数
+   - 修改了 client/src/views/article/Detail.vue ，添加评论区域
+   - 实现了多层回复功能，支持无限层级回复
+   - 拆解了 client/src/views/article/Detail.vue 文件：
+     - 提取了 client/src/composables/useArticle.ts 文章管理逻辑
+     - 提取了 client/src/composables/useComments.ts 评论管理逻辑
+     - 创建了 client/src/components/ArticleHeader.vue 文章头部组件
+     - 创建了 client/src/components/CommentInput.vue 评论输入组件
+     - 创建了 client/src/components/CommentItem.vue 评论项组件（支持递归渲染）
+3. 代码质量优化 ：
+   
+   - 为所有关键文件添加了详细注释，提高代码可读性
+   - 修复了类型错误，确保类型安全
+   - 优化了组件布局和样式
+## 遇到的问题及解决方案
+### 1. 500 错误获取评论列表
+- 问题 ：在获取评论列表时出现 500 错误
+- 原因 ：MySQL 参数化查询中 LIMIT 和 OFFSET 参数类型不匹配
+- 解决方案 ：将 LIMIT 和 OFFSET 参数直接插入 SQL 语句，而非使用参数化查询
+  ```
+  // 修改前
+  const listSql = "SELECT ... 
+  LIMIT ? OFFSET ?";
+  pool.execute(listSql, 
+  [articleId, validPageSize, 
+  offset])
+  
+  // 修改后
+  const listSql = `SELECT ... 
+  LIMIT ${validPageSize} OFFSET $
+  {offset}`;
+  pool.execute(listSql, 
+  [articleId])
+  ```
+### 2. 多层回复无法显示
+- 问题 ：评论不能实现多层嵌套回复，只能回复一层
+- 原因 ：CommentItem 组件仅接收直接回复列表，无法递归获取深层回复
+- 解决方案 ：传递完整评论列表给组件，动态过滤当前评论的回复
+  ```
+  <!-- 修改前 -->
+  <CommentItem :replies="comments.
+  filter(c => c.parent_id === 
+  comment.id)" />
+  
+  <!-- 修改后 -->
+  <CommentItem 
+  :all-comments="comments" />
+  ```
+### 3. 未使用变量警告
+- 问题 ：CommentItem.vue 中出现未使用变量的警告
+- 原因 ：导入了未使用的 ElSpace 和 deleteComment，以及未使用的 props 变量
+- 解决方案 ：删除未使用的导入，简化 props 定义
+  ```
+  // 修改前
+  import { ElAvatar, ElButton, 
+  ElSpace } from 'element-plus';
+  import { deleteComment } from '@/
+  api/comment';
+  const props = defineProps<{...}>
+  ();
+  
+  // 修改后
+  import { ElAvatar, ElButton } 
+  from 'element-plus';
+  defineProps<{...}>();
+  ```
+### 4. 类型错误
+- 问题 ： isAuthor 属性类型不匹配， isAuthor 可能为 boolean | null ，但 ArticleHeader 组件要求 boolean 类型
+- 解决方案 ：在 useArticle.ts 中使用 Boolean() 函数确保 isAuthor 始终返回 boolean 类型
+  ```
+  // 修改前
+  const isAuthor = computed(() => {
+    return article.value && 
+    userStore.userInfo && article.
+    value.author_id === userStore.
+    userInfo.id;
+  });
+  
+  // 修改后
+  const isAuthor = computed(() => {
+    return Boolean(article.
+    value && userStore.userInfo && 
+    article.value.author_id === 
+    userStore.userInfo.id);
+  });
+  ```
+### 5. 标签跳转和样式问题
+- 问题 ：文章详情页面头部标签点击无法跳转到对应标签，且标签显示位置靠上
+- 原因 ： el-tag 组件本身不支持 href 属性，标签容器的布局方式导致标签显示位置靠上
+- 解决方案 ：
+  - 使用 el-link 包裹 el-tag 实现跳转
+  - 添加 .tags-container 容器，使用 flex 布局和 flex-wrap: wrap 处理标签换行
+  - 调整 .tags-info 的 align-items 为 flex-start
+  - 使用 gap 属性控制标签之间的间距

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ArticleModel } from '../models/Article';
 import { TagModel } from '../models/Tag';
+import { LikeModel } from '../models/Like';
 
 /**
  * 创建新文章
@@ -97,24 +98,38 @@ export async function getArticleById(req: Request, res: Response): Promise<void>
   try {
     // 从路由参数获取id并转换为数字
     const id = parseInt(req.params.id as string);
-    
+
     // 验证id是否有效
     if (isNaN(id) || id <= 0) {
       res.status(400).json({ message: '无效的文章ID' });
       return;
     }
-    
+
     // 调用模型获取文章数据
     const article = await ArticleModel.getArticleById(id);
-    
+
     // 如果文章不存在，返回404
     if (!article) {
       res.status(404).json({ message: '文章不存在' });
       return;
     }
-    
-    // 返回200和文章对象
-    res.status(200).json(article);
+
+    // 获取点赞总数
+    const likesCount = await LikeModel.getLikesCount(id);
+
+    // 如果用户已登录，查询是否已点赞
+    const userId = (req as any).user?.id;
+    let liked = false;
+    if (userId) {
+      liked = await LikeModel.hasUserLiked(userId, id);
+    }
+
+    // 返回200和文章对象（包含点赞信息）
+    res.status(200).json({
+      ...article,
+      liked,
+      likesCount
+    });
   } catch (error) {
     // 记录错误信息
     console.error('获取文章详情失败:', error);

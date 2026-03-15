@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption } from 'element-plus';
 import { getArticleDetail, updateArticle } from '@/api/article';
 import { useArticleForm } from '@/composables/article/useArticleForm';
-import ArticleEditor from '@/components/article/ArticleEditor.vue';
-import CoverUpload from '@/components/article/CoverUpload.vue';
+import ArticleForm from './components/ArticleForm.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -13,8 +11,8 @@ const router = useRouter();
 // 文章ID
 const articleId = ref<number>(parseInt(route.params.id as string));
 
-// 编辑器引用
-const articleEditorRef = ref<InstanceType<typeof ArticleEditor> | null>(null);
+// 表单组件引用
+const articleFormRef = ref<InstanceType<typeof ArticleForm> | null>(null);
 
 const {
   form,
@@ -41,7 +39,7 @@ const loadArticleDetail = async () => {
     });
 
     // 设置编辑器内容
-    articleEditorRef.value?.setHtml(article.content);
+    articleFormRef.value?.setEditorContent(article.content);
   } catch (error: any) {
     handleError(error);
   } finally {
@@ -51,9 +49,7 @@ const loadArticleDetail = async () => {
 
 // 错误处理
 const handleError = (error: any) => {
-  if (error.message?.includes('403')) {
-    router.back();
-  } else if (error.message?.includes('404')) {
+  if (error.message?.includes('403') || error.message?.includes('404')) {
     router.back();
   }
 };
@@ -80,6 +76,11 @@ const submitForm = async () => {
   }
 };
 
+// 取消
+const handleCancel = () => {
+  router.back();
+};
+
 // 组件挂载时初始化
 onMounted(() => {
   loadArticleDetail();
@@ -90,76 +91,23 @@ onMounted(() => {
   <div class="edit-article">
     <h1 class="page-title">编辑文章</h1>
 
-    <div v-show="loading" class="loading-container">
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
       <el-button loading>加载中...</el-button>
     </div>
 
-    <el-form v-show="!loading" :model="form" label-width="80px" class="article-form">
-      <!-- 标题 -->
-      <el-form-item label="标题" required>
-        <el-input
-          v-model="form.title"
-          placeholder="请输入文章标题"
-          :maxlength="100"
-          show-word-limit
-        />
-      </el-form-item>
-
-      <!-- 分类 -->
-      <el-form-item label="分类">
-        <el-select
-          v-model="form.category_id"
-          placeholder="请选择分类"
-          clearable
-        >
-          <el-option
-            v-for="category in categories"
-            :key="category.id"
-            :label="category.name"
-            :value="category.id"
-          />
-        </el-select>
-      </el-form-item>
-
-      <!-- 标签 -->
-      <el-form-item label="标签">
-        <el-select
-          v-model="form.tags"
-          multiple
-          filterable
-          allow-create
-          default-first-option
-          placeholder="请选择或输入标签"
-        >
-          <el-option
-            v-for="tag in existingTags"
-            :key="tag.id"
-            :label="tag.name"
-            :value="tag.name"
-          />
-        </el-select>
-      </el-form-item>
-
-      <!-- 封面图 -->
-      <el-form-item label="封面图">
-        <CoverUpload v-model="form.cover" />
-      </el-form-item>
-
-      <!-- 正文 -->
-      <el-form-item label="正文" required>
-        <ArticleEditor ref="articleEditorRef" v-model="form.content" />
-      </el-form-item>
-
-      <!-- 操作按钮 -->
-      <el-form-item>
-        <el-button type="primary" @click="submitForm" :loading="submitting">
-          保存修改
-        </el-button>
-        <el-button @click="$router.back()">
-          取消
-        </el-button>
-      </el-form-item>
-    </el-form>
+    <!-- 编辑表单 -->
+    <ArticleForm
+      v-else
+      ref="articleFormRef"
+      v-model="form"
+      :categories="categories"
+      :existing-tags="existingTags"
+      :submitting="submitting"
+      submit-text="保存修改"
+      @submit="submitForm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
@@ -184,20 +132,9 @@ onMounted(() => {
   padding: 40px;
 }
 
-.article-form {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
 @media (max-width: 768px) {
   .edit-article {
     padding: 10px;
-  }
-
-  .article-form {
-    padding: 15px;
   }
 }
 </style>

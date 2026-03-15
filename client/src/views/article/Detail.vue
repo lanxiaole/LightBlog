@@ -4,9 +4,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { ElCard, ElSkeleton, ElSkeletonItem, ElDivider, ElBacktop, ElEmpty, ElPagination } from 'element-plus';
 import { useArticle } from '@/composables/useArticle';
 import { useComments } from '@/composables/useComments';
-import ArticleHeader from '@/components/ArticleHeader.vue';
-import CommentInput from '@/components/CommentInput.vue';
-import CommentItem from '@/components/CommentItem.vue';
+import ArticleHeader from '@/components/article/ArticleHeader.vue';
+import CommentInput from '@/components/comment/CommentInput.vue';
+import CommentItem from '@/components/comment/CommentItem.vue';
 
 const route = useRoute();
 const router = useRouter();

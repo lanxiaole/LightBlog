@@ -53,21 +53,42 @@ const getArticleSummary = (content: string): string => {
 
 <template>
   <div class="articles-container">
-    <router-link :to="`/article/${article.id}`" v-for="article in articles.list" :key="article.id" style="text-decoration: none; color: inherit;">
-      <ElCard class="article-card" style="cursor: pointer;">
-        <h3 class="article-title">{{ article.title }}</h3>
-        <p class="article-summary">{{ getArticleSummary(article.content) }}</p>
-        <div class="article-meta">
-          <span>{{ new Date(article.created_at).toLocaleDateString() }}</span>
-          <span>阅读 {{ article.views }}</span>
-        </div>
-      </ElCard>
-    </router-link>
-
-    <!-- 无文章提示 -->
-    <div v-if="articles.list.length === 0" class="no-articles">
-      <p>该用户还没有发布文章</p>
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-state">
+      <el-skeleton animated>
+        <template #template>
+          <el-skeleton-item variant="h3" style="width: 60%; margin-bottom: 16px;" />
+          <el-skeleton-item variant="text" style="margin-bottom: 8px;" />
+          <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 24px;" />
+        </template>
+      </el-skeleton>
+      <el-skeleton animated>
+        <template #template>
+          <el-skeleton-item variant="h3" style="width: 60%; margin-bottom: 16px;" />
+          <el-skeleton-item variant="text" style="margin-bottom: 8px;" />
+          <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 24px;" />
+        </template>
+      </el-skeleton>
     </div>
+
+    <!-- 文章列表 -->
+    <template v-else>
+      <router-link :to="`/article/${article.id}`" v-for="article in articles.list" :key="article.id" style="text-decoration: none; color: inherit;">
+        <ElCard class="article-card" style="cursor: pointer;">
+          <h3 class="article-title">{{ article.title }}</h3>
+          <p class="article-summary">{{ getArticleSummary(article.content) }}</p>
+          <div class="article-meta">
+            <span>{{ new Date(article.created_at).toLocaleDateString() }}</span>
+            <span>阅读 {{ article.views }}</span>
+          </div>
+        </ElCard>
+      </router-link>
+
+      <!-- 无文章提示 -->
+      <div v-if="articles.list.length === 0" class="no-articles">
+        <p>该用户还没有发布文章</p>
+      </div>
+    </template>
 
     <!-- 分页组件 -->
     <div v-if="articles.total > articles.pageSize" class="pagination-container">
@@ -87,6 +108,10 @@ const getArticleSummary = (content: string): string => {
 <style scoped>
 .articles-container {
   margin-top: 20px;
+}
+
+.loading-state {
+  padding: 20px 0;
 }
 
 .article-card {

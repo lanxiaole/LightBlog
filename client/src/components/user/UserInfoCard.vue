@@ -43,7 +43,7 @@ const handleEdit = () => {
   <ElCard class="user-card">
     <div class="user-info">
       <ElAvatar :size="'large'" :src="user?.avatar || ''" class="user-avatar">
-        {{ user?.username.charAt(0).toUpperCase() }}
+        {{ user?.username?.charAt(0)?.toUpperCase() || 'U' }}
       </ElAvatar>
       <div class="user-details">
         <h2 class="username">{{ user?.username }}</h2>

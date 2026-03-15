@@ -9,6 +9,13 @@ import { useUserStore } from '@/stores/user';
 import type { Comment } from '@/api/comment';
 
 /**
+ * 显式声明组件名称，支持递归渲染
+ */
+defineOptions({
+  name: 'CommentItem'
+});
+
+/**
  * 组件属性
  */
 defineProps<{

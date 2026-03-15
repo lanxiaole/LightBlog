@@ -3,8 +3,8 @@ import { ElCard, ElIcon } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { ArrowLeft } from '@element-plus/icons-vue';
 import { useSettings } from '@/composables/useSettings';
-import AvatarUpload from '@/components/AvatarUpload.vue';
-import ProfileForm from '@/components/ProfileForm.vue';
+import AvatarUpload from '@/components/user/AvatarUpload.vue';
+import ProfileForm from '@/components/user/ProfileForm.vue';
 
 /**
  * 设置页面

@@ -3,8 +3,8 @@ import { useRouter } from 'vue-router';
 import { ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption } from 'element-plus';
 import { createArticle } from '@/api/article';
 import { useArticleForm } from '@/composables/useArticleForm';
-import ArticleEditor from '@/components/ArticleEditor.vue';
-import CoverUpload from '@/components/CoverUpload.vue';
+import ArticleEditor from '@/components/article/ArticleEditor.vue';
+import CoverUpload from '@/components/article/CoverUpload.vue';
 
 const router = useRouter();
 

@@ -1,0 +1,29 @@
+/* 点赞图标样式 */
+.icon-thumbs-up {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+.icon-thumbs-up::before {
+  content: "👍";
+  font-size: 1em;
+}
+
+.icon-thumbs-up-filled {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+.icon-thumbs-up-filled::before {
+  content: "👍";
+  font-size: 1em;
+  color: #409eff;
+}

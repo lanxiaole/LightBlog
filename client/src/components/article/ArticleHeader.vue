@@ -58,7 +58,7 @@ const emit = defineEmits<{
           <span>{{ totalComments || 0 }}</span>
         </span>
         <span class="stat-item">
-          <el-icon><Star /></el-icon>
+          <span class="icon-thumbs-up" style="margin-right: 4px;"></span>
           <span>{{ likesCount ?? article.likes ?? 0 }}</span>
         </span>
         <span class="stat-item">

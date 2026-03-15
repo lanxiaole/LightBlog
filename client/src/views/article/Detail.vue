@@ -81,10 +81,7 @@ onMounted(async () => {
         @click="handleLike"
         style="margin-right: 20px;"
       >
-        <el-icon>
-          <star-filled v-if="liked" />
-          <star v-else />
-        </el-icon>
+        <span :class="liked ? 'icon-thumbs-up-filled' : 'icon-thumbs-up'" style="margin-right: 5px;"></span>
         <span class="like-count">{{ likesCount }}</span>
       </el-button>
       <el-button

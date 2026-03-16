@@ -105,6 +105,17 @@ CONSTRAINT `favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) 
 CONSTRAINT `favorites_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+创建关注表
+CREATE TABLE `follows` (
+`follower_id` int NOT NULL COMMENT '关注者 ID',
+`following_id` int NOT NULL COMMENT '被关注者 ID',
+`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`follower_id`, `following_id`),
+KEY `following_id` (`following_id`),
+CONSTRAINT `follows_ibfk_1` FOREIGN KEY (`follower_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`following_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 问题 1：不要使用旧版 volar 只使用 vue official！！
 问题 2：使用 element 自动导入，不要手动导入！！！
 问题 3：配置 tsconfig.app.json 中 "noImplicitAny": false,

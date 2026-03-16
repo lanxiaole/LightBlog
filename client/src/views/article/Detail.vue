@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElButton, ElBacktop, ElIcon } from 'element-plus';
 import { Star, StarFilled } from '@element-plus/icons-vue';
@@ -25,7 +25,15 @@ const { favorited, favoritesCount, favoriting, toggleFavorite } = useFavorite(ar
 const targetUserId = computed(() => article.value?.author?.id || null);
 
 // 使用关注组合式函数
-const { isFollowing, loading: followLoading, toggleFollow } = useFollow(targetUserId);
+const { isFollowing, loading: followLoading, toggleFollow, checkStatus } = useFollow(targetUserId);
+
+// 监听文章变化，确保关注状态正确更新
+watch(article, (newArticle) => {
+  if (newArticle && newArticle.author?.id) {
+    // 当文章加载完成后，检查关注状态
+    checkStatus();
+  }
+}, { immediate: true });
 
 const {
   comments,
@@ -53,6 +61,10 @@ const handleEdit = () => {
 
 onMounted(async () => {
   await fetchArticleDetail(articleId.value);
+  // 文章加载完成后，检查关注状态
+  if (article.value && article.value.author?.id) {
+    await checkStatus();
+  }
   await fetchComments();
 });
 </script>
@@ -78,8 +90,8 @@ onMounted(async () => {
       :favorites-count="favoritesCount"
       :favoriting="favoriting"
       :target-user-id="targetUserId"
-      :is-following="isFollowing"
-      :follow-loading="followLoading"
+      :is-following="isFollowing || false"
+      :follow-loading="followLoading || false"
       @edit="handleEdit"
       @delete="handleDelete"
       @follow="toggleFollow"

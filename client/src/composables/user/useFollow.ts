@@ -26,7 +26,8 @@ export function useFollow(targetUserId: number | null | Ref<number | null>) {
 
     try {
       const status = await getFollowStatus(userId);
-      isFollowing.value = status.isFollowed;
+      // 注意：API 响应返回的是 isFollowing，不是 isFollowed
+      isFollowing.value = status.isFollowing;
     } catch (error) {
       console.error('检查关注状态失败:', error);
     }
@@ -71,8 +72,10 @@ export function useFollow(targetUserId: number | null | Ref<number | null>) {
   };
 
   // 监听目标用户 ID 变化，重新检查状态
-  watch(currentTargetUserId, () => {
-    checkStatus();
+  watch(currentTargetUserId, (newUserId) => {
+    if (newUserId !== null) {
+      checkStatus();
+    }
   }, { immediate: true });
 
   return {

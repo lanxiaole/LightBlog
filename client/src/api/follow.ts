@@ -86,9 +86,9 @@ export async function getFollowing(userId: number, params?: { page?: number; pag
  * @param userId 用户 ID
  * @returns 关注状态
  */
-export async function getFollowStatus(userId: number): Promise<{ isFollowed: boolean }> {
+export async function getFollowStatus(userId: number): Promise<{ isFollowing: boolean }> {
   try {
-    const response = await api.get<{ isFollowed: boolean }>(`/users/${userId}/follow/status`);
+    const response = await api.get<{ isFollowing: boolean }>(`/users/${userId}/follow/status`);
     return response.data;
   } catch (error) {
     if (error instanceof Error) {

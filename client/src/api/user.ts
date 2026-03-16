@@ -10,6 +10,8 @@ export interface User {
   bio: string | null;
   created_at: string;
   updated_at: string;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 // 定义获取用户文章列表的响应类型

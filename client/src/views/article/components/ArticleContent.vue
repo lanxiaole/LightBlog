@@ -31,9 +31,9 @@ interface Props {
   /** 目标用户 ID，可为 null */
   targetUserId: number | null;
   /** 当前用户是否已关注 */
-  isFollowing: boolean;
+  isFollowing?: boolean;
   /** 关注操作是否正在加载 */
-  followLoading: boolean;
+  followLoading?: boolean;
 }
 
 defineProps<Props>();

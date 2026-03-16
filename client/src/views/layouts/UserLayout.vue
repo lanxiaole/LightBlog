@@ -27,6 +27,18 @@ const targetUserId = computed(() => user.value?.id || null);
 // 使用关注组合式函数
 const { isFollowing, followersCount, followingCount, toggleFollow, loading: followLoading } = useFollow(targetUserId);
 
+// 监听用户信息变化，更新关注数和粉丝数
+watch(user, (newUser) => {
+  if (newUser) {
+    if (newUser.followersCount !== undefined) {
+      followersCount.value = newUser.followersCount;
+    }
+    if (newUser.followingCount !== undefined) {
+      followingCount.value = newUser.followingCount;
+    }
+  }
+}, { immediate: true });
+
 // 获取用户信息
 const fetchUserInfo = async (currentUsername) => {
   try {

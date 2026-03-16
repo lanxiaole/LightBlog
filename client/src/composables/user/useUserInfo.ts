@@ -8,7 +8,7 @@ import type { User } from '@/api/user';
 
 /**
  * 用户信息组合式函数
- * @param username 用户名
+ * @param username 用户名（可以是普通字符串）
  * @returns 用户信息相关的状态和方法
  */
 export function useUserInfo(username: string) {

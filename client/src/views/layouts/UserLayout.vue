@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElTabs, ElTabPane, ElCard, ElEmpty } from 'element-plus';
-import { useUserInfo } from '@/composables/user/useUserInfo';
+
 import { useUserStore } from '@/stores/user';
+import type { User } from '@/api/user';
 import UserInfoCard from '@/components/user/UserInfoCard.vue';
 import LoadingState from '@/components/common/LoadingState.vue';
 import ErrorState from '@/components/common/ErrorState.vue';
@@ -13,8 +14,40 @@ const route = useRoute();
 const router = useRouter();
 const username = computed(() => route.params.username as string);
 
+// 响应式状态
+const user = ref<User | null>(null);
+const loading = ref<boolean>(false);
+const error = ref<string | null>(null);
+const notFound = ref<boolean>(false);
+
 // 获取用户信息
-const { user, loading, error, notFound } = useUserInfo(username.value);
+const fetchUserInfo = async (currentUsername) => {
+  try {
+    loading.value = true;
+    error.value = null;
+    notFound.value = false;
+
+    const response = await import('@/api/user').then(module => module.getUserProfile(currentUsername));
+    user.value = response;
+  } catch (err: any) {
+    if (err.response?.status === 404) {
+      notFound.value = true;
+      error.value = '用户不存在';
+    } else {
+      error.value = err.message || '获取用户信息失败';
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 初始化时获取用户信息
+fetchUserInfo(username.value);
+
+// 监听用户名变化，重新获取用户信息
+watch(username, (newUsername) => {
+  fetchUserInfo(newUsername);
+});
 
 // 获取用户 store
 const userStore = useUserStore();
@@ -39,6 +72,11 @@ const handleTabClick = (tab: any) => {
   router.push(path);
 };
 
+// 处理编辑资料按钮点击
+const handleEdit = () => {
+  router.push('/settings');
+};
+
 // 获取当前激活的标签页
 const activeTab = computed(() => {
   return route.path.replace('/', '');
@@ -61,7 +99,7 @@ const activeTab = computed(() => {
     <!-- 用户信息和标签页 -->
     <div v-else class="user-content">
       <!-- 用户信息卡片 -->
-      <UserInfoCard :user="user" :is-current-user="isCurrentUser" />
+      <UserInfoCard :user="user" :is-current-user="isCurrentUser" @edit="handleEdit" />
 
       <!-- 标签页导航 -->
       <ElCard class="tabs-card">

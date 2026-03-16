@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { ElPagination } from 'element-plus';
 import 'element-plus/dist/index.css';
@@ -15,7 +15,13 @@ import EmptyState from '@/components/common/EmptyState.vue';
  */
 
 const route = useRoute();
+const router = useRouter();
 const username = computed(() => route.params.username as string);
+
+// 处理文章卡片点击
+const handleArticleClick = (id: number) => {
+  router.push(`/article/${id}`);
+};
 
 const {
   articles,
@@ -49,6 +55,7 @@ const {
           v-for="article in articles"
           :key="article.id"
           :article="article"
+          @click="handleArticleClick"
         />
       </div>
 

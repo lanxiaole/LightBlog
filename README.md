@@ -1221,3 +1221,30 @@ const [listRows] = await pool.
    - 例如：某些 API 可能直接使用用户名作为参数，而不是用户 ID
    - 这样就不需要前端进行参数转换
 ```
+
+## 问题原因
+
+从日志可以看到， useUserIdFromUsername 正常工作并获取到了用户 ID（9），但 fetchFollowers 函数在用户 ID 还没有获取到时就被调用了，导致 targetUserId.value 为 null ，直接返回了。
+
+## 解决方案
+
+修改了两个文件，使用 watch 监听 targetUserId 的变化，确保在用户 ID 获取完成后再调用 API：
+
+### 1. Followers.vue
+
+- 添加了 watch 导入
+- 移除了 onMounted 钩子
+- 添加了对 targetUserId 的监听，当获取到用户 ID 时才调用 fetchFollowers
+
+### 2. Following.vue
+
+- 添加了 watch 导入
+- 移除了 onMounted 钩子
+- 添加了对 targetUserId 的监听，当获取到用户 ID 时才调用 fetchFollowing
+
+## 执行流程
+
+1. 页面加载 → useUserIdFromUsername 开始获取用户 ID
+2. 用户 ID 获取完成 → targetUserId 从 null 变为 9
+3. watch 检测到 targetUserId 变化 → 调用 fetchFollowers
+4. fetchFollowers 检查到 targetUserId 有值 → 正常调用 API

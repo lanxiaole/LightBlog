@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElCard, ElAvatar, ElPagination, ElSkeleton, ElEmpty, ElAlert } from 'element-plus';
 import { getFollowing } from '@/api/follow';
-import { getUserProfile } from '@/api/user';
+import { useUserIdFromUsername } from '@/composables/user/useUserIdFromUsername';
 import type { User } from '@/api/user';
 
 const route = useRoute();
@@ -12,6 +12,9 @@ const router = useRouter();
 // 从路由获取用户名
 const username = computed(() => route.params.username as string);
 
+// 使用组合式函数获取用户 ID
+const { userId: targetUserId } = useUserIdFromUsername(username);
+
 // 响应式状态
 const list = ref<User[]>([]);
 const total = ref<number>(0);
@@ -19,22 +22,17 @@ const page = ref<number>(1);
 const pageSize = ref<number>(10);
 const loading = ref<boolean>(false);
 const error = ref<string | null>(null);
-const targetUserId = ref<number | null>(null);
 
 /**
  * 获取关注列表
  */
 const fetchFollowing = async () => {
-  if (!username.value) return;
+  if (!targetUserId.value) return;
 
   loading.value = true;
   error.value = null;
 
   try {
-    // 先通过用户名获取用户信息，获取用户 ID
-    const userProfile = await getUserProfile(username.value);
-    targetUserId.value = userProfile.id;
-
     // 使用获取到的用户 ID 调用 getFollowing API
     const response = await getFollowing(
       targetUserId.value,
@@ -68,10 +66,12 @@ const goToUserProfile = (username: string) => {
   router.push(`/user/${username}`);
 };
 
-// 组件挂载时获取数据
-onMounted(() => {
-  fetchFollowing();
-});
+// 监听用户 ID 变化，当获取到用户 ID 时获取关注列表
+watch(targetUserId, (newUserId) => {
+  if (newUserId) {
+    fetchFollowing();
+  }
+}, { immediate: true });
 </script>
 
 <template>

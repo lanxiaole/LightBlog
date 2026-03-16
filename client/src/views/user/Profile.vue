@@ -1,84 +1,70 @@
 <script setup lang="ts">
-import { ElSkeleton, ElCard, ElDivider } from 'element-plus';
+import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+import { ElPagination } from 'element-plus';
 import 'element-plus/dist/index.css';
-import { useUserProfile } from '@/composables/user/useUserProfile';
-import UserInfoCard from '@/components/user/UserInfoCard.vue';
-import ArticleListPage from '@/components/article/ArticleListPage.vue';
+import { useUserArticles } from '@/composables/user/useUserArticles';
+import ArticleCard from '@/components/article/ArticleCard.vue';
+import LoadingState from '@/components/common/LoadingState.vue';
+import ErrorState from '@/components/common/ErrorState.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 
 /**
- * 用户资料页面
- * 展示用户信息和文章列表
+ * 用户文章列表页面
+ * 展示用户发布的文章列表
  */
+
+const route = useRoute();
+const username = computed(() => route.params.username as string);
 
 const {
-  user,
   articles,
+  total,
+  page,
+  pageSize,
   loading,
   error,
-  userNotFound,
-  isCurrentUser,
-  handlePageChange,
-  goToSettings
-} = useUserProfile();
-
-/**
- * 获取文章列表数据
- * @param params 分页参数
- */
-const fetchArticles = async (params: { page: number; pageSize: number }) => {
-  handlePageChange(params.page, params.pageSize);
-  return {
-    list: articles.value.list,
-    total: articles.value.total
-  };
-};
+  fetchArticles,
+  setPage,
+  setPageSize
+} = useUserArticles(username);
 </script>
 
 <template>
   <div class="profile-container">
-    <!-- 错误提示 -->
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
-
-    <!-- 用户不存在提示 -->
-    <div v-else-if="userNotFound" class="not-found">
-      <h2>用户不存在</h2>
-      <p>抱歉，您访问的用户不存在或已被删除。</p>
-    </div>
-
     <!-- 加载状态 -->
-    <div v-else-if="loading" class="loading-container">
-      <ElCard class="user-card">
-        <ElSkeleton :rows="6" animated />
-      </ElCard>
-      <ElCard class="articles-card" style="margin-top: 20px;">
-        <ElSkeleton :rows="10" animated />
-      </ElCard>
-    </div>
+    <LoadingState v-if="loading" />
 
-    <!-- 用户资料和文章列表 -->
-    <template v-else>
-      <!-- 用户信息卡片 -->
-      <UserInfoCard
-        :user="user"
-        :is-current-user="isCurrentUser"
-        :followers-count="123"
-        :following-count="456"
-        @edit="goToSettings"
-      />
+    <!-- 错误状态 -->
+    <ErrorState v-else-if="error" :message="error" @retry="fetchArticles" />
 
-      <ElDivider>文章列表</ElDivider>
+    <!-- 文章列表 -->
+    <div v-else class="articles-section">
+      <!-- 空状态 -->
+      <EmptyState v-if="articles.length === 0" text="该用户还没有发布文章" />
 
-      <!-- 文章列表 -->
-      <div class="articles-section">
-        <ArticleListPage
-          :show-sidebar="false"
-          :fetch-data="fetchArticles"
-          empty-text="该用户还没有发布文章"
+      <!-- 文章卡片列表 -->
+      <div v-else class="articles-list">
+        <ArticleCard
+          v-for="article in articles"
+          :key="article.id"
+          :article="article"
         />
       </div>
-    </template>
+
+      <!-- 分页组件 -->
+      <div v-if="total > 0" class="pagination-container">
+        <ElPagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 30, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="setPageSize"
+          @current-change="setPage"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -87,6 +73,22 @@ const fetchArticles = async (params: { page: number; pageSize: number }) => {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
+}
+
+.articles-section {
+  margin-top: 20px;
+}
+
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pagination-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
 }
 
 .error-message {

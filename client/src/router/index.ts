@@ -21,8 +21,10 @@ const router = createRouter({
         // 用户个人主页相关路由
         {
           path: 'user/:username',
+          component: () => import('@/views/layouts/UserLayout.vue'),
           children: [
             { path: '', name: 'user-profile', component: () => import('@/views/user/Profile.vue'), meta: { title: '个人主页' } },
+            { path: 'favorites', name: 'user-favorites', component: () => import('@/views/user/Favorites.vue'), meta: { title: '收藏' } },
             { path: 'followers', name: 'user-followers', component: () => import('@/views/user/Followers.vue'), meta: { title: '关注者' } },
             { path: 'following', name: 'user-following', component: () => import('@/views/user/Following.vue'), meta: { title: '关注' } },
             { path: 'about', name: 'user-about', component: () => import('@/views/user/About.vue'), meta: { title: '关于' } }

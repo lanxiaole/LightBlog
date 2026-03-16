@@ -1009,3 +1009,14 @@ defineOptions({
 - 修改 ArticleHeader 组件，添加 likesCount prop
 - 优先显示传入的 likesCount ，其次使用 article.likes
 - 在 ArticleContent 和 Detail.vue 中传递 likesCount
+
+问题分析 ：
+
+- 错误信息： Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+- 根本原因： FavoriteModel.getUserFavorites 方法中 SQL 执行出错，错误信息为 Incorrect arguments to mysqld_stmt_execute
+  解决步骤 ：
+
+1. 初步检查 ：分析了 Favorite.ts 文件中的 getUserFavorites 方法，发现结果处理逻辑存在类型转换问题
+2. 第一次修复 ：修改了结果处理逻辑，使用可选链操作符确保即使没有收藏记录也能正常返回
+3. 持续排查 ：发现参数传递方式有问题，尝试了多种参数类型转换方法（如 Number() 、 parseInt() ）
+4. 最终解决方案 ：将 pool.execute 改为 pool.query ，解决了 SQL 参数绑定的问题

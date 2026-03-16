@@ -124,13 +124,13 @@ export const FavoriteModel = {
 
     // 并行执行两个查询
     const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [userId, validPageSize, offset]),
-      pool.execute<RowDataPacket[]>(countSql, [userId])
+      pool.query<RowDataPacket[]>(listSql, [userId, validPageSize, offset]),
+      pool.query<RowDataPacket[]>(countSql, [userId])
     ]);
 
     // 处理结果
     const list = listResult[0] as any[];
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
+    const total = (countResult[0] as RowDataPacket[])[0]?.total || 0;
 
     return { list, total };
   }

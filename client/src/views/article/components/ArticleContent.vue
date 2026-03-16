@@ -28,6 +28,12 @@ interface Props {
   favoritesCount?: number;
   /** 收藏操作加载状态 */
   favoriting?: boolean;
+  /** 目标用户 ID，可为 null */
+  targetUserId: number | null;
+  /** 当前用户是否已关注 */
+  isFollowing: boolean;
+  /** 关注操作是否正在加载 */
+  followLoading: boolean;
 }
 
 defineProps<Props>();
@@ -37,6 +43,8 @@ const emit = defineEmits<{
   edit: [];
   /** 删除文章 */
   delete: [];
+  /** 切换关注状态 */
+  follow: [];
 }>();
 
 const router = useRouter();
@@ -71,8 +79,12 @@ const router = useRouter();
       :favorited="favorited"
       :favorites-count="favoritesCount"
       :favoriting="favoriting"
+      :target-user-id="targetUserId"
+      :is-following="isFollowing"
+      :follow-loading="followLoading"
       @edit="emit('edit')"
       @delete="emit('delete')"
+      @follow="emit('follow')"
     />
 
     <div class="article-content" v-html="article.content"></div>

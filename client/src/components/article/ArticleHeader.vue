@@ -25,6 +25,12 @@ defineProps<{
   favoritesCount?: number;
   /** 收藏操作加载状态 */
   favoriting?: boolean;
+  /** 目标用户 ID，可为 null */
+  targetUserId: number | null;
+  /** 当前用户是否已关注 */
+  isFollowing: boolean;
+  /** 关注操作是否正在加载 */
+  followLoading: boolean;
 }>();
 
 /**
@@ -37,7 +43,16 @@ const emit = defineEmits<{
   delete: [];
   /** 切换收藏 */
   favorite: [];
+  /** 切换关注状态 */
+  follow: [];
 }>();
+
+/**
+ * 处理关注按钮点击
+ */
+const handleFollow = () => {
+  emit('follow');
+};
 </script>
 
 <template>
@@ -78,6 +93,15 @@ const emit = defineEmits<{
       </el-button>
       <el-button v-if="isAuthor" type="danger" size="small" @click="emit('delete')">
         删除
+      </el-button>
+      <el-button
+        v-else-if="targetUserId !== null"
+        :type="isFollowing ? 'default' : 'primary'"
+        size="small"
+        @click="handleFollow"
+        :loading="followLoading"
+      >
+        {{ isFollowing ? '取消关注' : '关注' }}
       </el-button>
     </div>
 

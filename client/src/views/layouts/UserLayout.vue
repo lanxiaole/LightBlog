@@ -8,6 +8,7 @@ import type { User } from '@/api/user';
 import UserInfoCard from '@/components/user/UserInfoCard.vue';
 import LoadingState from '@/components/common/LoadingState.vue';
 import ErrorState from '@/components/common/ErrorState.vue';
+import { useFollow } from '@/composables/user/useFollow';
 
 // 获取路由参数
 const route = useRoute();
@@ -19,6 +20,12 @@ const user = ref<User | null>(null);
 const loading = ref<boolean>(false);
 const error = ref<string | null>(null);
 const notFound = ref<boolean>(false);
+
+// 计算目标用户 ID
+const targetUserId = computed(() => user.value?.id || null);
+
+// 使用关注组合式函数
+const { isFollowing, followersCount, followingCount, toggleFollow, loading: followLoading } = useFollow(targetUserId);
 
 // 获取用户信息
 const fetchUserInfo = async (currentUsername) => {
@@ -99,7 +106,17 @@ const activeTab = computed(() => {
     <!-- 用户信息和标签页 -->
     <div v-else class="user-content">
       <!-- 用户信息卡片 -->
-      <UserInfoCard :user="user" :is-current-user="isCurrentUser" @edit="handleEdit" />
+      <UserInfoCard
+        :user="user"
+        :is-current-user="isCurrentUser"
+        :followers-count="followersCount"
+        :following-count="followingCount"
+        :target-user-id="targetUserId"
+        :is-following="isFollowing"
+        :follow-loading="followLoading"
+        @edit="handleEdit"
+        @follow="toggleFollow"
+      />
 
       <!-- 标签页导航 -->
       <ElCard class="tabs-card">

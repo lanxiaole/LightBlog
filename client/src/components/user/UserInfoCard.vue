@@ -17,6 +17,12 @@ interface Props {
   followersCount?: number;
   /** 关注数 */
   followingCount?: number;
+  /** 目标用户 ID，可为 null */
+  targetUserId: number | null;
+  /** 当前用户是否已关注 */
+  isFollowing: boolean;
+  /** 关注操作是否正在加载 */
+  followLoading: boolean;
 }
 
 // 定义组件属性并设置默认值
@@ -29,6 +35,8 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   /** 编辑资料按钮点击事件 */
   'edit': [];
+  /** 切换关注状态事件 */
+  'follow': [];
 }>();
 
 /**
@@ -36,6 +44,13 @@ const emit = defineEmits<{
  */
 const handleEdit = () => {
   emit('edit');
+};
+
+/**
+ * 处理关注按钮点击
+ */
+const handleFollow = () => {
+  emit('follow');
 };
 </script>
 
@@ -54,6 +69,15 @@ const handleEdit = () => {
           <span>粉丝 {{ followersCount }}</span>
           <ElButton v-if="isCurrentUser" type="primary" @click="handleEdit" style="margin-left: 20px;">
             编辑资料
+          </ElButton>
+          <ElButton
+            v-else-if="targetUserId !== null"
+            :type="isFollowing ? 'default' : 'primary'"
+            @click="handleFollow"
+            :loading="followLoading"
+            style="margin-left: 20px;"
+          >
+            {{ isFollowing ? '取消关注' : '关注' }}
           </ElButton>
         </ElSpace>
       </div>

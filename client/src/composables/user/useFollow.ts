@@ -3,9 +3,9 @@ import { followUser, unfollowUser, getFollowStatus } from '@/api/follow';
 
 /**
  * 关注组合式函数
- * @param targetUserId 目标用户 ID（可以是 number 或 ref）
+ * @param targetUserId 目标用户 ID（可以是 number | null 或 ref）
  */
-export function useFollow(targetUserId: number | Ref<number>) {
+export function useFollow(targetUserId: number | null | Ref<number | null>) {
   // 响应式状态
   const isFollowing = ref<boolean>(false);
   const followersCount = ref<number>(0);
@@ -14,15 +14,18 @@ export function useFollow(targetUserId: number | Ref<number>) {
 
   // 计算属性，处理 targetUserId 可能是 ref 的情况
   const currentTargetUserId = computed(() => {
-    return typeof targetUserId === 'object' ? targetUserId.value : targetUserId;
+    return targetUserId !== null && typeof targetUserId === 'object' ? targetUserId.value : targetUserId;
   });
 
   /**
    * 检查关注状态
    */
   const checkStatus = async () => {
+    const userId = currentTargetUserId.value;
+    if (userId === null) return;
+
     try {
-      const status = await getFollowStatus(currentTargetUserId.value);
+      const status = await getFollowStatus(userId);
       isFollowing.value = status.isFollowed;
     } catch (error) {
       console.error('检查关注状态失败:', error);
@@ -33,13 +36,14 @@ export function useFollow(targetUserId: number | Ref<number>) {
    * 切换关注状态
    */
   const toggleFollow = async () => {
-    if (loading.value) return;
+    const userId = currentTargetUserId.value;
+    if (loading.value || userId === null) return;
 
     loading.value = true;
     try {
       if (isFollowing.value) {
         // 取消关注
-        const result = await unfollowUser(currentTargetUserId.value);
+        const result = await unfollowUser(userId);
         if (result.followersCount !== undefined) {
           followersCount.value = result.followersCount;
         }
@@ -49,7 +53,7 @@ export function useFollow(targetUserId: number | Ref<number>) {
         isFollowing.value = false;
       } else {
         // 关注
-        const result = await followUser(currentTargetUserId.value);
+        const result = await followUser(userId);
         if (result.followersCount !== undefined) {
           followersCount.value = result.followersCount;
         }

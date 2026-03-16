@@ -6,6 +6,7 @@ import { Star, StarFilled } from '@element-plus/icons-vue';
 import { useArticle } from '@/composables/article/useArticle';
 import { useFavorite } from '@/composables/article/useFavorite';
 import { useComments } from '@/composables/comment/useComments';
+import { useFollow } from '@/composables/user/useFollow';
 import ArticleContent from './components/ArticleContent.vue';
 import CommentSection from './components/CommentSection.vue';
 
@@ -19,6 +20,13 @@ const articleId = computed(() => {
 
 const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
 const { favorited, favoritesCount, favoriting, toggleFavorite } = useFavorite(articleId);
+
+// 计算目标用户 ID
+const targetUserId = computed(() => article.value?.author?.id || null);
+
+// 使用关注组合式函数
+const { isFollowing, loading: followLoading, toggleFollow } = useFollow(targetUserId);
+
 const {
   comments,
   totalComments,
@@ -69,8 +77,12 @@ onMounted(async () => {
       :favorited="favorited"
       :favorites-count="favoritesCount"
       :favoriting="favoriting"
+      :target-user-id="targetUserId"
+      :is-following="isFollowing"
+      :follow-loading="followLoading"
       @edit="handleEdit"
       @delete="handleDelete"
+      @follow="toggleFollow"
     />
 
     <!-- 点赞和收藏按钮 -->

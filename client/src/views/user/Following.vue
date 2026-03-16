@@ -1,6 +1,229 @@
 <script setup lang="ts">
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElCard, ElAvatar, ElPagination, ElSkeleton, ElEmpty, ElAlert } from 'element-plus';
+import { getFollowing } from '@/api/follow';
+import { getUserProfile } from '@/api/user';
+import type { User } from '@/api/user';
+
+const route = useRoute();
+const router = useRouter();
+
+// 从路由获取用户名
+const username = computed(() => route.params.username as string);
+
+// 响应式状态
+const list = ref<User[]>([]);
+const total = ref<number>(0);
+const page = ref<number>(1);
+const pageSize = ref<number>(10);
+const loading = ref<boolean>(false);
+const error = ref<string | null>(null);
+const targetUserId = ref<number | null>(null);
+
+/**
+ * 获取关注列表
+ */
+const fetchFollowing = async () => {
+  if (!username.value) return;
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    // 先通过用户名获取用户信息，获取用户 ID
+    const userProfile = await getUserProfile(username.value);
+    targetUserId.value = userProfile.id;
+
+    // 使用获取到的用户 ID 调用 getFollowing API
+    const response = await getFollowing(
+      targetUserId.value,
+      {
+        page: page.value,
+        pageSize: pageSize.value
+      }
+    );
+    list.value = response.list;
+    total.value = response.total;
+  } catch (err) {
+    error.value = '获取关注列表失败';
+    console.error('获取关注列表失败:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+/**
+ * 处理分页变化
+ */
+const handlePageChange = (newPage: number) => {
+  page.value = newPage;
+  fetchFollowing();
+};
+
+/**
+ * 跳转到用户个人主页
+ */
+const goToUserProfile = (username: string) => {
+  router.push(`/user/${username}`);
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchFollowing();
+});
 </script>
 
 <template>
-  <div>关注中 - Following</div>
+  <div class="following-page">
+    <h1 class="page-title">关注列表</h1>
+
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
+      <el-skeleton animated>
+        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
+        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
+        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
+      </el-skeleton>
+    </div>
+
+    <!-- 错误状态 -->
+    <el-alert
+      v-else-if="error"
+      type="error"
+      :title="error"
+      show-icon
+      class="error-alert"
+    />
+
+    <!-- 空状态 -->
+    <el-empty
+      v-else-if="list.length === 0 && !loading"
+      description="暂无关注"
+      class="empty-state"
+    />
+
+    <!-- 关注列表 -->
+    <div v-else class="following-list">
+      <el-card
+        v-for="user in list"
+        :key="user.id"
+        class="following-card"
+      >
+        <div class="following-info" @click="goToUserProfile(user.username)">
+          <el-avatar :src="user.avatar || undefined" size="default">
+            {{ user.username.charAt(0) }}
+          </el-avatar>
+          <div class="following-details">
+            <h3 class="following-name">{{ user.username }}</h3>
+            <p v-if="user.bio" class="following-bio">{{ user.bio }}</p>
+          </div>
+        </div>
+      </el-card>
+
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="(size) => { pageSize = size; fetchFollowing(); }"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.following-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #303133;
+}
+
+.loading-container {
+  margin: 40px 0;
+}
+
+.error-alert {
+  margin: 40px 0;
+}
+
+.empty-state {
+  margin: 60px 0;
+}
+
+.following-list {
+  margin-bottom: 40px;
+}
+
+.following-card {
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.following-card:hover {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+.following-info {
+  display: flex;
+  align-items: flex-start;
+}
+
+.following-details {
+  margin-left: 16px;
+  flex: 1;
+}
+
+.following-name {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: #303133;
+}
+
+.following-bio {
+  font-size: 14px;
+  color: #606266;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pagination-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .following-page {
+    padding: 10px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .following-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .following-details {
+    margin-left: 0;
+    margin-top: 12px;
+  }
+}
+</style>

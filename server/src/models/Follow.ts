@@ -108,29 +108,32 @@ export const FollowModel = {
    * @returns 粉丝列表和总数
    */
   async getFollowers(userId: number, page: number, pageSize: number): Promise<{ list: any[]; total: number }> {
+    // 确保参数是有效的数字
+    const validPage = Math.max(1, Number(page));
+    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
     // 计算偏移量
-    const offset = (page - 1) * pageSize;
+    const offset = (validPage - 1) * validPageSize;
     
     // 获取粉丝列表
     const listSql = `
       SELECT u.id, u.username, u.avatar, u.bio, u.created_at
       FROM follows f
       JOIN users u ON f.follower_id = u.id
-      WHERE f.following_id = ?
+      WHERE f.following_id = ${Number(userId)}
       ORDER BY f.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${validPageSize} OFFSET ${offset}
     `;
     
-    const [listRows] = await pool.execute<RowDataPacket[]>(listSql, [userId, pageSize, offset]);
+    const [listRows] = await pool.execute<RowDataPacket[]>(listSql);
     
     // 获取粉丝总数
     const totalSql = `
       SELECT COUNT(*) as total
       FROM follows
-      WHERE following_id = ?
+      WHERE following_id = ${Number(userId)}
     `;
     
-    const [totalRows] = await pool.execute<RowDataPacket[]>(totalSql, [userId]);
+    const [totalRows] = await pool.execute<RowDataPacket[]>(totalSql);
     const total = (totalRows[0] as any).total;
     
     return {
@@ -147,29 +150,32 @@ export const FollowModel = {
    * @returns 关注列表和总数
    */
   async getFollowing(userId: number, page: number, pageSize: number): Promise<{ list: any[]; total: number }> {
+    // 确保参数是有效的数字
+    const validPage = Math.max(1, Number(page));
+    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
     // 计算偏移量
-    const offset = (page - 1) * pageSize;
+    const offset = (validPage - 1) * validPageSize;
     
     // 获取关注列表
     const listSql = `
       SELECT u.id, u.username, u.avatar, u.bio, u.created_at
       FROM follows f
       JOIN users u ON f.following_id = u.id
-      WHERE f.follower_id = ?
+      WHERE f.follower_id = ${Number(userId)}
       ORDER BY f.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${validPageSize} OFFSET ${offset}
     `;
     
-    const [listRows] = await pool.execute<RowDataPacket[]>(listSql, [userId, pageSize, offset]);
+    const [listRows] = await pool.execute<RowDataPacket[]>(listSql);
     
     // 获取关注总数
     const totalSql = `
       SELECT COUNT(*) as total
       FROM follows
-      WHERE follower_id = ?
+      WHERE follower_id = ${Number(userId)}
     `;
     
-    const [totalRows] = await pool.execute<RowDataPacket[]>(totalSql, [userId]);
+    const [totalRows] = await pool.execute<RowDataPacket[]>(totalSql);
     const total = (totalRows[0] as any).total;
     
     return {

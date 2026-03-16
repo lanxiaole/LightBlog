@@ -8,6 +8,7 @@ import categoryRouter from './routes/categories';
 import tagRouter from './routes/tags';
 import commentRouter from './routes/comments';
 import favoriteRouter from './routes/favorites';
+import followRouter from './routes/follow';
 
 const app = express();
 
@@ -40,6 +41,9 @@ app.use('/api', commentRouter);
 
 // 收藏路由
 app.use('/api', favoriteRouter);
+
+// 关注路由
+app.use('/api', followRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/User';
 import { ArticleModel } from '../models/Article';
+import { FollowModel } from '../models/Follow';
 
 /**
  * 获取用户资料
@@ -21,8 +22,29 @@ export async function getUserProfile(req: Request, res: Response): Promise<void>
       return;
     }
     
+    // 获取目标用户 ID
+    const targetUserId = user.id;
+    
+    // 获取粉丝数和关注数
+    const followersCount = await FollowModel.getFollowersCount(targetUserId);
+    const followingCount = await FollowModel.getFollowingCount(targetUserId);
+    
+    // 构建返回对象
+    const userWithFollowInfo = {
+      ...user,
+      followersCount,
+      followingCount
+    } as any;
+    
+    // 如果请求已认证，获取当前用户的关注状态
+    const currentUserId = (req as any).user?.id;
+    if (currentUserId) {
+      const isFollowed = await FollowModel.isFollowing(currentUserId, targetUserId);
+      userWithFollowInfo.isFollowed = isFollowed;
+    }
+    
     // 返回用户信息
-    res.status(200).json(user);
+    res.status(200).json(userWithFollowInfo);
   } catch (error) {
     console.error('获取用户资料失败:', error);
     res.status(500).json({ message: '服务器内部错误' });

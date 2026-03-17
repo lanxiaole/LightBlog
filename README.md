@@ -147,25 +147,26 @@ CREATE TABLE `follows` (
   CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`following_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
+
 通知表
 CREATE TABLE `notifications` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `type` enum('comment','reply','like','favorite','follow') NOT NULL COMMENT '通知类型',
-  `sender_id` int NOT NULL COMMENT '触发通知的用户ID',
-  `receiver_id` int NOT NULL COMMENT '接收通知的用户ID',
-  `article_id` int DEFAULT NULL COMMENT '关联文章ID（如果适用）',
-  `comment_id` int DEFAULT NULL COMMENT '关联评论ID（如果适用）',
-  `is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `receiver_id` (`receiver_id`),
-  KEY `sender_id` (`sender_id`),
-  KEY `article_id` (`article_id`),
-  KEY `comment_id` (`comment_id`),
-  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `notifications_ibfk_3` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `notifications_ibfk_4` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
+`id` int NOT NULL AUTO_INCREMENT,
+`type` enum('comment','reply','like','favorite','follow') NOT NULL COMMENT '通知类型',
+`sender_id` int NOT NULL COMMENT '触发通知的用户ID',
+`receiver_id` int NOT NULL COMMENT '接收通知的用户ID',
+`article_id` int DEFAULT NULL COMMENT '关联文章ID（如果适用）',
+`comment_id` int DEFAULT NULL COMMENT '关联评论ID（如果适用）',
+`is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读',
+`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+KEY `receiver_id` (`receiver_id`),
+KEY `sender_id` (`sender_id`),
+KEY `article_id` (`article_id`),
+KEY `comment_id` (`comment_id`),
+CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+CONSTRAINT `notifications_ibfk_3` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
+CONSTRAINT `notifications_ibfk_4` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ## 项目配置说明
@@ -190,7 +191,6 @@ CREATE TABLE `notifications` (
 #### 根本原因
 
 1. **前端问题**
-
    - 路由参数与 API 参数不匹配：
      - 前端路由使用 username 作为参数（如 /user/lanxiaole/followers）
      - 后端 API 需要 userId 作为参数（如 /users/9/followers）
@@ -204,7 +204,6 @@ CREATE TABLE `notifications` (
 #### 解决方案
 
 1. **前端解决方案**
-
    - 添加用户信息获取逻辑：
      - 从路由获取 username 参数
      - 通过 getUserProfile API 获取用户信息，提取用户 ID
@@ -230,7 +229,6 @@ CREATE TABLE `notifications` (
    ```
 
 2. **后端解决方案**
-
    - 修改 SQL 语句构建方式：
      - 直接将参数值插入到 SQL 语句中，而不是使用参数化查询
      - 对参数进行严格的验证和限制，确保它们是有效的数字
@@ -261,7 +259,6 @@ CREATE TABLE `notifications` (
 #### 为什么经常出现这样的问题
 
 1. **前端层面**
-
    - 路由设计与 API 设计不一致：
      - 路由通常使用更友好的 username 作为参数
      - API 通常使用更唯一的 userId 作为参数
@@ -276,7 +273,6 @@ CREATE TABLE `notifications` (
 #### 预防措施
 
 1. **前端最佳实践**
-
    - 使用已创建的 `useUserIdFromUsername` 组合式函数：
      - 该函数已封装在 `client/src/composables/user/useUserIdFromUsername.ts` 中
      - 统一处理从用户名到用户 ID 的转换
@@ -298,7 +294,6 @@ CREATE TABLE `notifications` (
    ```
 
 2. **后端最佳实践**
-
    - 使用已创建的 `pagination` 工具函数：
      - 该函数已封装在 `server/src/utils/pagination.ts` 中
      - 统一处理分页参数的验证和 SQL 语句构建
@@ -344,7 +339,6 @@ CREATE TABLE `notifications` (
 - **问题现象**：前端获取文章列表时出现 500 内部服务器错误，后端服务器日志显示 `Incorrect arguments to mysqld_stmt_execute` 错误
 - **原因分析**：MySQL 语句执行时参数类型不正确，特别是 `pageSize` 和 `offset` 参数。当使用参数化查询时，传递给 MySQL 的参数类型与 SQL 语句期望的类型不匹配
 - **解决方案**：
-
   - 修改 `Article.ts` 文件，使用 `Number()` 而不是 `parseInt()` 来转换参数类型
   - 直接将参数值插入到 SQL 语句中，而不是使用参数化查询
   - 对参数进行严格的验证和限制，确保它们是有效的数字
@@ -512,7 +506,6 @@ CREATE TABLE `notifications` (
 - **问题表现**：未勾选"记住我"时，刷新页面登录状态丢失，显示未登录状态
 - **原因分析**：页面刷新后，用户信息对象为 null，导致显示未登录状态
 - **解决方案**：
-
   - 后端：添加获取当前用户信息的接口
   - 前端：在页面刷新后自动从服务器获取用户信息
 
@@ -552,7 +545,6 @@ CREATE TABLE `notifications` (
 - **问题表现**：在编写 TypeScript 代码时，使用 any 类型会导致编译错误，例如 "Unexpected any. Specify a type instead."
 - **原因分析**：TypeScript 配置默认启用了 noImplicitAny 规则，不允许使用 any 类型，同时 ESLint 也配置了 @typescript-eslint/no-explicit-any 规则
 - **解决方案**：
-
   - 修改 tsconfig.app.json 文件，添加 "noImplicitAny": false 配置
   - 修改 eslint.config.ts 文件，添加 "@typescript-eslint/no-explicit-any": "off" 规则
 
@@ -638,7 +630,6 @@ CREATE TABLE `notifications` (
 
 - **问题描述**：在创建 Register.vue 组件时，为了获取表单实例，使用了 const formRef = ref<any>(null)，这不符合 TypeScript 的类型安全最佳实践
 - **解决方案**：
-
   - 从 Element Plus 导入 FormInstance 类型：import type { FormInstance } from 'element-plus'
   - 使用 import type 语法是因为项目启用了 verbatimModuleSyntax 配置
   - 更新类型定义：const formRef = ref<FormInstance | null>(null)
@@ -806,3 +797,14 @@ CREATE TABLE `notifications` (
 3. **API 接口**：所有 API 接口都以 `/api` 为前缀
 4. **认证**：需要认证的接口会返回 401 错误，前端需要处理这种情况并跳转到登录页
 5. **错误处理**：后端会返回统一的错误格式，前端需要根据错误信息进行相应的处理
+
+### 问题原因
+
+1. 数据关联缺失 ：后端 Notification 模型的 SQL 查询没有关联文章表，无法获取文章标题，导致所有通知中的文章标题显示为默认的"文章"。
+2. 数据结构不匹配 ：后端返回的数据结构与前端期望的不匹配，前端期望的是 sender 对象（包含 id、username、avatar），但后端返回的是 sender_username 和 sender_avatar 字段，导致前端无法正确显示发送者信息，头像显示为默认的"U"。
+
+### 修复方法
+
+1. 添加文章表关联 ：修改 Notification 模型的 getNotificationsByReceiver 方法，在 SQL 查询中添加 LEFT JOIN articles a ON n.article_id = a.id ，以获取文章标题。
+2. 调整返回数据结构 ：在处理查询结果时，将 sender_username 和 sender_avatar 转换为 sender 对象，以匹配前端的期望结构。
+3. 更新接口定义 ：修改 NotificationWithSender 接口，将 sender_username 和 sender_avatar 属性替换为 sender 对象，确保类型定义与实际返回数据一致。

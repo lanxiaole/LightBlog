@@ -4,15 +4,17 @@ import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, 
 import { ElBadge } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { useUserStore } from '@/stores/user';
+import { useNotificationStore } from '@/stores/notification';
 import { useRoute, useRouter } from 'vue-router';
 import { getCategories } from '@/api/category';
 import { getTags } from '@/api/tag';
-import { getUnreadCount } from '@/api/notification';
 import type { Category } from '@/api/category';
 import type { Tag } from '@/api/tag';
 
 // 获取用户 store
 const userStore = useUserStore();
+// 获取通知 store
+const notificationStore = useNotificationStore();
 // 获取当前路由
 const route = useRoute();
 // 获取路由实例
@@ -21,9 +23,6 @@ const router = useRouter();
 // 分类和标签数据
 const categories = ref<Category[]>([]);
 const tags = ref<Tag[]>([]);
-
-// 未读消息数
-const unreadCount = ref(0);
 
 // 生成面包屑数据
 const breadcrumbItems = computed(() => {
@@ -62,14 +61,9 @@ const fetchCategoriesAndTags = async () => {
 // 获取未读消息数
 const fetchUnreadCount = async () => {
   if (userStore.isLoggedIn) {
-    try {
-      const response = await getUnreadCount();
-      unreadCount.value = response.count;
-    } catch (error) {
-      console.error('获取未读消息数失败:', error);
-    }
+    await notificationStore.fetchUnreadCount();
   } else {
-    unreadCount.value = 0;
+    notificationStore.setUnreadCount(0);
   }
 };
 
@@ -185,7 +179,7 @@ watch(() => userStore.isLoggedIn, () => {
 
           <!-- 消息图标 -->
           <template v-if="userStore.isLoggedIn">
-            <el-badge :value="unreadCount" :hidden="unreadCount === 0" style="margin-right: 20px;">
+            <el-badge :value="notificationStore.unreadCount" :hidden="notificationStore.unreadCount === 0" style="margin-right: 20px;">
               <el-icon class="message-icon" style="cursor: pointer;" @click="router.push('/notifications')">
                 <Message />
               </el-icon>

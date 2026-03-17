@@ -10,6 +10,7 @@ import {
 } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { getNotifications, markAsRead, markAllAsRead, type Notification } from '@/api/notification';
+import { useNotificationStore } from '@/stores/notification';
 import LoadingState from '@/components/common/LoadingState.vue';
 import ErrorState from '@/components/common/ErrorState.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -20,6 +21,7 @@ import EmptyState from '@/components/common/EmptyState.vue';
  */
 
 const router = useRouter();
+const notificationStore = useNotificationStore();
 
 // 响应式状态
 const list = ref<Notification[]>([]);
@@ -79,6 +81,8 @@ async function handleMarkAsRead(notification: Notification) {
     const index = list.value.findIndex(item => item.id === notification.id);
     if (index !== -1 && list.value[index]) {
       list.value[index].is_read = true;
+      // 如果是未读通知，减少未读消息数
+      notificationStore.decreaseUnreadCount();
     }
   } catch (err) {
     console.error('标记已读失败:', err);
@@ -91,6 +95,8 @@ async function handleMarkAsRead(notification: Notification) {
 async function handleMarkAllAsRead() {
   try {
     await markAllAsRead();
+    // 重置未读消息数
+    notificationStore.resetUnreadCount();
     // 重新获取列表
     fetchNotifications();
   } catch (err) {

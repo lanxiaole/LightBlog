@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu, Message } from '@element-plus/icons-vue';
 import { ElBadge } from 'element-plus';
 import 'element-plus/dist/index.css';
@@ -23,6 +23,9 @@ const router = useRouter();
 // 分类和标签数据
 const categories = ref<Category[]>([]);
 const tags = ref<Tag[]>([]);
+
+// 轮询定时器
+let pollingTimer: number | null = null;
 
 // 生成面包屑数据
 const breadcrumbItems = computed(() => {
@@ -67,15 +70,49 @@ const fetchUnreadCount = async () => {
   }
 };
 
+// 启动轮询
+const startPolling = () => {
+  // 清除之前的定时器
+  stopPolling();
+
+  // 每 10 秒获取一次未读消息数
+  pollingTimer = window.setInterval(() => {
+    fetchUnreadCount();
+  }, 10000);
+};
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollingTimer !== null) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+};
+
 // 组件挂载时获取数据
 onMounted(() => {
   fetchCategoriesAndTags();
   fetchUnreadCount();
+  // 启动轮询
+  startPolling();
+});
+
+// 组件卸载时清理
+onUnmounted(() => {
+  // 停止轮询
+  stopPolling();
 });
 
 // 监听登录状态变化
-watch(() => userStore.isLoggedIn, () => {
+watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   fetchUnreadCount();
+  if (isLoggedIn) {
+    // 用户登录，启动轮询
+    startPolling();
+  } else {
+    // 用户退出，停止轮询
+    stopPolling();
+  }
 });
 </script>
 
@@ -179,7 +216,7 @@ watch(() => userStore.isLoggedIn, () => {
 
           <!-- 消息图标 -->
           <template v-if="userStore.isLoggedIn">
-            <el-badge :value="notificationStore.unreadCount" :hidden="notificationStore.unreadCount === 0" style="margin-right: 20px;">
+            <el-badge :value="notificationStore.unreadCount" :hidden="notificationStore.unreadCount === 0" style="margin-right: 30px;">
               <el-icon class="message-icon" style="cursor: pointer;" @click="router.push('/notifications')">
                 <Message />
               </el-icon>
@@ -254,5 +291,9 @@ watch(() => userStore.isLoggedIn, () => {
 
 .message-icon:hover {
   color: #409eff;
+}
+
+.message-icon {
+  font-size: 24px;
 }
 </style>

@@ -808,3 +808,15 @@ CONSTRAINT `notifications_ibfk_4` FOREIGN KEY (`comment_id`) REFERENCES `comment
 1. 添加文章表关联 ：修改 Notification 模型的 getNotificationsByReceiver 方法，在 SQL 查询中添加 LEFT JOIN articles a ON n.article_id = a.id ，以获取文章标题。
 2. 调整返回数据结构 ：在处理查询结果时，将 sender_username 和 sender_avatar 转换为 sender 对象，以匹配前端的期望结构。
 3. 更新接口定义 ：修改 NotificationWithSender 接口，将 sender_username 和 sender_avatar 属性替换为 sender 对象，确保类型定义与实际返回数据一致。
+
+### 问题原因
+
+- useFavorite 组合式函数中的 favorited 和 favoritesCount 都是通过 ref 初始化的，没有从服务器获取初始值
+- 每次页面刷新时，这些值都会重置为默认值（ false 和 0 ）
+- 服务器端的收藏状态和数量是正确的，但是前端没有在页面加载时从服务器获取这些值
+
+### 解决方案
+
+1. 添加收藏相关字段 ：在 Article 接口中添加了 favorited 和 favoritesCount 字段
+2. 添加获取收藏状态方法 ：在 useFavorite 组合式函数中添加了 fetchFavoriteStatus 方法，用于从服务器获取初始的收藏状态和数量
+3. 调用获取收藏状态方法 ：在 Detail.vue 页面的 onMounted 钩子中，在文章加载完成后调用 fetchFavoriteStatus 方法来获取初始的收藏状态和数量

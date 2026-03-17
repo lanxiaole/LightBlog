@@ -6,6 +6,7 @@ import { ref, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { favoriteArticle, unfavoriteArticle } from '@/api/favorite';
+import { getArticleDetail } from '@/api/article';
 import { useUserStore } from '@/stores/user';
 
 /**
@@ -63,10 +64,25 @@ export function useFavorite(articleId: number | Ref<number>) {
     }
   };
 
+  /**
+   * 获取初始收藏状态和数量
+   */
+  const fetchFavoriteStatus = async () => {
+    try {
+      const id = typeof articleId === 'number' ? articleId : articleId.value;
+      const article = await getArticleDetail(id);
+      favorited.value = article.favorited || false;
+      favoritesCount.value = article.favoritesCount || 0;
+    } catch (err) {
+      console.error('获取收藏状态失败:', err);
+    }
+  };
+
   return {
     favorited,        // 是否已收藏
     favoritesCount,   // 收藏数量
     favoriting,       // 收藏操作加载状态
-    toggleFavorite    // 处理收藏/取消收藏
+    toggleFavorite,   // 处理收藏/取消收藏
+    fetchFavoriteStatus // 获取初始收藏状态和数量
   };
 }

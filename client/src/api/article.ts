@@ -31,6 +31,9 @@ export interface Article {
   // 点赞相关字段（仅在详情接口返回）
   liked?: boolean;
   likesCount?: number;
+  // 收藏相关字段（仅在详情接口返回）
+  favorited?: boolean;
+  favoritesCount?: number;
 }
 
 // 定义获取文章列表的响应类型

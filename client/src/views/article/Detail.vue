@@ -19,7 +19,7 @@ const articleId = computed(() => {
 });
 
 const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
-const { favorited, favoritesCount, favoriting, toggleFavorite } = useFavorite(articleId);
+const { favorited, favoritesCount, favoriting, toggleFavorite, fetchFavoriteStatus } = useFavorite(articleId);
 
 // 计算目标用户 ID
 const targetUserId = computed(() => article.value?.author?.id || null);
@@ -61,9 +61,10 @@ const handleEdit = () => {
 
 onMounted(async () => {
   await fetchArticleDetail(articleId.value);
-  // 文章加载完成后，检查关注状态
+  // 文章加载完成后，检查关注状态和收藏状态
   if (article.value && article.value.author?.id) {
     await checkStatus();
+    await fetchFavoriteStatus();
   }
   await fetchComments();
 });

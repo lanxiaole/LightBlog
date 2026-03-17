@@ -1,6 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
-import { buildPaginationSql, buildPaginationClause } from '../utils/pagination';
+import { buildPaginationSql } from '../utils/pagination';
 
 /**
  * 收藏接口

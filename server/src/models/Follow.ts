@@ -1,6 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
-import { validatePagination, buildPaginationSql } from '../utils/pagination';
+import { buildPaginationSql } from '../utils/pagination';
 
 // 定义 Follow 接口
 export interface Follow {

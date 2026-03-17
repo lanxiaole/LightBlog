@@ -9,6 +9,7 @@ import tagRouter from './routes/tags';
 import commentRouter from './routes/comments';
 import favoriteRouter from './routes/favorites';
 import followRouter from './routes/follow';
+import notificationRouter from './routes/notifications';
 
 const app = express();
 
@@ -44,6 +45,9 @@ app.use('/api', favoriteRouter);
 
 // 关注路由
 app.use('/api', followRouter);
+
+// 通知路由
+app.use('/api/notifications', notificationRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

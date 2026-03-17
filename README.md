@@ -1,1262 +1,808 @@
 # LightBlog
 
-用户表
+## 数据库表结构
+
+### 用户表
+
+```sql
 CREATE TABLE `users` (
-`id` int NOT NULL AUTO_INCREMENT,
-`email` varchar(255) NOT NULL,
-`username` varchar(50) NOT NULL,
-`password` varchar(255) NOT NULL,
-`avatar` varchar(255) DEFAULT NULL,
-`bio` text,
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-PRIMARY KEY (`id`),
-UNIQUE KEY `email` (`email`),
-UNIQUE KEY `username` (`username`)
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `bio` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
-文章表
+### 文章表
+
+```sql
 CREATE TABLE `articles` (
-`id` int NOT NULL AUTO_INCREMENT,
-`title` varchar(255) NOT NULL,
-`content` text NOT NULL,
-`cover` varchar(255) DEFAULT NULL,
-`author_id` int NOT NULL,
-`status` enum('draft','published') DEFAULT 'published',
-`views` int DEFAULT 0,
-`likes` int DEFAULT 0,
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-PRIMARY KEY (`id`),
-KEY `author_id` (`author_id`),
-CONSTRAINT `articles_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `cover` varchar(255) DEFAULT NULL,
+  `author_id` int NOT NULL,
+  `status` enum('draft','published') DEFAULT 'published',
+  `views` int DEFAULT 0,
+  `likes` int DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `author_id` (`author_id`),
+  CONSTRAINT `articles_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
--- 分类表
+### 分类表
+
+```sql
 CREATE TABLE `categories` (
-`id` int NOT NULL AUTO_INCREMENT,
-`name` varchar(50) NOT NULL,
-`description` varchar(255) DEFAULT NULL,
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`id`),
-UNIQUE KEY `name` (`name`)
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
--- 标签表
+### 标签表
+
+```sql
 CREATE TABLE `tags` (
-`id` int NOT NULL AUTO_INCREMENT,
-`name` varchar(50) NOT NULL,
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`id`),
-UNIQUE KEY `name` (`name`)
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
--- 文章-标签关联表
+### 文章-标签关联表
+
+```sql
 CREATE TABLE `article_tags` (
-`article_id` int NOT NULL,
-`tag_id` int NOT NULL,
-PRIMARY KEY (`article_id`, `tag_id`),
-KEY `tag_id` (`tag_id`),
-CONSTRAINT `article_tags_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
-CONSTRAINT `article_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE
+  `article_id` int NOT NULL,
+  `tag_id` int NOT NULL,
+  PRIMARY KEY (`article_id`, `tag_id`),
+  KEY `tag_id` (`tag_id`),
+  CONSTRAINT `article_tags_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `article_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
--- 为 articles 表增加 category_id 字段（允许为空）
+### 为文章表增加分类字段
+
+```sql
 ALTER TABLE `articles` ADD COLUMN `category_id` int DEFAULT NULL AFTER `author_id`;
 ALTER TABLE `articles` ADD CONSTRAINT `articles_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL;
+```
 
-评论表
+### 评论表
+
+```sql
 CREATE TABLE `comments` (
-`id` int NOT NULL AUTO_INCREMENT,
-`content` text NOT NULL,
-`article_id` int NOT NULL,
-`user_id` int NOT NULL,
-`parent_id` int DEFAULT '0',
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-PRIMARY KEY (`id`),
-KEY `article_id` (`article_id`),
-KEY `user_id` (`user_id`),
-KEY `parent_id` (`parent_id`),
-CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
-CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
+  `id` int NOT NULL AUTO_INCREMENT,
+  `content` text NOT NULL,
+  `article_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `parent_id` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `article_id` (`article_id`),
+  KEY `user_id` (`user_id`),
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
-点赞表
+### 点赞表
+
+```sql
 CREATE TABLE `likes` (
-`user_id` int NOT NULL,
-`article_id` int NOT NULL,
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`user_id`, `article_id`),
-KEY `article_id` (`article_id`),
-CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
+  `user_id` int NOT NULL,
+  `article_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `article_id`),
+  KEY `article_id` (`article_id`),
+  CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
-收藏表
+### 收藏表
+
+```sql
 CREATE TABLE `favorites` (
-`user_id` int NOT NULL,
-`article_id` int NOT NULL,
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`user_id`, `article_id`),
-KEY `article_id` (`article_id`),
-CONSTRAINT `favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-CONSTRAINT `favorites_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
+  `user_id` int NOT NULL,
+  `article_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `article_id`),
+  KEY `article_id` (`article_id`),
+  CONSTRAINT `favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `favorites_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
-创建关注表
+### 关注表
+
+```sql
 CREATE TABLE `follows` (
-`follower_id` int NOT NULL COMMENT '关注者 ID',
-`following_id` int NOT NULL COMMENT '被关注者 ID',
-`created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`follower_id`, `following_id`),
-KEY `following_id` (`following_id`),
-CONSTRAINT `follows_ibfk_1` FOREIGN KEY (`follower_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`following_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  `follower_id` int NOT NULL COMMENT '关注者 ID',
+  `following_id` int NOT NULL COMMENT '被关注者 ID',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`follower_id`, `following_id`),
+  KEY `following_id` (`following_id`),
+  CONSTRAINT `follows_ibfk_1` FOREIGN KEY (`follower_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`following_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+通知表
+CREATE TABLE `notifications` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `type` enum('comment','reply','like','favorite','follow') NOT NULL COMMENT '通知类型',
+  `sender_id` int NOT NULL COMMENT '触发通知的用户ID',
+  `receiver_id` int NOT NULL COMMENT '接收通知的用户ID',
+  `article_id` int DEFAULT NULL COMMENT '关联文章ID（如果适用）',
+  `comment_id` int DEFAULT NULL COMMENT '关联评论ID（如果适用）',
+  `is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `receiver_id` (`receiver_id`),
+  KEY `sender_id` (`sender_id`),
+  KEY `article_id` (`article_id`),
+  KEY `comment_id` (`comment_id`),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `notifications_ibfk_3` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `notifications_ibfk_4` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-问题 1：不要使用旧版 volar 只使用 vue official！！
-问题 2：使用 element 自动导入，不要手动导入！！！
-问题 3：配置 tsconfig.app.json 中 "noImplicitAny": false,
-配置 eslint 在 eslint.config.ts 文件中添加了 '@typescript-eslint/no-explicit-any': 'off' 规则
+## 项目配置说明
+
+### 开发环境配置
+
+1. **Vue 官方插件**：不要使用旧版 volar，只使用 vue official
+2. **Element Plus 配置**：使用 element 自动导入，不要手动导入
+3. **TypeScript 配置**：
+   - 在 `tsconfig.app.json` 中设置 `"noImplicitAny": false`
+   - 在 `eslint.config.ts` 文件中添加 `'@typescript-eslint/no-explicit-any': 'off'` 规则
 
-问题现象 ：
+## 常见问题及解决方案
 
-- 前端获取文章列表时出现 500 内部服务器错误
-- 后端服务器日志显示 Incorrect arguments to mysqld_stmt_execute 错误
-- 错误发生在 ArticleModel.getArticles 方法中
-  原因分析 ：
+### 通用解决方案：处理 404 和 500 错误
+
+#### 问题现象
 
-- 这个错误通常发生在 MySQL 语句执行时，参数类型不正确
-- 具体来说，当使用参数化查询时，传递给 MySQL 的参数类型与 SQL 语句期望的类型不匹配
-- 在我们的案例中， pageSize 和 offset 参数可能不是有效的数字类型
+- **404 错误**：访问粉丝列表和关注列表页面时返回 404 错误
+- **500 错误**：修复 404 后出现 "Incorrect arguments to mysqld_stmt_execute" 错误
 
-## 解决方案
+#### 根本原因
 
-### 步骤 1：识别问题
+1. **前端问题**
 
-- 检查后端服务器日志，找到具体的错误信息
-- 定位错误发生的位置： ArticleModel.getArticles 方法
+   - 路由参数与 API 参数不匹配：
+     - 前端路由使用 username 作为参数（如 /user/lanxiaole/followers）
+     - 后端 API 需要 userId 作为参数（如 /users/9/followers）
+     - 代码中使用了占位符 0 作为用户 ID，导致 API 调用失败
+
+2. **后端问题**
+   - MySQL 参数类型不匹配：
+     - 使用参数化查询时，LIMIT 和 OFFSET 子句的参数类型与 MySQL 预期不符
+     - 错误信息 "Incorrect arguments to mysqld_stmt_execute" 表明 MySQL 无法正确处理传递的参数
 
-### 步骤 2：尝试参数验证
+#### 解决方案
+
+1. **前端解决方案**
 
-- 首先尝试使用 parseInt() 来确保参数是有效的数字
-- 但是这种方法仍然没有解决问题
-
-### 步骤 3：最终解决方案
-
-- 修改 Article.ts 文件，使用 Number() 而不是 parseInt() 来转换参数类型
-- 直接将参数值插入到 SQL 语句中，而不是使用参数化查询
-- 对参数进行严格的验证和限制，确保它们是有效的数字
-
-### 关键代码修改
-
-```
-// 确保参数是有效的数字
-const validPage = Math.max(1, Number
-(page));
-const validPageSize = Math.max(1, 
-Math.min(100, Number(pageSize)));
-// 计算偏移量
-const offset = (validPage - 1) * 
-validPageSize;
-
-// 查询文章列表
-const listSql = `
-  SELECT * FROM articles
-  WHERE status = 'published'
-  ORDER BY created_at DESC
-  LIMIT ${validPageSize} OFFSET $
-  {offset}
-`;
-
-// 并行执行两个查询
-const [listResult, countResult] = 
-await Promise.all([
-  pool.execute<RowDataPacket[]>
-  (listSql),
-  pool.execute<RowDataPacket[]>
-  (countSql)
-]);
-```
-
-## 技术说明
-
-1. 参数验证 ：
-
-   - 使用 Math.max(1, Number(page)) 确保 page 是一个大于等于 1 的数字
-   - 使用 Math.max(1, Math.min(100, Number(pageSize))) 确保 pageSize 是一个在 1 到 100 之间的数字
-
-2. SQL 语句构建 ：
-
-   - 直接将验证后的参数值插入到 SQL 语句中
-   - 虽然这可能会有 SQL 注入的风险，但在这种情况下，我们已经对参数进行了严格的验证和限制，确保它们只能是数字
-
-3. 错误处理 ：
-
-   - 添加了全面的错误处理，确保即使出现错误也能返回适当的错误信息
-   - 记录详细的错误日志，便于调试和问题定位
-
-## 预防措施
-
-1. 参数验证 ：
-
-   - 始终对用户输入的参数进行验证和限制
-   - 确保参数类型正确，尤其是在与数据库交互时
-
-2. SQL 语句安全 ：
-
-   - 优先使用参数化查询，避免 SQL 注入
-   - 如果必须直接插入参数，确保对参数进行严格的验证和限制
-
-3. 错误处理 ：
-
-   - 添加全面的错误处理，确保即使出现错误也能返回适当的错误信息
-   - 记录详细的错误日志，便于调试和问题定位
-
-4. 代码测试 ：
-
-   - 定期测试 API 接口，确保它们能够正常工作
-   - 测试边界情况，例如参数为负数、0 或非数字值时的情况
-
-- 问题原因 ：顶部导航栏中的个人中心、设置、登录和注册按钮使用了 :to 属性，但这些组件（el-dropdown-item 和 el-button）在这种情况下不支持直接的路由跳转。
-- 解决方案 ：
-
-- 将 :to 属性改为 @click 事件
-- 使用 router.push() 方法来实现路由跳转
-- 在 script 部分添加了 useRouter 的引用，获取路由实例
-
-Vue Router 4 中已弃用 next() 回调函数，现在应该使用返回值的形式来处理导航。
-
-解决方案 ：
-
-1. 修改了 router.beforeEach 函数，移除了 next 参数
-2. 将 next('/login') 改为 return '/login'
-3. 将 next('/') 改为 return '/'
-4. 将 next() 改为 return true
-
-根据 Element Plus 的文档， type="text" 属性在 3.0.0 版本中会被弃用，建议使用 type="link" 代替。
-
-问题原因 ：
-
-- 前端请求拦截器只从 localStorage 中获取 token，而没有从 sessionStorage 中获取
-- 当用户选择"记住我"时，token 存储在 localStorage 中，否则存储在 sessionStorage 中
-- 这导致在某些情况下，token 无法被正确添加到请求头中，从而导致 401 错误
-  解决方案 ：
-
-1. 修改前端请求拦截器 ：
-
-   - 同时从 localStorage 和 sessionStorage 中获取 token
-   - 确保无论用户是否选择"记住我"，都能正确获取 token
-
-2. 修改前端响应拦截器 ：
-
-   - 当遇到 401 错误时，同时清除 localStorage 和 sessionStorage 中的 token
-   - 确保用户被正确重定向到登录页
-
-   问题原因 ：
-
-- 当用户没有选择"记住我"时，token 存储在 sessionStorage 中
-- 页面刷新后， userStore.token 能正确从 sessionStorage 中读取，所以 isLoggedIn 为 true
-- 但是 userStore.userInfo 为 null，因为它只在登录时设置，没有在页面刷新时重新获取
-- DefaultLayout.vue 中的条件判断是 v-if="userStore.isLoggedIn && userStore.userInfo" ，所以即使 token 存在，只要 userInfo 为 null，就会显示未登录状态
-- 当显示未登录状态时，登录和注册按钮应该是可点击的，但由于条件判断逻辑错误，导致状态混乱
-  解决方案 ：
-
-1. 修改条件判断逻辑 ：
-
-   - 将 v-if="userStore.isLoggedIn && userStore.userInfo" 改为 v-if="userStore.isLoggedIn"
-   - 这样只要 token 存在，就会显示登录状态，不会因为 userInfo 为 null 而显示未登录状态
-
-2. 添加空值检查 ：
-
-   - 修复了引用 userStore.userInfo 的地方，添加了空值检查（使用可选链操作符 ?. ）
-   - 确保即使 userInfo 为 null，页面也能正常显示
-
-   问题原因 ：
-
-- 当用户没有选择"记住我"时，token 存储在 sessionStorage 中
-- 页面刷新后， userStore.token 能正确从 sessionStorage 中读取，但 userStore.userInfo 为 null
-- 由于 userInfo 为 null，页面无法显示用户名和头像
-  解决方案 ：
-
-1. 后端 ：
-
-   - 添加了 getCurrentUser 控制器方法，用于获取当前登录用户的信息
-   - 添加了 findUserById 模型方法，用于根据用户 ID 查找用户
-   - 添加了 /auth/me 路由，使用 authMiddleware 保护
-
-2. 前端 ：
-
-   - 添加了 getCurrentUser API 函数，用于调用后端的 /auth/me 接口
-   - 在 userStore 中添加了 initUserInfo 方法，用于在页面刷新后获取用户信息
-   - 在 main.ts 中添加了初始化用户信息的逻辑
-
-   无法上传文章
-   具体原因 ：
-
-3. 认证信息丢失 ：当用户没有选择"记住我"时，token 存储在 sessionStorage 中，但页面刷新后，前端没有正确获取和使用这个 token
-4. 请求无认证头 ：发布文章的 API 请求（ /api/articles ）需要认证，但由于 token 丢失，请求头中没有包含 Authorization: Bearer {token}
-5. 后端拒绝请求 ：后端的 auth 中间件验证失败，返回 401 错误，导致文章上传失败
-
-- 文章内容存储的是带有 HTML 标签的富文本（如 <p>1</p> ）
-- 预览时直接截取内容，没有去除 HTML 标签，导致标签也被显示出来
-  解决方案 ：
-
-- 修改了 getSummary 函数，在截取内容之前先去除 HTML 标签
-- 使用正则表达式 /<[^>]\*>/g 匹配并移除所有 HTML 标签
-- 然后再对纯文本内容进行截取，确保预览只显示前 100 个字符
-
-从开始制作发布文章页面到现在，我们完成了以下工作：
-
-1. 创建发布文章页面组件 ：
-
-   - 生成 client/src/views/article/Write.vue 组件，使用 Vue 3 + TypeScript + Element Plus + wangEditor
-   - 集成 wangEditor 富文本编辑器，实现标题输入、内容编辑和封面图上传功能
-   - 添加表单验证和提交逻辑，成功后跳转到文章详情页
-
-2. 修复编译和类型错误 ：
-
-   - 移除未使用的 ElIcon 导入
-   - 移除未使用的图标导入（Upload, Check, Close）
-   - 修复 file-list 属性的类型错误，为文件对象添加 name 属性
-
-3. 解决路由和认证问题 ：
-
-   - 修复路由守卫中使用已弃用的 next() 回调的问题，改为返回值形式
-   - 处理 Element Plus 的弃用警告（ type="text" 改为 type="link" ，后因版本兼容改回 type="text" ）
-   - 修复发布文章时的 401 错误，修改前端请求拦截器，同时从 localStorage 和 sessionStorage 获取 token
-   - 解决登录状态在刷新后丢失的问题：
-     - 后端添加 getCurrentUser 接口，用于获取当前登录用户信息
-     - 前端添加 getCurrentUser API 函数
-     - 在 userStore 中添加 initUserInfo 方法，页面刷新后自动获取用户信息
-     - 在 DefaultLayout.vue 中添加 onMounted 钩子，组件挂载时初始化用户信息
-
-4. 优化用户体验 ：
-
-   - 修复文章列表页预览显示 HTML 标签的问题，在 getSummary 函数中去除 HTML 标签
-   - 确保登录状态在刷新后保持，避免用户重新登录
-   - 优化认证流程，确保发布文章时正确携带 token
-
-阶段性总结
-
-## 2. 顶部导航栏按钮无法点击
-
-问题表现 ：登录、注册等按钮配置了路由但点击无反应。 原因分析 ：使用了错误的属性绑定方式，按钮不是导航组件，不能直接使用 :to 。 解决方案 ：将路由绑定改为点击事件，通过编程方式实现页面跳转。
-
-```
-<el-button type="text" 
-@click="router.push('/login')">登录
-</el-button>
-<el-button type="primary" 
-@click="router.push('/register')">注
-册</el-button>
-```
-
-修改文件 ： client/src/views/layouts/DefaultLayout.vue
-
-## 3. 页面布局问题
-
-问题表现 ：右侧热门推荐和分类区域占用空间过大，影响整体布局平衡。 原因分析 ：侧边栏宽度设置过宽，导致主内容区空间不足。 解决方案 ：调整侧边栏宽度，使其与主内容区比例更加协调。
-
-```
-.sidebar {
-  width: 200px; /* 从250px调整为
-  200px */
-  flex-shrink: 0;
-}
-```
-
-修改文件 ： client/src/views/home/Home.vue
-
-## 4. 分页组件显示英文
-
-问题表现 ：分页组件显示"Prev"、"Next"等英文文本，与网站整体中文风格不一致。 原因分析 ：Element Plus 默认使用英文语言包。 解决方案 ：配置 Element Plus 国际化，引入中文语言包。
-
-```
-import zhCn from 'element-plus/es/
-locale/lang/zh-cn'
-
-app.use(ElementPlus, {
-  locale: zhCn
-})
-```
-
-修改文件 ： client/src/main.ts
-
-## 5. 背景颜色错位
-
-问题表现 ：页面中部分区域背景色与导航栏不一致，出现明显的色彩断层。 原因分析 ：不同区域的背景色设置不同，导致视觉上的不协调。 解决方案 ：统一调整相关区域的背景色，使其与导航栏保持一致。 修改文件 ： client/src/views/layouts/DefaultLayout.vue
-
-## 7. 编译错误
-
-问题表现 ：出现未使用导入、图标不存在、类型错误等编译问题。 原因分析 ：代码中存在未使用的导入、错误的图标名称和类型不匹配的问题。 解决方案 ：
-
-- 移除未使用的导入
-- 替换不存在的图标
-- 修复类型错误 修改文件 ： client/src/views/article/Detail.vue
-
-## 8. 路由守卫弃用警告
-
-问题表现 ：Vue Router 警告 next() 回调已弃用。 原因分析 ：Vue Router 4 推荐使用返回值代替 next() 调用。 解决方案 ：修改路由守卫逻辑，使用返回值方式处理导航。
-
-```
-router.beforeEach((to) => {
-  const token = localStorage.getItem
-  ('token') || sessionStorage.
-  getItem('token');
-  if (to.meta.requiresAuth && 
-  !token) {
-    return '/login';
-  }
-  return true;
-});
-```
-
-修改文件 ： client/src/router/index.ts
-
-## 9. Element Plus 弃用警告
-
-问题表现 ： type="text" 属性在 3.0.0 版本中弃用。 原因分析 ：Element Plus 3.0.0 对按钮类型属性进行了调整。 解决方案 ：根据版本兼容性考虑，选择合适的按钮类型属性。 修改文件 ： client/src/views/layouts/DefaultLayout.vue
-
-## 10. 登录和注册按钮有时无法点击
-
-问题表现 ：按钮有时无法点击，控制台无报错。 原因分析 ：用户状态管理逻辑问题，当用户信息为 null 时，即使 token 存在，也会显示未登录状态。 解决方案 ：优化用户状态判断逻辑，只检查 token 存在性。 修改文件 ： client/src/views/layouts/DefaultLayout.vue
-
-## 11. 发布文章 401 错误
-
-问题表现 ：发布文章时返回 401 Unauthorized 错误。 原因分析 ：前端请求拦截器只从 localStorage 获取 token，而当用户未选择"记住我"时，token 存储在 sessionStorage 中。 解决方案 ：修改请求拦截器，同时从 localStorage 和 sessionStorage 获取 token。
-
-```
-const token = localStorage.getItem
-('token') || sessionStorage.getItem
-('token');
-if (token) {
-  config.headers.Authorization = 
-  `Bearer ${token}`;
-}
-```
-
-修改文件 ： client/src/api/index.ts
-
-## 12. 登录状态刷新后丢失
-
-问题表现 ：未勾选"记住我"时，刷新页面登录状态丢失。 原因分析 ：页面刷新后，用户信息对象为 null，导致显示未登录状态。 解决方案 ：
-
-- 后端：添加获取当前用户信息的接口
-- 前端：在页面刷新后自动从服务器获取用户信息
-
-```
-// 前端：在 userStore 中添加 
-initUserInfo 方法
-async initUserInfo() {
-  if (this.token && !this.userInfo) 
-  {
-    try {
-      const userInfo = await 
-      getCurrentUser();
-      this.setUserInfo(userInfo);
-    } catch (error) {
-      this.logout();
-    }
-  }
-}
-```
-
-修改文件 ：
-
-- server/src/controllers/authController.ts
-- client/src/stores/user.ts
-
-## 13. 后端路由 404 错误
-
-问题表现 ：新增的用户信息接口返回 404 错误。 原因分析 ：后端服务器未重启，新添加的路由未生效。 解决方案 ：重启后端服务器，使新添加的路由生效。 操作 ：
-
-```
-# 查找占用端口 3000 的进程
-netstat -ano | findstr :3000
-# 终止进程
-taskkill /PID [进程ID] /F
-# 重新启动服务器
-npm run dev
-```
-
-## 14. 文章列表预览显示 HTML 标签
-
-问题表现 ：文章预览显示 <p>1</p> 等 HTML 标签，影响阅读体验。 原因分析 ：直接截取包含 HTML 标签的内容，未做处理。 解决方案 ：在显示预览前去除 HTML 标签，只保留纯文本内容。
-
-```
-const getSummary = (content: string)
-: string => {
-  // 去除HTML标签
-  const plainText = content.replace
-  (/<[^>]*>/g, '');
-  // 截取前100字作为摘要
-  return plainText.length > 100 ? 
-  plainText.substring(0, 100) + '...
-  ' : plainText;
-};
-```
-
-修改文件 ： client/src/views/home/Home.vue
-
-1. TypeScript 类型错误
-   问题表现：在编写 TypeScript 代码时，使用 any 类型会导致编译错误，例如在 Register.vue 文件中，TypeScript 会报错提示 "Unexpected any. Specify a type instead."
-   原因分析：TypeScript 配置默认启用了 noImplicitAny 规则，不允许使用 any 类型，同时 ESLint 也配置了 @typescript-eslint/no-explicit-any 规则
-   解决方案：
-   修改 tsconfig.app.json 文件，添加 "noImplicitAny": false 配置
-   修改 eslint.config.ts 文件，添加 "@typescript-eslint/no-explicit-any": "off" 规则
-2. Element Plus 组件无法解析/样式不生效
-   问题表现：Element Plus 组件显示为原始 HTML 标签，没有应用样式，例如按钮和表单组件看起来和普通 HTML 元素一样
-   原因分析：自动导入配置问题，导致 Element Plus 的组件和样式没有正确加载
-   解决方案：
-   改为手动导入 Element Plus 及样式，在 main.ts 文件中添加：
-   TypeScript
-
-import ElementPlus from 'element-plus';import 'element-plus/dist/index.css';app.use(ElementPlus); 3. 注册接口 404 错误
-问题表现：前端调用注册接口时返回 404 错误，控制台显示 "POST http://localhost:3000/api/auth/register 404 (Not Found)"
-原因分析：后端路由未挂载，Express 应用没有注册认证路由
-解决方案：
-在 server/src/app.ts 文件中添加路由挂载代码：
-TypeScript
-
-import authRouter from './routes/auth';app.use('/api/auth', authRouter); 4. 登录失败提示 "axios is not defined"
-问题表现：登录失败时控制台显示 "axios is not defined" 错误
-原因分析：在 auth.ts 文件中使用了 axios.isAxiosError 方法，但没有正确导入 axios
-解决方案：
-移除 axios.isAxiosError 检查，直接检查 error.response：
-TypeScript
-
-6.  Express Request 类型扩展失败
-    问题表现：TypeScript 报错 "Property 'user' does not exist on type 'Request'"，在 auth.ts 中间件和 articleController.ts 控制器中都出现了这个错误
-    原因分析：在 auth.ts 中直接声明命名空间扩展 Request 类型无效，TypeScript 无法识别
-    解决方案：
-    创建 server/src/types/express.d.ts 文件，在全局命名空间扩展 Request 类型：
-    TypeScript
-
-declare namespace Express { interface Request { user?: { id: number; email: string; username: string; }; }}
-
-8.  后端服务器启动失败
-    问题表现：运行 npm run start 时显示 "Cannot find module 'dist/server.js'" 错误
-    原因分析：未构建后端项目，缺少 dist 目录和编译后的文件
-    解决方案：
-    运行 npm run build 构建后端项目，生成 dist 目录和编译后的文件
-
-9.  文章列表获取失败
-    问题表现：前端获取文章列表时返回 500 错误，错误信息为 "Incorrect arguments to mysqld_stmt_execute"
-    原因分析：MySQL 语句执行时参数类型不正确，在 Article.ts 文件中使用参数化查询时，参数类型与 SQL 语句预期的类型不匹配
-    解决方案：
-    修改 Article.ts 文件，直接将参数值插入到 SQL 语句中，而不是使用参数化查询：
-    TypeScript
-
-const offset = (page - 1) _ pageSize;const query = `SELECT _ FROM articles ORDER BY created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
-
-12. 面包屑组件实现
-    问题表现：面包屑组件没有正确处理根路径和动态路由，例如根路径显示为空，动态路由显示为 /article/:id 这种格式
-    原因分析：breadcrumbItems 计算属性没有正确处理根路径和动态路由的情况
-    解决方案：
-    修改 breadcrumbItems 计算属性，确保正确处理根路径和动态路由：
-    TypeScript
-
-const breadcrumbItems = computed(() => { return route.matched.filter (item => item.meta.title).map (item => { if (item.path === '') { return { title: item.meta.title, path: '/' }; } return { title: item.meta.title, path: item.path }; });});
-
-16. 顶部导航栏用户信息区域
-    问题表现：头像显示方式不正确，当 userInfo.avatar 存在时，图片没有正确显示，而是显示为文本
-    原因分析：使用了错误的方式设置头像图片，将图片 URL 作为 el-avatar 的子内容，而不是使用 src 属性
-    解决方案：
-    使用 el-avatar 的 :src 属性来设置头像图片，使用 <template #default> 来设置默认头像：
-    HTML
-
-<el-avatar   size="small"   style="margin-right: 10px;"  :src="userStore.userInfo.  avatar"> <template #default> <el-icon><UserFilled /></ el-icon> </template></el-avatar>
-
-问题 2：formRef 使用 any 类型
-问题描述：在创建 Register.vue 组件时，为了获取表单实例，使用了 const formRef = ref<any>(null)，这不符合 TypeScript 的类型安全最佳实践。
-
-解决方案：
-
-从 Element Plus 导入 FormInstance 类型：import type { FormInstance } from 'element-plus'
-使用 import type 语法是因为项目启用了 verbatimModuleSyntax 配置
-更新类型定义：const formRef = ref<FormInstance | null>(null)
-调整 handleSubmit 函数中的代码，移除 await 关键字，因为 validate 方法不返回 Promise
-
-使用了 TypeScript 的 Omit 类型来排除密码字段
-
-`c:\Users\lanxiaole\Desktop\LightBlog\client\tsconfig.app.json#L1-1` 突然间这个文件报错了，找不到文件“c:/Users/lanxiaole/Desktop/LightBlog/client/src/views/layouts/AdminLayout.vue”。
-程序包含该文件是因为:
-通过在 "c:/Users/lanxiaole/Desktop/LightBlog/client/tsconfig.app.json" 中的包含模式 "src/\*_/_" 匹配
-
-这是因为 IDE（如 Trae）会缓存项目文件和依赖信息，当文件被删除或修改后，缓存可能没有及时更新，导致 IDE 仍然在寻找已经不存在的文件。
-
-具体来说，当我们修改路由配置，将所有页面从 AdminLayout.vue 迁移到 DefaultLayout.vue 后，虽然 AdminLayout.vue 文件已经不存在了，但 IDE 的缓存中仍然保留着对这个文件的引用。
-
-重启 Trae 会清除所有缓存，使 IDE 重新扫描项目文件，从而正确识别到：
-
-1. AdminLayout.vue 文件已经不存在
-2. 所有页面都已经正确配置在 DefaultLayout.vue 下
-3. 路由配置中不再引用 AdminLayout.vue
-   这种情况在开发过程中很常见，特别是当我们对项目结构或配置进行较大修改时。如果遇到类似问题，重启 IDE 或清除缓存通常是最直接有效的解决方法。
-
-问题出在 el-input 组件的 rows 属性上，当使用 rows="4" 时， 4 被解析为字符串类型，而 Element Plus 期望的是数字类型。
-
-修复方法是使用 Vue 的绑定语法，将 rows="4" 改为 :rows="4" ，这样 4 就会被解析为数字类型。
-
-问题出在 formRef 变量没有定义，导致在模板中使用 formRef 时出现了类型错误。
-
-修复方法是在 script 部分添加 formRef 的定义，使用 ref() 函数来创建一个响应式引用，这样就可以在模板中使用它来引用表单元素。
-
-用户输入
-↓
-[v-model 双向绑定]
-↓
-form 响应式数据
-↓
-[点击提交按钮]
-↓
-handleSubmit 函数
-↓
-[表单验证]
-↓
-updateUserProfile API 函数
-↓
-[axios PUT 请求]
-↓
-后端路由 /api/users/profile
-↓
-[authMiddleware 身份验证]
-↓
-updateProfile 控制器
-↓
-[req.body 提取数据]
-↓
-UserModel.updateUserProfile
-↓
-[构建 SQL 并执行]
-↓
-数据库更新
-↓
-返回响应给前端
-↓
-更新 userStore 并跳转页面
-
-### 一、本次对话实现的功能 1. 后端 API 扩展
-
-- 在 server/src/controllers/articleController.ts 中添加了两个新方法：
-
-  - getArticlesByCategory - 根据分类名称获取文章列表
-  - getArticlesByTag - 根据标签名称获取文章列表
-
-- 在 server/src/models/Article.ts 中添加了对应的查询方法：
-
-  - getArticlesByCategory - 联表查询分类文章
-  - getArticlesByTag - 联表查询标签文章
-
-- 在 server/src/routes/articles.ts 中添加了两个路由：
-
-  - GET /api/articles/category/:name
-  - GET /api/articles/tag/:name 2. 前端 API 封装
-
-- 在 client/src/api/article.ts 中添加了两个函数：
-  - getArticlesByCategory(categoryName, params)
-  - getArticlesByTag(tagName, params) 3. 页面组件开发
-- 创建了 client/src/views/category/List.vue - 分类文章列表页面
-- 创建了 client/src/views/tag/List.vue - 标签文章列表页面 4. 侧边栏功能增强
-- 修改了 client/src/views/layouts/DefaultLayout.vue ：
-
-  - 添加分类和标签数据的动态获取
-  - 将静态菜单改为动态子菜单，显示所有分类和标签
-  - 为每个分类和标签添加对应的路由链接
-
-- 修改了 client/src/views/home/Home.vue ：
-
-  - 添加分类和标签数据的动态获取
-  - 将静态的分类列表改为动态列表
-  - 添加标签列表显示
-  - 为分类和标签添加点击跳转功能
-
-### 二、遇到的问题及解决方案 问题 1：分类/标签文章无法正常显示，会显示所有文章（最严重的问题）
-
-现象：
-
-- 访问 /category/技术 或 /tag/Vue 时返回 404 或错误数据
-  原因： Express 路由匹配顺序问题。原来的路由定义顺序是：
-
-```
-router.get('/:id', 
-getArticleById);           // 先定义
-router.get('/category/:name', 
-getArticlesByCategory);  // 后定义
-router.get('/tag/:name', 
-getArticlesByTag);            // 后
-定义
-```
-
-当访问 /api/articles/category/技术 时，Express 会按顺序匹配，先匹配到 /:id ，将 category 当作文章 ID，导致请求被错误路由。
-
-解决方案： 调整路由顺序，将具体路由放在通用路由之前：
-
-````
-router.get('/category/:name', 
-getArticlesByCategory);  // 先定义具
-体路由
-router.get('/tag/:name', 
-getArticlesByTag);            // 先
-定义具体路由
-router.get('/:id', 
-getArticleById);                    
-// 后定义通用路由
-``` 问题 2：切换分类/标签不刷新数据
-现象：
-
-- 从 /category/技术 切换到 /category/生活 时，页面显示的还是"技术"分类的文章
-- 必须手动刷新页面才能显示正确数据
-原因： Vue Router 的组件复用机制。当路由参数变化时（从 /category/技术 到 /category/生活 ），Vue 会复用同一个组件实例，不会重新挂载，因此 onMounted 钩子不会再次执行，数据不会重新获取。
-
-解决方案： 使用 watch 监听路由参数变化：
-
-````
-
-import { watch } from 'vue';
-
-//  监听路由参数变化
-watch(() => route.params.name, 
-(newName, oldName) => {
-  if (newName !== oldName) {
-    //  重置分页
-    currentPage.value = 1;
-    pageSize.value = 10;
-    //  重新获取文章列表
-    fetchArticles();
-  }
-});
-
-```
-在 category/List.vue 和 tag/List.vue 中都添加了这个监听。
- 问题 3：侧边栏分类/标签无对应路由
-现象：
-
-- 左侧边栏的"分类"和"标签"按钮点击后没有反应或跳转错误
-原因：
-
-- 原来的菜单项是静态的，没有绑定正确的路由
-- 没有动态加载分类和标签数据
-解决方案：
-
-1. 将 el-menu-item 改为 el-sub-menu ，显示所有分类和标签
-2. 在 onMounted 中调用 getCategories() 和 getTags() 获取数据
-3. 为每个分类和标签生成对应的路由链接：
-   - 分类： /category/${category.name}
-   - 标签： /tag/${tag.name}
-```
-
-## 我们实际遇到的问题及解决方案
-
-### 1. 编辑按钮权限判断错误
-
-问题 ：在 Detail.vue 中使用 userStore.user 访问用户信息，但实际 store 中定义的是 userInfo 属性，导致权限判断失效 解决方案 ：将 userStore.user 改为 userStore.userInfo ，与 store 定义保持一致
-
-### 2. 编辑页面富文本编辑器消失问题
-
-问题 ：进入编辑页面时，富文本编辑器瞬间显示后消失，只剩下被压扁的输入框 原因 ：使用 v-if 和 v-else 导致编辑器在加载状态切换时被销毁和重新创建 解决方案 ：
-
-- 改用 v-show 替代 v-if ，保持编辑器实例不被销毁
-- 使用 nextTick() 确保 DOM 更新后再设置编辑器内容
-
-### 4. 代码可读性问题
-
-问题 ： articles.ts 中导入的组件过多，一行显示不便阅读 解决方案 ：将导入语句改为多行格式，每个组件占一行，提高代码可读性
-
-### 5. 未使用变量警告
-
-问题 ： updateArticle 控制器中声明了 updateSuccess 变量但未使用 解决方案 ：添加条件判断，检查更新是否成功，失败时返回 500 错误
-
-### 6. 编辑器内容同步问题
-
-问题 ：编辑页面加载文章内容时，编辑器内容显示异常 原因 ：编辑器实例未完全初始化就尝试设置内容 解决方案 ：使用 nextTick() 确保 DOM 更新后再设置编辑器内容，避免操作未初始化的实例
-
-# 对话总结：评论系统实现与问题解决
-
-## 完成的工作
-
-1. 服务器端实现 ：
-
-   - 创建了 server/src/models/Comment.ts 评论模型，包含评论的 CRUD 操作
-   - 实现了 server/src/controllers/commentController.ts 控制器，处理评论相关 HTTP 请求
-   - 配置了 server/src/routes/comments.ts 路由，定义评论相关 API 接口
-
-2. 客户端实现 ：
-
-   - 封装了 client/src/api/comment.ts API 模块，提供评论相关 API 函数
-   - 修改了 client/src/views/article/Detail.vue ，添加评论区域
-   - 实现了多层回复功能，支持无限层级回复
-   - 拆解了 client/src/views/article/Detail.vue 文件：
-     - 提取了 client/src/composables/useArticle.ts 文章管理逻辑
-     - 提取了 client/src/composables/useComments.ts 评论管理逻辑
-     - 创建了 client/src/components/ArticleHeader.vue 文章头部组件
-     - 创建了 client/src/components/CommentInput.vue 评论输入组件
-     - 创建了 client/src/components/CommentItem.vue 评论项组件（支持递归渲染）
-
-3. 代码质量优化 ：
-
-   - 为所有关键文件添加了详细注释，提高代码可读性
-   - 修复了类型错误，确保类型安全
-   - 优化了组件布局和样式
-
-## 遇到的问题及解决方案
-
-### 1. 500 错误获取评论列表
-
-- 问题 ：在获取评论列表时出现 500 错误
-- 原因 ：MySQL 参数化查询中 LIMIT 和 OFFSET 参数类型不匹配
-- 解决方案 ：将 LIMIT 和 OFFSET 参数直接插入 SQL 语句，而非使用参数化查询
-
-  ```
-  // 修改前
-  const listSql = "SELECT ... 
-  LIMIT ? OFFSET ?";
-  pool.execute(listSql, 
-  [articleId, validPageSize, 
-  offset])
-
-  // 修改后
-  const listSql = `SELECT ... 
-  LIMIT ${validPageSize} OFFSET $
-  {offset}`;
-  pool.execute(listSql, 
-  [articleId])
-  ```
-
-### 2. 多层回复无法显示
-
-- 问题 ：评论不能实现多层嵌套回复，只能回复一层
-- 原因 ：CommentItem 组件仅接收直接回复列表，无法递归获取深层回复
-- 解决方案 ：传递完整评论列表给组件，动态过滤当前评论的回复
-
-  ```
-  <!-- 修改前 -->
-  <CommentItem :replies="comments.
-  filter(c => c.parent_id === 
-  comment.id)" />
-
-  <!-- 修改后 -->
-  <CommentItem 
-  :all-comments="comments" />
-  ```
-
-### 3. 未使用变量警告
-
-- 问题 ：CommentItem.vue 中出现未使用变量的警告
-- 原因 ：导入了未使用的 ElSpace 和 deleteComment，以及未使用的 props 变量
-- 解决方案 ：删除未使用的导入，简化 props 定义
-
-  ```
-  // 修改前
-  import { ElAvatar, ElButton, 
-  ElSpace } from 'element-plus';
-  import { deleteComment } from '@/
-  api/comment';
-  const props = defineProps<{...}>
-  ();
-
-  // 修改后
-  import { ElAvatar, ElButton } 
-  from 'element-plus';
-  defineProps<{...}>();
-  ```
-
-### 4. 类型错误
-
-- 问题 ： isAuthor 属性类型不匹配， isAuthor 可能为 boolean | null ，但 ArticleHeader 组件要求 boolean 类型
-- 解决方案 ：在 useArticle.ts 中使用 Boolean() 函数确保 isAuthor 始终返回 boolean 类型
-
-  ```
-  // 修改前
-  const isAuthor = computed(() => {
-    return article.value && 
-    userStore.userInfo && article.
-    value.author_id === userStore.
-    userInfo.id;
-  });
-
-  // 修改后
-  const isAuthor = computed(() => {
-    return Boolean(article.
-    value && userStore.userInfo && 
-    article.value.author_id === 
-    userStore.userInfo.id);
-  });
-  ```
-
-### 5. 标签跳转和样式问题
-
-- 问题 ：文章详情页面头部标签点击无法跳转到对应标签，且标签显示位置靠上
-- 原因 ： el-tag 组件本身不支持 href 属性，标签容器的布局方式导致标签显示位置靠上
-- 解决方案 ：
-
-  - 使用 el-link 包裹 el-tag 实现跳转
-  - 添加 .tags-container 容器，使用 flex 布局和 flex-wrap: wrap 处理标签换行
-  - 调整 .tags-info 的 align-items 为 flex-start
-  - 使用 gap 属性控制标签之间的间距
-
-  ### 二、递归组件最佳实践
-
-  问题： 组件递归调用自己时，Vue 3 虽然能自动处理，但显式声明更健壮
-
-优化前：
-
-```
-<script setup lang="ts">
-// 没有显式声明组件名
-</script>
-<template>
-  <div>
-    <CommentItem />  <!-- 递归调用 
-    -->
-  </div>
-</template>
-```
-
-优化后：
-
-```
-<script setup lang="ts">
-defineOptions({
-  name: 'CommentItem'  // 显式声明组
-  件名称
-});
-</script>
-```
-
-要点：
-
-- 显式命名让代码意图更清晰
-- 避免潜在的递归渲染问题
-- 便于调试和 DevTools 识别
-
-### 三、TypeScript 空值安全
-
-问题： 可选链操作符使用不完整，存在运行时错误风险
-
-优化前：
-
-```
-<ElAvatar>
-  {{ user?.username.charAt(0).
-  toUpperCase() }}
-  <!-- 如果 user 为 null，username 访
-  问会报错 -->
-</ElAvatar>
-```
-
-优化后：
-
-```
-<ElAvatar>
-  {{ user?.username?.charAt(0)?.
-  toUpperCase() || 'U' }}
-  <!-- 完整的安全访问 + 默认值 -->
-</ElAvatar>
-```
-
-要点：
-
-- 使用 ?. 可选链操作符进行安全访问
-- 提供默认值 || 'U' 防止显示空白
-- 对可能为 null 的数据保持警惕
-
-### 四、加载状态设计
-
-问题： 数据加载时界面空白，用户体验差
-
-优化前：
-
-```
-<template>
-  <div v-if="articles.list.length 
-  === 0">暂无文章</div>
-  <!-- 无法区分"加载中"和"无数据" -->
-</template>
-```
-
-优化后：
-
-```
-<template>
-  <!-- 加载状态 -->
-  <div v-if="loading" 
-  class="loading-state">
-    <el-skeleton animated>
-      <template #template>
-        <el-skeleton-item 
-        variant="h3" />
-        <el-skeleton-item 
-        variant="text" />
-      </template>
-    </el-skeleton>
-  </div>
-  
-  <!-- 实际内容 -->
-  <template v-else>
-    <!-- 文章列表 -->
-    <div v-if="articles.list.length 
-    === 0">暂无文章</div>
-  </template>
-</template>
-```
-
-要点：
-
-- 区分 loading 、 empty 、 error 三种状态
-- 使用骨架屏（Skeleton）提升感知性能
-- 用户知道系统正在工作，减少焦虑感
-
-2. 页面刷新后点赞状态丢失
-   问题 ： GET /articles/:id 路由没有使用认证中间件，即使用户已登录也无法获取点赞状态 解决方案 ：
-
-- 创建了 optionalAuthMiddleware 可选认证中间件
-- 在获取文章详情的路由上使用该中间件，既支持未登录用户访问，又能为已登录用户返回点赞状态 3. 点赞数量显示问题
-  问题 ： ArticleHeader 组件显示的是 article.likes 字段，而不是实时的 likesCount 解决方案 ：
-
-- 修改 ArticleHeader 组件，添加 likesCount prop
-- 优先显示传入的 likesCount ，其次使用 article.likes
-- 在 ArticleContent 和 Detail.vue 中传递 likesCount
-
-问题分析 ：
-
-- 错误信息： Failed to load resource: the server responded with a status of 500 (Internal Server Error)
-- 根本原因： FavoriteModel.getUserFavorites 方法中 SQL 执行出错，错误信息为 Incorrect arguments to mysqld_stmt_execute
-  解决步骤 ：
-
-1. 初步检查 ：分析了 Favorite.ts 文件中的 getUserFavorites 方法，发现结果处理逻辑存在类型转换问题
-2. 第一次修复 ：修改了结果处理逻辑，使用可选链操作符确保即使没有收藏记录也能正常返回
-3. 持续排查 ：发现参数传递方式有问题，尝试了多种参数类型转换方法（如 Number() 、 parseInt() ）
-4. 最终解决方案 ：将 pool.execute 改为 pool.query ，解决了 SQL 参数绑定的问题
-
-在已经有了关注控制器的情况下，修改用户控制器添加关注相关信息是出于以下几个原因：
-
-1. 数据聚合与完整性 ：用户资料应该包含完整的用户信息，其中关注数、粉丝数是用户社交属性的重要组成部分。将这些信息与用户基本资料一起返回，可以为前端提供更完整的数据，减少前端的请求次数。
-2. API 设计的一致性 ：一个设计良好的用户资料 API 应该返回与该用户相关的所有核心信息，包括社交数据。这样前端可以通过一个 API 调用获取所有需要的用户信息，而不需要分别调用多个 API。
-3. 职责划分的合理性 ：
-
-   - 关注控制器（followController）负责处理 关注操作 ，如关注/取消关注用户、获取关注列表等行为
-   - 用户控制器（userController）负责 提供用户信息 ，包括基本资料和相关的统计数据
-
-4. 前端使用的便利性 ：当前端展示用户资料页面时，通常需要同时显示用户的基本信息和关注相关数据。将这些数据在一个 API 中返回，可以简化前端的代码逻辑。
-5. 性能优化 ：虽然在两个控制器中都使用了 FollowModel 的方法，但这些方法都是参数化查询，性能开销很小。相比之下，减少前端的 API 请求次数带来的性能提升更为显著。
-
-完成的功能
-添加关注按钮及相关逻辑
-
-在 UserInfoCard.vue 中添加了关注按钮，支持关注/取消关注功能
-实现了关注状态的显示和切换
-集成关注功能到用户主页
-
-在 UserLayout.vue 中集成了关注功能
-使用 useFollow 组合式函数管理关注状态
-在文章详情页添加关注功能
-
-在 Detail.vue 中添加了关注功能
-通过 ArticleContent 和 ArticleHeader 组件传递关注状态
-实现关注数和粉丝数的响应式更新
-
-确保个人详情页的关注数和粉丝数能够实时更新
-当关注状态变化时，关注数和粉丝数也会相应更新
-遇到的问题及解决方案
-类型错误问题
-
-问题：useFollow.ts 中 targetUserId 为 null 时的类型错误
-解决方案：在计算属性中添加 targetUserId !== null 检查，确保类型安全
-关注数和粉丝数非响应式更新问题
-
-问题：个人详情页关注数和粉丝数是写死的，不是响应式更新的
-解决方案：
-修改 User 接口，添加 followersCount 和 followingCount 可选属性
-在 UserLayout.vue 中添加监听器，当用户信息加载完成后更新关注数和粉丝数
-在 useFollow.ts 的 toggleFollow 方法中更新关注数和粉丝数
-文章详情页关注状态不一致问题
-
-问题：就算关注了一个人，点击他的别的文章，关注按钮却不是已关注
-解决方案：
-在 Detail.vue 中添加监听器，当文章加载完成后检查关注状态
-在 onMounted 钩子中，文章加载完成后手动调用 checkStatus()
-关键修复：发现 API 响应返回的是 {isFollowing: true}，但代码中使用的是 status.isFollowed，将其改为 status.isFollowing
-更新 follow.ts 中 getFollowStatus 函数的类型定义，确保与 API 响应一致
-组件类型错误问题
-
-问题：控制台报错 "Invalid prop: type check failed for prop 'isFollowing'. Expected Boolean, got Undefined"
-解决方案：
-在 ArticleHeader.vue 和 ArticleContent.vue 中，将 isFollowing 和 followLoading 改为可选属性
-在模板中为这些属性提供默认值，确保组件能够正常渲染
-
-### 问题现象
-
-- 404 错误 ：访问粉丝列表和关注列表页面时返回 404 错误
-- 500 错误 ：修复 404 后出现 "Incorrect arguments to mysqld_stmt_execute" 错误
-
-### 根本原因 1. 前端问题
-
-- 路由参数与 API 参数不匹配 ：
-  - 前端路由使用 username 作为参数（如 /user/lanxiaole/followers ）
-  - 后端 API 需要 userId 作为参数（如 /users/9/followers ）
-  - 代码中使用了占位符 0 作为用户 ID，导致 API 调用失败 2. 后端问题
-- MySQL 参数类型不匹配 ：
-  - 使用参数化查询时， LIMIT 和 OFFSET 子句的参数类型与 MySQL 预期不符
-  - 错误信息 "Incorrect arguments to mysqld_stmt_execute" 表明 MySQL 无法正确处理传递的参数
-
-### 解决方案 1. 前端解决方案
-
-- 添加用户信息获取逻辑 ：
-  - 从路由获取 username 参数
-  - 通过 getUserProfile API 获取用户信息，提取用户 ID
-  - 使用获取到的用户 ID 调用关注相关的 API
-
-````
-// 前端核心代码
-const fetchFollowers = async () => {
-  if (!username.value) return;
-  
-  // 先通过用户名获取用户信息
-  const userProfile = await 
-  getUserProfile(username.value);
-  targetUserId.value = userProfile.
-  id;
-  
-  // 使用获取到的用户 ID 调用 API
-  const response = await 
-  getFollowers(
-    targetUserId.value,
-    { page: page.value, pageSize: 
-    pageSize.value }
-  );
-  list.value = response.list;
-  total.value = response.total;
-};
-``` 2. 后端解决方案
-- 修改 SQL 语句构建方式 ：
+   - 添加用户信息获取逻辑：
+     - 从路由获取 username 参数
+     - 通过 getUserProfile API 获取用户信息，提取用户 ID
+     - 使用获取到的用户 ID 调用关注相关的 API
+
+   ```typescript
+   // 前端核心代码
+   const fetchFollowers = async () => {
+     if (!username.value) return;
+
+     // 先通过用户名获取用户信息
+     const userProfile = await getUserProfile(username.value);
+     targetUserId.value = userProfile.id;
+
+     // 使用获取到的用户 ID 调用 API
+     const response = await getFollowers(targetUserId.value, {
+       page: page.value,
+       pageSize: pageSize.value,
+     });
+     list.value = response.list;
+     total.value = response.total;
+   };
+   ```
+
+2. **后端解决方案**
+
+   - 修改 SQL 语句构建方式：
+     - 直接将参数值插入到 SQL 语句中，而不是使用参数化查询
+     - 对参数进行严格的验证和限制，确保它们是有效的数字
+
+   ```typescript
+   // 后端核心代码
+   async getFollowers(userId: number, page: number, pageSize: number) {
+     // 确保参数是有效的数字
+     const validPage = Math.max(1, Number(page));
+     const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
+     const offset = (validPage - 1) * validPageSize;
+
+     // 直接将参数插入 SQL 语句
+     const listSql = `
+       SELECT u.id, u.username, u.avatar, u.bio, u.created_at
+       FROM follows f
+       JOIN users u ON f.follower_id = u.id
+       WHERE f.following_id = ${Number(userId)}
+       ORDER BY f.created_at DESC
+       LIMIT ${validPageSize} OFFSET ${offset}
+     `;
+
+     const [listRows] = await pool.execute<RowDataPacket[]>(listSql);
+     // ...
+   }
+   ```
+
+#### 为什么经常出现这样的问题
+
+1. **前端层面**
+
+   - 路由设计与 API 设计不一致：
+     - 路由通常使用更友好的 username 作为参数
+     - API 通常使用更唯一的 userId 作为参数
+     - 每次创建新页面时，都需要处理这种参数转换
+
+2. **后端层面**
+   - MySQL 参数化查询的局限性：
+     - MySQL 对 LIMIT 和 OFFSET 子句的参数类型有严格要求
+     - 使用参数化查询时，这些参数可能无法正确转换为 MySQL 期望的类型
+     - 每次实现分页功能时，都可能遇到类似问题
+
+#### 预防措施
+
+1. **前端最佳实践**
+
+   - 使用已创建的 `useUserIdFromUsername` 组合式函数：
+     - 该函数已封装在 `client/src/composables/user/useUserIdFromUsername.ts` 中
+     - 统一处理从用户名到用户 ID 的转换
+     - 在需要用户 ID 的页面中直接调用此函数
+
+   ```typescript
+   // 前端使用示例
+   import { useUserIdFromUsername } from "@/composables/user/useUserIdFromUsername";
+
+   const { userId, loading, error } = useUserIdFromUsername(username);
+
+   // 当 userId 变化时，使用它调用 API
+   watch(userId, (newUserId) => {
+     if (newUserId) {
+       // 使用用户 ID 调用关注相关的 API
+       fetchFollowers(newUserId);
+     }
+   });
+   ```
+
+2. **后端最佳实践**
+
+   - 使用已创建的 `pagination` 工具函数：
+     - 该函数已封装在 `server/src/utils/pagination.ts` 中
+     - 统一处理分页参数的验证和 SQL 语句构建
+     - 在需要分页的查询中直接调用此函数
+
+   ```typescript
+   // 后端使用示例
+   import { buildPaginationSql } from '../utils/pagination';
+
+   async getFollowers(userId: number, page: number, pageSize: number) {
+     // 直接使用工具函数构建分页 SQL
+     const paginationSql = buildPaginationSql(page, pageSize);
+
+     // 构建完整的 SQL 语句
+     const listSql = `
+       SELECT u.id, u.username, u.avatar, u.bio, u.created_at
+       FROM follows f
+       JOIN users u ON f.follower_id = u.id
+       WHERE f.following_id = ${Number(userId)}
+       ORDER BY f.created_at DESC
+       ${paginationSql}
+     `;
+
+     const [listRows] = await pool.execute<RowDataPacket[]>(listSql);
+     // ...
+   }
+   ```
+
+3. **文档和规范**
+   - 建立 API 设计规范：
+     - 明确路由参数和 API 参数的使用约定
+     - 记录常见问题和解决方案
+     - 为新开发者提供参考文档
+   - 推广使用已创建的工具函数：
+     - 在团队中推广使用 `useUserIdFromUsername` 和 `pagination` 工具函数
+     - 确保所有新开发的页面和 API 都使用这些工具函数
+     - 定期检查代码库，确保工具函数的正确使用
+
+### 后端问题
+
+#### 1. 文章列表获取失败（500 错误）
+
+- **问题现象**：前端获取文章列表时出现 500 内部服务器错误，后端服务器日志显示 `Incorrect arguments to mysqld_stmt_execute` 错误
+- **原因分析**：MySQL 语句执行时参数类型不正确，特别是 `pageSize` 和 `offset` 参数。当使用参数化查询时，传递给 MySQL 的参数类型与 SQL 语句期望的类型不匹配
+- **解决方案**：
+
+  - 修改 `Article.ts` 文件，使用 `Number()` 而不是 `parseInt()` 来转换参数类型
   - 直接将参数值插入到 SQL 语句中，而不是使用参数化查询
   - 对参数进行严格的验证和限制，确保它们是有效的数字
+
+  ```typescript
+  // 确保参数是有效的数字
+  const validPage = Math.max(1, Number(page));
+  const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
+  // 计算偏移量
+  const offset = (validPage - 1) * validPageSize;
+
+  // 查询文章列表
+  const listSql = `
+    SELECT * FROM articles
+    WHERE status = 'published'
+    ORDER BY created_at DESC
+    LIMIT ${validPageSize} OFFSET ${offset}
+  `;
+  ```
+
+#### 2. 后端路由 404 错误
+
+- **问题现象**：新增的用户信息接口返回 404 错误，前端控制台显示 "GET http://localhost:3000/api/auth/me 404 (Not Found)"
+- **原因分析**：后端服务器未重启，新添加的路由未生效
+- **解决方案**：重启后端服务器，使新添加的路由生效
+
+  ```bash
+  # 查找占用端口 3000 的进程
+  netstat -ano | findstr :3000
+  # 终止进程
+  taskkill /PID [进程ID] /F
+  # 重新启动服务器
+  npm run dev
+  ```
+
+#### 3. Express Request 类型扩展失败
+
+- **问题现象**：TypeScript 报错 "Property 'user' does not exist on type 'Request'"，在 auth.ts 中间件和 articleController.ts 控制器中都出现了这个错误
+- **原因分析**：在 auth.ts 中直接声明命名空间扩展 Request 类型无效，TypeScript 无法识别
+- **解决方案**：创建 `server/src/types/express.d.ts` 文件，在全局命名空间扩展 Request 类型
+
+  ```typescript
+  // server/src/types/express.d.ts
+  declare namespace Express {
+    interface Request {
+      user?: {
+        id: number;
+        email: string;
+        username: string;
+      };
+    }
+  }
+  ```
+
+### 前端问题
+
+#### 1. 顶部导航栏按钮无法点击
+
+- **问题表现**：登录、注册等按钮配置了路由但点击无反应，控制台无报错
+- **原因分析**：使用了错误的属性绑定方式，按钮不是导航组件，不能直接使用 `:to`
+- **解决方案**：将路由绑定改为点击事件，通过编程方式实现页面跳转
+
+  ```vue
+  <!-- 修改前 -->
+  <el-button type="text" :to="'/login'">登录</el-button>
+
+  <!-- 修改后 -->
+  <el-button type="text" @click="router.push('/login')">登录</el-button>
+  <el-button type="primary" @click="router.push('/register')">注册</el-button>
+  ```
+
+#### 2. 分页组件显示英文
+
+- **问题表现**：分页组件显示"Prev"、"Next"等英文文本，与网站整体中文风格不一致
+- **原因分析**：Element Plus 默认使用英文语言包
+- **解决方案**：配置 Element Plus 国际化，引入中文语言包
+
+  ```typescript
+  // client/src/main.ts
+  import zhCn from "element-plus/es/locale/lang/zh-cn";
+
+  app.use(ElementPlus, {
+    locale: zhCn,
+  });
+  ```
+
+#### 3. 路由守卫弃用警告
+
+- **问题表现**：Vue Router 警告 "[Vue Router warn]: `next` is deprecated in navigation guards and will be removed in a future version. Use `return` instead."
+- **原因分析**：Vue Router 4 推荐使用返回值代替 next() 调用
+- **解决方案**：修改路由守卫逻辑，使用返回值方式处理导航
+
+  ```typescript
+  // 修改前
+  router.beforeEach((to, from, next) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (to.meta.requiresAuth && !token) {
+      next("/login");
+    } else {
+      next();
+    }
+  });
+
+  // 修改后
+  router.beforeEach((to) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (to.meta.requiresAuth && !token) {
+      return "/login";
+    }
+    return true;
+  });
+  ```
+
+#### 4. Element Plus 弃用警告
+
+- **问题表现**：控制台显示 "[Element Plus] `type="text"` is deprecated, please use `type="link"` instead."
+- **原因分析**：Element Plus 3.0.0 对按钮类型属性进行了调整，`type="text"` 属性在 3.0.0 版本中会被弃用
+- **解决方案**：根据版本兼容性考虑，选择合适的按钮类型属性
+
+  ```vue
+  <!-- 修改前 -->
+  <el-button type="text">登录</el-button>
+
+  <!-- 修改后 (Element Plus 3.0.0+) -->
+  <el-button type="link">登录</el-button>
+  ```
+
+#### 5. 登录和注册按钮有时无法点击
+
+- **问题表现**：按钮有时无法点击，控制台无报错，刷新页面后可能恢复正常
+- **原因分析**：用户状态管理逻辑问题，当用户信息为 null 时，即使 token 存在，也会显示未登录状态
+- **解决方案**：优化用户状态判断逻辑，只检查 token 存在性
+
+  ```vue
+  <!-- 修改前 -->
+  <div v-if="userStore.isLoggedIn && userStore.userInfo">
+    <!-- 登录状态 -->
+  </div>
+
+  <!-- 修改后 -->
+  <div v-if="userStore.isLoggedIn">
+    <!-- 登录状态 -->
+  </div>
+  ```
+
+#### 6. 发布文章 401 错误
+
+- **问题表现**：发布文章时返回 401 Unauthorized 错误，控制台显示 "POST http://localhost:3000/api/articles 401 (Unauthorized)"
+- **原因分析**：前端请求拦截器只从 localStorage 获取 token，而当用户未选择"记住我"时，token 存储在 sessionStorage 中
+- **解决方案**：修改请求拦截器，同时从 localStorage 和 sessionStorage 获取 token
+
+  ```typescript
+  // client/src/api/index.ts
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  ```
+
+#### 7. 登录状态刷新后丢失
+
+- **问题表现**：未勾选"记住我"时，刷新页面登录状态丢失，显示未登录状态
+- **原因分析**：页面刷新后，用户信息对象为 null，导致显示未登录状态
+- **解决方案**：
+
+  - 后端：添加获取当前用户信息的接口
+  - 前端：在页面刷新后自动从服务器获取用户信息
+
+  ```typescript
+  // 前端：在 userStore 中添加 initUserInfo 方法
+  async initUserInfo() {
+    if (this.token && !this.userInfo) {
+      try {
+        const userInfo = await getCurrentUser();
+        this.setUserInfo(userInfo);
+      } catch (error) {
+        this.logout();
+      }
+    }
+  }
+  ```
+
+#### 8. 文章列表预览显示 HTML 标签
+
+- **问题表现**：文章预览显示 `<p>1</p>` 等 HTML 标签，影响阅读体验
+- **原因分析**：直接截取包含 HTML 标签的内容，未做处理
+- **解决方案**：在显示预览前去除 HTML 标签，只保留纯文本内容
+
+  ```typescript
+  const getSummary = (content: string): string => {
+    // 去除HTML标签
+    const plainText = content.replace(/<[^>]*>/g, "");
+    // 截取前100字作为摘要
+    return plainText.length > 100
+      ? plainText.substring(0, 100) + "..."
+      : plainText;
+  };
+  ```
+
+#### 9. TypeScript 类型错误
+
+- **问题表现**：在编写 TypeScript 代码时，使用 any 类型会导致编译错误，例如 "Unexpected any. Specify a type instead."
+- **原因分析**：TypeScript 配置默认启用了 noImplicitAny 规则，不允许使用 any 类型，同时 ESLint 也配置了 @typescript-eslint/no-explicit-any 规则
+- **解决方案**：
+
+  - 修改 tsconfig.app.json 文件，添加 "noImplicitAny": false 配置
+  - 修改 eslint.config.ts 文件，添加 "@typescript-eslint/no-explicit-any": "off" 规则
+
+  ```json
+  // tsconfig.app.json
+  {
+    "compilerOptions": {
+      "noImplicitAny": false
+    }
+  }
+  ```
+
+#### 10. Element Plus 组件无法解析/样式不生效
+
+- **问题表现**：Element Plus 组件显示为原始 HTML 标签，没有应用样式，例如按钮和表单组件看起来和普通 HTML 元素一样
+- **原因分析**：自动导入配置问题，导致 Element Plus 的组件和样式没有正确加载
+- **解决方案**：改为手动导入 Element Plus 及样式
+
+  ```typescript
+  // client/src/main.ts
+  import ElementPlus from "element-plus";
+  import "element-plus/dist/index.css";
+
+  app.use(ElementPlus);
+  ```
+
+#### 11. 注册接口 404 错误
+
+- **问题表现**：前端调用注册接口时返回 404 错误，控制台显示 "POST http://localhost:3000/api/auth/register 404 (Not Found)"
+- **原因分析**：后端路由未挂载，Express 应用没有注册认证路由
+- **解决方案**：在 server/src/app.ts 文件中添加路由挂载代码
+
+  ```typescript
+  // server/src/app.ts
+  import authRouter from "./routes/auth";
+  app.use("/api/auth", authRouter);
+  ```
+
+#### 12. 面包屑组件实现问题
+
+- **问题表现**：面包屑组件没有正确处理根路径和动态路由，例如根路径显示为空，动态路由显示为 /article/:id 这种格式
+- **原因分析**：breadcrumbItems 计算属性没有正确处理根路径和动态路由的情况
+- **解决方案**：修改 breadcrumbItems 计算属性，确保正确处理根路径和动态路由
+
+  ```typescript
+  const breadcrumbItems = computed(() => {
+    return route.matched
+      .filter((item) => item.meta.title)
+      .map((item) => {
+        if (item.path === "") {
+          return {
+            title: item.meta.title,
+            path: "/",
+          };
+        }
+        return {
+          title: item.meta.title,
+          path: item.path,
+        };
+      });
+  });
+  ```
+
+#### 13. 顶部导航栏用户信息区域问题
+
+- **问题表现**：头像显示方式不正确，当 userInfo.avatar 存在时，图片没有正确显示，显示为文本
+- **原因分析**：使用了错误的方式设置头像图片，将图片 URL 作为 el-avatar 的子内容，而不是使用 src 属性
+- **解决方案**：使用 el-avatar 的 :src 属性来设置头像图片，使用 <template #default> 来设置默认头像
+
+  ```vue
+  <el-avatar
+    size="small"
+    style="margin-right: 10px;"
+    :src="userStore.userInfo?.avatar"
+  >
+    <template #default>
+      <el-icon><UserFilled /></el-icon>
+    </template>
+  </el-avatar>
+  ```
+
+#### 14. formRef 使用 any 类型
+
+- **问题描述**：在创建 Register.vue 组件时，为了获取表单实例，使用了 const formRef = ref<any>(null)，这不符合 TypeScript 的类型安全最佳实践
+- **解决方案**：
+
+  - 从 Element Plus 导入 FormInstance 类型：import type { FormInstance } from 'element-plus'
+  - 使用 import type 语法是因为项目启用了 verbatimModuleSyntax 配置
+  - 更新类型定义：const formRef = ref<FormInstance | null>(null)
+  - 调整 handleSubmit 函数中的代码，移除 await 关键字，因为 validate 方法不返回 Promise
+
+  ```typescript
+  import type { FormInstance } from "element-plus";
+
+  const formRef = ref<FormInstance | null>(null);
+
+  const handleSubmit = () => {
+    formRef.value?.validate((valid) => {
+      if (valid) {
+        // 提交表单
+      }
+    });
+  };
+  ```
+
+#### 15. el-input 组件 rows 属性类型错误
+
+- **问题表现**：当使用 rows="4" 时，4 被解析为字符串类型，而 Element Plus 期望的是数字类型，控制台显示类型错误
+- **解决方案**：使用 Vue 的绑定语法，将 rows="4" 改为 :rows="4"，这样 4 就会被解析为数字类型
+
+  ```vue
+  <!-- 修改前 -->
+  <el-input type="textarea" rows="4"></el-input>
+
+  <!-- 修改后 -->
+  <el-input type="textarea" :rows="4"></el-input>
+  ```
+
+#### 16. formRef 变量未定义
+
+- **问题表现**：在模板中使用 formRef 时出现了类型错误，显示 "Cannot find name 'formRef'"
+- **解决方案**：在 script 部分添加 formRef 的定义，使用 ref() 函数来创建一个响应式引用
+
+  ```typescript
+  import { ref } from "vue";
+  import type { FormInstance } from "element-plus";
+
+  const formRef = ref<FormInstance | null>(null);
+  ```
+
+## 最佳实践
+
+### 1. 递归组件最佳实践
+
+- **问题**：组件递归调用自己时，Vue 3 虽然能自动处理，但显式声明更健壮
+- **解决方案**：使用 `defineOptions` 显式声明组件名称
+  ```vue
+  <script setup lang="ts">
+  defineOptions({
+    name: "CommentItem", // 显式声明组件名称
+  });
+  </script>
+  <template>
+    <div>
+      <!-- 评论内容 -->
+      <CommentItem v-if="hasReplies" />
+    </div>
+  </template>
+  ```
+
 ````
 
-//  后端核心代码
-async getFollowers(userId: number, 
-page: number, pageSize: number) {
-  //  确保参数是有效的数字
-  const validPage = Math.max(1, 
-  Number(page));
-  const validPageSize = Math.max(1, 
-  Math.min(100, Number(pageSize)));
-  const offset = (validPage - 1) \* 
-  validPageSize;
+### 2. TypeScript 空值安全
 
-//  直接将参数插入  SQL  语句
-  const listSql = `
-    SELECT u.id, u.username, u.
-    avatar, u.bio, u.created_at
-    FROM follows f
-    JOIN users u ON f.follower_id = 
-    u.id
-    WHERE f.following_id = ${Number
-    (userId)}
-    ORDER BY f.created_at DESC
-    LIMIT ${validPageSize} OFFSET $
-    {offset}
-  `;
+- **问题**：可选链操作符使用不完整，存在运行时错误风险
+- **解决方案**：使用完整的可选链操作符进行安全访问，并提供默认值
 
-const [listRows] = await pool.
-  execute<RowDataPacket[]>(listSql);
-  // ...
-}
+  ```vue
+  <ElAvatar>
+    {{ user?.username?.charAt(0)?.toUpperCase() || 'U' }}
+  </ElAvatar>
+````
 
-```
-### 为什么经常出现这样的问题 1. 前端层面
-- 路由设计与 API 设计不一致 ：
-  - 路由通常使用更友好的 username 作为参数
-  - API 通常使用更唯一的 userId 作为参数
-  - 每次创建新页面时，都需要处理这种参数转换 2. 后端层面
-- MySQL 参数化查询的局限性 ：
-  - MySQL 对 LIMIT 和 OFFSET 子句的参数类型有严格要求
-  - 使用参数化查询时，这些参数可能无法正确转换为 MySQL 期望的类型
-  - 每次实现分页功能时，都可能遇到类似问题
-### 预防措施 1. 前端最佳实践
-- 创建通用的用户信息获取逻辑 ：
-  - 封装一个 useUserByUsername 组合式函数
-  - 统一处理从用户名到用户 ID 的转换
-  - 在需要用户 ID 的页面中复用此逻辑 2. 后端最佳实践
-- 创建通用的分页查询工具 ：
-  - 封装一个 buildPaginationQuery 函数
-  - 统一处理分页参数的验证和 SQL 语句构建
-  - 在需要分页的查询中复用此函数 3. 文档和规范
-- 建立 API 设计规范 ：
-  - 明确路由参数和 API 参数的使用约定
-  - 记录常见问题和解决方案
-  - 为新开发者提供参考文档
+### 3. 加载状态设计
 
+- **问题**：数据加载时界面空白，用户体验差
+- **解决方案**：区分 loading、empty、error 三种状态，使用骨架屏（Skeleton）提升感知性能
 
+  ```vue
+  <template>
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-state">
+      <el-skeleton animated>
+        <template #template>
+          <el-skeleton-item variant="h3" />
+          <el-skeleton-item variant="text" />
+        </template>
+      </el-skeleton>
+    </div>
 
+    <!-- 实际内容 -->
+    <template v-else>
+      <div v-if="articles.list.length === 0">暂无文章</div>
+      <div v-else>
+        <!-- 文章列表 -->
+      </div>
+    </template>
+  </template>
+  ```
 
-  问题分为两类 ：
+### 4. 代码质量优化
 
-1. 404 错误 ：与分页无关
+- **添加详细注释**：为所有关键文件添加详细注释，提高代码可读性
+- **修复类型错误**：确保类型安全
+- **优化组件布局和样式**：提升用户体验
 
-   - 原因：前端路由使用 username 参数，后端 API 需要 userId 参数
-   - 例如：访问 /user/lanxiaole/followers 时，前端需要先通过 username 获取 userId ，再调用 API
-   - 影响范围：所有需要通过用户名获取用户相关数据的页面
-2. 500 错误 ：与分页有关
+### 5. 数据库操作安全
 
-   - 原因：MySQL 参数化查询中 LIMIT 和 OFFSET 参数类型不匹配
-   - 影响范围：所有使用分页功能的 API 接口
-### 为什么有的页面不会有这种问题
-不同页面的差异 ：
+- **参数验证**：始终对用户输入的参数进行验证和限制
+- **SQL 语句安全**：优先使用参数化查询，避免 SQL 注入
+- **错误处理**：添加全面的错误处理，确保即使出现错误也能返回适当的错误信息
 
-1. 不需要分页的页面 ：
+### 6. 认证和授权
 
-   - 例如：用户详情页、文章详情页
-   - 这些页面通常只获取单个资源，不需要 LIMIT 和 OFFSET ，因此不会遇到参数类型问题
-2. 使用不同参数传递方式的页面 ：
+- **token 管理**：同时从 localStorage 和 sessionStorage 中获取 token
+- **用户状态管理**：在页面刷新后自动获取用户信息
+- **权限控制**：使用中间件保护需要认证的路由
 
-   - 例如：首页文章列表
-   - 可能已经使用了直接插入参数的方式构建 SQL，或者使用了不同的参数处理方法
-3. API 设计不同的页面 ：
+## 系统架构
 
-   - 例如：某些 API 可能直接使用用户名作为参数，而不是用户 ID
-   - 这样就不需要前端进行参数转换
-```
+### 前端架构
 
-## 问题原因
+- **技术栈**：Vue 3 + TypeScript + Element Plus + Vue Router + Pinia
+- **文件组织**：
+  - `components/` - 全局共享组件
+  - `composables/` - 组合式函数
+  - `api/` - API 接口
+  - `views/` - 页面视图
+  - `stores/` - 状态管理
 
-从日志可以看到， useUserIdFromUsername 正常工作并获取到了用户 ID（9），但 fetchFollowers 函数在用户 ID 还没有获取到时就被调用了，导致 targetUserId.value 为 null ，直接返回了。
+### 后端架构
 
-## 解决方案
+- **技术栈**：Node.js + Express + MySQL + TypeScript
+- **文件组织**：
+  - `controllers/` - 控制器层
+  - `models/` - 数据模型层
+  - `routes/` - 路由层
+  - `middlewares/` - 中间件
+  - `types/` - 类型定义
 
-修改了两个文件，使用 watch 监听 targetUserId 的变化，确保在用户 ID 获取完成后再调用 API：
+## 项目启动流程
 
-### 1. Followers.vue
+### 后端启动
 
-- 添加了 watch 导入
-- 移除了 onMounted 钩子
-- 添加了对 targetUserId 的监听，当获取到用户 ID 时才调用 fetchFollowers
+1. 进入 `server` 目录
+2. 运行 `npm install` 安装依赖
+3. 运行 `npm run build` 构建项目
+4. 运行 `npm run start` 启动服务器
 
-### 2. Following.vue
+### 前端启动
 
-- 添加了 watch 导入
-- 移除了 onMounted 钩子
-- 添加了对 targetUserId 的监听，当获取到用户 ID 时才调用 fetchFollowing
+1. 进入 `client` 目录
+2. 运行 `npm install` 安装依赖
+3. 运行 `npm run dev` 启动开发服务器
+4. 访问 `http://localhost:5173` 查看应用
 
-## 执行流程
+## 注意事项
 
-1. 页面加载 → useUserIdFromUsername 开始获取用户 ID
-2. 用户 ID 获取完成 → targetUserId 从 null 变为 9
-3. watch 检测到 targetUserId 变化 → 调用 fetchFollowers
-4. fetchFollowers 检查到 targetUserId 有值 → 正常调用 API
-
-### 具体原因 1. 前端路由使用用户名（username）
-
-- 原因 ：用户名是用户友好的标识，用户可以直接看到和理解
-- 示例 ： /user/lanxiaole/followers 比 /user/9/followers 更直观
-- 场景 ：用户分享自己的主页链接时， lanxiaole 比 9 更有意义 2. 后端 API 使用用户 ID（userId）
-- 原因 ：用户 ID 是数据库中的唯一标识，更精确
-- 示例 ：用户名可以修改，但用户 ID 不会改变
-- 场景 ：数据库查询时，使用数字 ID 比字符串更高效 3. 两者需要转换
-- 问题 ：前端路由知道用户名，后端 API 需要用户 ID
-- 解决方案 ：前端需要先调用一个 API（如 getUserProfile ），通过用户名获取用户 ID
-- 这就是为什么需要 useUserIdFromUsername 组合式函数
+1. **数据库配置**：确保在 `server/src/config` 中正确配置数据库连接信息
+2. **环境变量**：根据实际环境配置相应的环境变量
+3. **API 接口**：所有 API 接口都以 `/api` 为前缀
+4. **认证**：需要认证的接口会返回 401 错误，前端需要处理这种情况并跳转到登录页
+5. **错误处理**：后端会返回统一的错误格式，前端需要根据错误信息进行相应的处理

@@ -1,6 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
-import { buildPaginationClause } from '../utils/pagination';
+import { buildPaginationSql } from '../utils/pagination';
 
 // 定义 Notification 接口
 export interface Notification {
@@ -16,8 +16,12 @@ export interface Notification {
 
 // 扩展接口，包含发送者信息
 export interface NotificationWithSender extends Notification {
-  sender_username: string;
-  sender_avatar: string | null;
+  sender: {
+    id: number;
+    username: string;
+    avatar: string | null;
+  };
+  article_title?: string;
 }
 
 // 导出 NotificationModel 对象
@@ -57,35 +61,60 @@ export const NotificationModel = {
    * @returns 通知列表和总数
    */
   async getNotificationsByReceiver(receiverId: number, page: number, pageSize: number): Promise<{ list: NotificationWithSender[]; total: number }> {
-    // 构建分页子句
-    const pagination = buildPaginationClause(page, pageSize);
-    
-    // 查询通知列表，关联用户表获取发送者信息
-    const listSql = `
-      SELECT 
-        n.id, n.type, n.sender_id, n.receiver_id, n.article_id, n.comment_id, n.is_read, n.created_at,
-        u.username as sender_username, u.avatar as sender_avatar
-      FROM notifications n
-      LEFT JOIN users u ON n.sender_id = u.id
-      WHERE n.receiver_id = ?
-      ORDER BY n.created_at DESC
-      ${pagination.sql}
-    `;
-    
-    // 查询总数
-    const countSql = 'SELECT COUNT(*) as total FROM notifications WHERE receiver_id = ?';
-    
-    // 并行执行两个查询
-    const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [receiverId, ...pagination.values]),
-      pool.execute<RowDataPacket[]>(countSql, [receiverId])
-    ]);
-    
-    // 处理结果
-    const list = listResult[0] as NotificationWithSender[];
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
-    
-    return { list, total };
+    try {
+      // 构建分页 SQL
+      const paginationSql = buildPaginationSql(page, pageSize);
+      
+      // 查询通知列表，关联用户表获取发送者信息，关联文章表获取文章标题
+      const listSql = `
+        SELECT 
+          n.id, n.type, n.sender_id, n.receiver_id, n.article_id, n.comment_id, n.is_read, n.created_at,
+          u.username as sender_username, u.avatar as sender_avatar,
+          a.title as article_title
+        FROM notifications n
+        LEFT JOIN users u ON n.sender_id = u.id
+        LEFT JOIN articles a ON n.article_id = a.id
+        WHERE n.receiver_id = ?
+        ORDER BY n.created_at DESC
+        ${paginationSql}
+      `;
+      
+      // 查询总数
+      const countSql = 'SELECT COUNT(*) as total FROM notifications WHERE receiver_id = ?';
+      
+      // 并行执行两个查询
+      const [listResult, countResult] = await Promise.all([
+        pool.execute<RowDataPacket[]>(listSql, [receiverId]),
+        pool.execute<RowDataPacket[]>(countSql, [receiverId])
+      ]);
+      
+      // 处理结果
+      const rawList = listResult[0] as any[];
+      const total = (countResult[0] as RowDataPacket[])[0].total as number;
+      
+      // 转换为前端期望的结构
+      const list = rawList.map(item => ({
+        id: item.id,
+        type: item.type,
+        sender_id: item.sender_id,
+        receiver_id: item.receiver_id,
+        article_id: item.article_id,
+        article_title: item.article_title,
+        comment_id: item.comment_id,
+        is_read: item.is_read,
+        created_at: item.created_at,
+        sender: {
+          id: item.sender_id,
+          username: item.sender_username,
+          avatar: item.sender_avatar
+        }
+      }));
+      
+      return { list, total };
+    } catch (error) {
+      console.error('获取通知列表失败:', error);
+      throw error;
+    }
   },
   
   /**

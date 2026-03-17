@@ -14,6 +14,7 @@ export interface Notification {
   sender_id: number;
   receiver_id: number;
   article_id?: number;
+  article_title?: string;
   comment_id?: number;
   is_read: boolean;
   created_at: string;

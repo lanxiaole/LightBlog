@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu } from '@element-plus/icons-vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu, Message } from '@element-plus/icons-vue';
+import { ElBadge } from 'element-plus';
+import 'element-plus/dist/index.css';
 import { useUserStore } from '@/stores/user';
 import { useRoute, useRouter } from 'vue-router';
 import { getCategories } from '@/api/category';
 import { getTags } from '@/api/tag';
+import { getUnreadCount } from '@/api/notification';
 import type { Category } from '@/api/category';
 import type { Tag } from '@/api/tag';
 
@@ -18,6 +21,9 @@ const router = useRouter();
 // 分类和标签数据
 const categories = ref<Category[]>([]);
 const tags = ref<Tag[]>([]);
+
+// 未读消息数
+const unreadCount = ref(0);
 
 // 生成面包屑数据
 const breadcrumbItems = computed(() => {
@@ -53,9 +59,29 @@ const fetchCategoriesAndTags = async () => {
   }
 };
 
+// 获取未读消息数
+const fetchUnreadCount = async () => {
+  if (userStore.isLoggedIn) {
+    try {
+      const response = await getUnreadCount();
+      unreadCount.value = response.count;
+    } catch (error) {
+      console.error('获取未读消息数失败:', error);
+    }
+  } else {
+    unreadCount.value = 0;
+  }
+};
+
 // 组件挂载时获取数据
 onMounted(() => {
   fetchCategoriesAndTags();
+  fetchUnreadCount();
+});
+
+// 监听登录状态变化
+watch(() => userStore.isLoggedIn, () => {
+  fetchUnreadCount();
 });
 </script>
 
@@ -157,6 +183,15 @@ onMounted(() => {
             <Search />
           </el-icon>
 
+          <!-- 消息图标 -->
+          <template v-if="userStore.isLoggedIn">
+            <el-badge :value="unreadCount" :hidden="unreadCount === 0" style="margin-right: 20px;">
+              <el-icon class="message-icon" style="cursor: pointer;" @click="router.push('/notifications')">
+                <Message />
+              </el-icon>
+            </el-badge>
+          </template>
+
           <!-- 登录后显示 -->
         <template v-if="userStore.isLoggedIn">
           <el-dropdown>
@@ -220,6 +255,10 @@ onMounted(() => {
 }
 
 .search-icon:hover {
+  color: #409eff;
+}
+
+.message-icon:hover {
   color: #409eff;
 }
 </style>

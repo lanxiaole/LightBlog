@@ -1248,3 +1248,15 @@ const [listRows] = await pool.
 2. 用户 ID 获取完成 → targetUserId 从 null 变为 9
 3. watch 检测到 targetUserId 变化 → 调用 fetchFollowers
 4. fetchFollowers 检查到 targetUserId 有值 → 正常调用 API
+
+### 具体原因 1. 前端路由使用用户名（username）
+
+- 原因 ：用户名是用户友好的标识，用户可以直接看到和理解
+- 示例 ： /user/lanxiaole/followers 比 /user/9/followers 更直观
+- 场景 ：用户分享自己的主页链接时， lanxiaole 比 9 更有意义 2. 后端 API 使用用户 ID（userId）
+- 原因 ：用户 ID 是数据库中的唯一标识，更精确
+- 示例 ：用户名可以修改，但用户 ID 不会改变
+- 场景 ：数据库查询时，使用数字 ID 比字符串更高效 3. 两者需要转换
+- 问题 ：前端路由知道用户名，后端 API 需要用户 ID
+- 解决方案 ：前端需要先调用一个 API（如 getUserProfile ），通过用户名获取用户 ID
+- 这就是为什么需要 useUserIdFromUsername 组合式函数

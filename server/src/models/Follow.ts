@@ -1,5 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
+import { validatePagination, buildPaginationSql } from '../utils/pagination';
 
 // 定义 Follow 接口
 export interface Follow {
@@ -108,11 +109,8 @@ export const FollowModel = {
    * @returns 粉丝列表和总数
    */
   async getFollowers(userId: number, page: number, pageSize: number): Promise<{ list: any[]; total: number }> {
-    // 确保参数是有效的数字
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    // 计算偏移量
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
     
     // 获取粉丝列表
     const listSql = `
@@ -121,7 +119,7 @@ export const FollowModel = {
       JOIN users u ON f.follower_id = u.id
       WHERE f.following_id = ${Number(userId)}
       ORDER BY f.created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
     
     const [listRows] = await pool.execute<RowDataPacket[]>(listSql);
@@ -150,11 +148,8 @@ export const FollowModel = {
    * @returns 关注列表和总数
    */
   async getFollowing(userId: number, page: number, pageSize: number): Promise<{ list: any[]; total: number }> {
-    // 确保参数是有效的数字
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    // 计算偏移量
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
     
     // 获取关注列表
     const listSql = `
@@ -163,7 +158,7 @@ export const FollowModel = {
       JOIN users u ON f.following_id = u.id
       WHERE f.follower_id = ${Number(userId)}
       ORDER BY f.created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
     
     const [listRows] = await pool.execute<RowDataPacket[]>(listSql);

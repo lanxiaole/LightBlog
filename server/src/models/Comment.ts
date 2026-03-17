@@ -1,5 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
+import { buildPaginationSql } from '../utils/pagination';
 
 // 定义作者接口
 export interface Author {
@@ -56,11 +57,8 @@ export const CommentModel = {
    * @returns 包含评论列表和总记录数的对象
    */
   async getCommentsByArticleId(articleId: number, page: number = 1, pageSize: number = 10): Promise<{ list: Comment[]; total: number }> {
-    // 确保参数是有效的数字
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    // 计算偏移量
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
 
     // 查询评论列表，关联用户信息
     const listSql = `
@@ -79,7 +77,7 @@ export const CommentModel = {
       JOIN users u ON c.user_id = u.id
       WHERE c.article_id = ?
       ORDER BY c.parent_id ASC, c.created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
 
     // 查询总记录数

@@ -1,6 +1,7 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
 import { Tag } from './Tag';
+import { buildPaginationSql } from '../utils/pagination';
 
 // 定义作者接口
 export interface Author {
@@ -70,18 +71,15 @@ export const ArticleModel = {
    * @returns 包含文章列表和总记录数的对象
    */
   async getArticles(page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 确保参数是有效的数字
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    // 计算偏移量
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
 
     // 查询文章列表
     const listSql = `
       SELECT * FROM articles
       WHERE status = 'published'
       ORDER BY created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
 
     // 查询总记录数
@@ -169,18 +167,15 @@ export const ArticleModel = {
    * @returns 包含文章列表和总记录数的对象
    */
   async getArticlesByUserId(userId: number, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 确保参数是有效的数字
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    // 计算偏移量
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
 
     // 查询文章列表
     const listSql = `
       SELECT * FROM articles
       WHERE author_id = ? AND status = 'published'
       ORDER BY created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
 
     // 查询总记录数
@@ -322,16 +317,15 @@ export const ArticleModel = {
    * @returns 包含文章列表和总记录数的对象
    */
   async getArticlesByCategory(categoryName: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
 
     const listSql = `
       SELECT a.* FROM articles a
       JOIN categories c ON a.category_id = c.id
       WHERE c.name = ? AND a.status = 'published'
       ORDER BY a.created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
 
     const countSql = `
@@ -359,9 +353,8 @@ export const ArticleModel = {
    * @returns 包含文章列表和总记录数的对象
    */
   async getArticlesByTag(tagName: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
 
     const listSql = `
       SELECT a.* FROM articles a
@@ -369,7 +362,7 @@ export const ArticleModel = {
       JOIN tags t ON at.tag_id = t.id
       WHERE t.name = ? AND a.status = 'published'
       ORDER BY a.created_at DESC
-      LIMIT ${validPageSize} OFFSET ${offset}
+      ${paginationClause}
     `;
 
     const countSql = `

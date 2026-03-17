@@ -1,5 +1,6 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
+import { buildPaginationSql, buildPaginationClause } from '../utils/pagination';
 
 /**
  * 收藏接口
@@ -97,11 +98,8 @@ export const FavoriteModel = {
    * @returns 包含文章列表和总记录数的对象
    */
   async getUserFavorites(userId: number, page: number, pageSize: number): Promise<{ list: any[]; total: number }> {
-    // 确保参数是有效的数字
-    const validPage = Math.max(1, Number(page));
-    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
-    // 计算偏移量
-    const offset = (validPage - 1) * validPageSize;
+    // 使用分页工具函数验证参数
+    const paginationClause = buildPaginationSql(page, pageSize);
 
     // 查询收藏的文章列表
     const listSql = `
@@ -111,7 +109,7 @@ export const FavoriteModel = {
       JOIN users u ON a.author_id = u.id
       WHERE f.user_id = ? AND a.status = 'published'
       ORDER BY f.created_at DESC
-      LIMIT ? OFFSET ?
+      ${paginationClause}
     `;
 
     // 查询总记录数
@@ -124,8 +122,8 @@ export const FavoriteModel = {
 
     // 并行执行两个查询
     const [listResult, countResult] = await Promise.all([
-      pool.query<RowDataPacket[]>(listSql, [userId, validPageSize, offset]),
-      pool.query<RowDataPacket[]>(countSql, [userId])
+      pool.execute<RowDataPacket[]>(listSql, [userId]),
+      pool.execute<RowDataPacket[]>(countSql, [userId])
     ]);
 
     // 处理结果

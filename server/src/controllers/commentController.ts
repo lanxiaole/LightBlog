@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CommentModel } from '../models/Comment';
 import { ArticleModel } from '../models/Article';
+import { NotificationModel } from '../models/Notification';
 
 /**
  * 获取文章评论列表
@@ -94,6 +95,39 @@ export async function createComment(req: Request, res: Response): Promise<void> 
       user_id: userId,
       parent_id
     });
+    
+    // 获取文章信息，用于创建通知
+    const article = await ArticleModel.getArticleById(articleId);
+    if (article) {
+      // 如果评论者不是文章作者，创建评论通知
+      if (userId !== article.author_id) {
+        NotificationModel.createNotification({
+          type: 'comment',
+          sender_id: userId,
+          receiver_id: article.author_id,
+          article_id: articleId,
+          comment_id: commentId
+        }).catch(error => {
+          console.error('创建评论通知失败:', error);
+        });
+      }
+      
+      // 如果是回复评论，给被回复者创建回复通知
+      if (parent_id) {
+        const parentComment = await CommentModel.getCommentById(parent_id);
+        if (parentComment && parentComment.user_id !== userId) {
+          NotificationModel.createNotification({
+            type: 'reply',
+            sender_id: userId,
+            receiver_id: parentComment.user_id,
+            article_id: articleId,
+            comment_id: commentId
+          }).catch(error => {
+            console.error('创建回复通知失败:', error);
+          });
+        }
+      }
+    }
     
     // 返回 201 状态码和新评论 id
     res.status(201).json({ id: commentId });

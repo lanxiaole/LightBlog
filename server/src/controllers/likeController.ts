@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { LikeModel } from '../models/Like';
 import { ArticleModel } from '../models/Article';
+import { NotificationModel } from '../models/Notification';
 
 /**
  * 点赞文章
@@ -32,6 +33,18 @@ export async function likeArticle(req: Request, res: Response): Promise<void> {
 
     // 调用模型插入点赞记录
     await LikeModel.likeArticle(userId, articleId);
+
+    // 如果点赞者不是文章作者，创建通知
+    if (userId !== article.author_id) {
+      NotificationModel.createNotification({
+        type: 'like',
+        sender_id: userId,
+        receiver_id: article.author_id,
+        article_id: articleId
+      }).catch(error => {
+        console.error('创建点赞通知失败:', error);
+      });
+    }
 
     // 获取新的点赞总数
     const likesCount = await LikeModel.getLikesCount(articleId);

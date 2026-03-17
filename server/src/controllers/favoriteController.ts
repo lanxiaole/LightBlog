@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { FavoriteModel } from '../models/Favorite';
 import { ArticleModel } from '../models/Article';
+import { NotificationModel } from '../models/Notification';
 
 /**
  * 收藏文章
@@ -32,6 +33,18 @@ export async function favoriteArticle(req: Request, res: Response): Promise<void
 
     // 调用模型插入收藏记录
     await FavoriteModel.favoriteArticle(userId, articleId);
+
+    // 如果收藏者不是文章作者，创建通知
+    if (userId !== article.author_id) {
+      NotificationModel.createNotification({
+        type: 'favorite',
+        sender_id: userId,
+        receiver_id: article.author_id,
+        article_id: articleId
+      }).catch(error => {
+        console.error('创建收藏通知失败:', error);
+      });
+    }
 
     // 获取新的收藏总数
     const favoritesCount = await FavoriteModel.getFavoritesCount(articleId);

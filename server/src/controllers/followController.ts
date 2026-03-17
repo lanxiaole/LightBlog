@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { FollowModel } from '../models/Follow';
 import { UserModel } from '../models/User';
+import { NotificationModel } from '../models/Notification';
 
 /**
  * 关注用户
@@ -45,6 +46,15 @@ export async function follow(req: Request, res: Response): Promise<void> {
     const success = await FollowModel.follow(followerId, followingId);
     
     if (success) {
+      // 创建关注通知
+      NotificationModel.createNotification({
+        type: 'follow',
+        sender_id: followerId,
+        receiver_id: followingId
+      }).catch(error => {
+        console.error('创建关注通知失败:', error);
+      });
+      
       // 获取新的关注数
       const followingCount = await FollowModel.getFollowingCount(followerId);
       const followersCount = await FollowModel.getFollowersCount(followingId);

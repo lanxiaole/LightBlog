@@ -221,61 +221,68 @@ const handleSearch = () => {
         </div>
 
         <!-- 右侧：用户信息 -->
-        <div style="display: flex; align-items: center;">
-          <ElInput
-            v-model="searchKeyword"
-            placeholder="搜索文章"
-            style="width: 200px; margin-right: 10px;"
-            @keyup.enter="handleSearch"
-          >
-            <template #append>
-              <el-icon class="search-icon" style="cursor: pointer;" @click="handleSearch">
-                <Search />
-              </el-icon>
-            </template>
-          </ElInput>
+        <div style="display: flex; align-items: center; gap: 24px; height: 100%;">
+          <div style="display: flex; align-items: center; height: 100%;">
+            <ElInput
+              v-model="searchKeyword"
+              placeholder="搜索文章"
+              style="width: 240px;"
+              @keyup.enter="handleSearch"
+            >
+              <template #append>
+                <el-icon class="search-icon" style="cursor: pointer; color: #909399;" @click="handleSearch">
+                  <Search />
+                </el-icon>
+              </template>
+            </ElInput>
+          </div>
 
           <!-- 消息图标 -->
           <template v-if="userStore.isLoggedIn">
-            <el-badge :value="notificationStore.unreadCount" :hidden="notificationStore.unreadCount === 0" style="margin-right: 30px;">
-              <el-icon class="message-icon" style="cursor: pointer;" @click="router.push('/notifications')">
-                <Message />
-              </el-icon>
-            </el-badge>
+            <div style="display: flex; align-items: center; height: 100%;">
+              <el-badge :value="notificationStore.unreadCount" :hidden="notificationStore.unreadCount === 0" style="display: flex; align-items: center;">
+                <el-icon class="message-icon" style="cursor: pointer; font-size: 22px; color: #606266;" @click="router.push('/notifications')">
+                  <Message />
+                </el-icon>
+              </el-badge>
+            </div>
           </template>
 
           <!-- 登录后显示 -->
         <template v-if="userStore.isLoggedIn">
-          <el-dropdown>
-            <span class="el-dropdown-link" style="display: flex; align-items: center; cursor: pointer;">
-              <el-avatar
-                size="small"
-                style="margin-right: 10px;"
-                :src="userStore.userInfo?.avatar"
-              >
-                <template #default>
-                  <el-icon><UserFilled /></el-icon>
-                </template>
-              </el-avatar>
-              <span style="margin-right: 5px;">{{ userStore.userInfo?.username || '' }}</span>
-              <el-icon class="el-icon--right">
-                <ArrowDown />
-              </el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="router.push(`/user/${userStore.userInfo?.username || ''}`)">个人中心</el-dropdown-item>
-                <el-dropdown-item @click="router.push('/settings')">设置</el-dropdown-item>
-                <el-dropdown-item divided @click="userStore.logout()">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <div style="display: flex; align-items: center; height: 100%;">
+            <el-dropdown>
+              <span class="el-dropdown-link" style="display: flex; align-items: center; cursor: pointer; color: #606266;">
+                <el-avatar
+                  size="small"
+                  :src="userStore.userInfo?.avatar"
+                >
+                  <template #default>
+                    <el-icon><UserFilled /></el-icon>
+                  </template>
+                </el-avatar>
+                <span style="margin-left: 8px; margin-right: 4px;">{{ userStore.userInfo?.username || '' }}</span>
+                <el-icon class="el-icon--right">
+                  <ArrowDown />
+                </el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="router.push(`/user/${userStore.userInfo?.username || ''}`)">个人中心</el-dropdown-item>
+                  <el-dropdown-item @click="router.push('/settings')">设置</el-dropdown-item>
+                  <el-dropdown-item divided @click="userStore.logout()">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </template>
 
         <!-- 未登录显示 -->
         <template v-else>
-          <el-button type="text" @click="router.push('/login')" style="margin-right: 10px;">登录</el-button>
-          <el-button type="primary" @click="router.push('/register')">注册</el-button>
+          <div style="display: flex; align-items: center; height: 100%; gap: 12px;">
+            <el-button type="text" @click="router.push('/login')">登录</el-button>
+            <el-button type="primary" @click="router.push('/register')">注册</el-button>
+          </div>
         </template>
         </div>
       </el-header>

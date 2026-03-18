@@ -1,7 +1,7 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
 import { Tag } from './Tag';
-import { buildPaginationSql } from '../utils/pagination';
+import { buildPaginationSql, validatePagination } from '../utils/pagination';
 
 // 定义作者接口
 export interface Author {
@@ -378,6 +378,73 @@ export const ArticleModel = {
     ]);
 
     const list = listResult[0] as Article[];
+    const total = (countResult[0] as RowDataPacket[])[0].total as number;
+
+    return { list, total };
+  },
+
+  /**
+   * 搜索文章（分页）
+   * @param keyword 搜索关键词
+   * @param page 页码，默认 1
+   * @param pageSize 每页数量，默认 10
+   * @returns 包含文章列表和总记录数的对象
+   */
+  async searchArticles(keyword: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
+    // 如果关键词为空，返回空列表
+    if (!keyword || keyword.trim() === '') {
+      return { list: [], total: 0 };
+    }
+
+    // 使用分页工具函数验证参数
+    const { offset, limit } = validatePagination(page, pageSize);
+
+    // 查询文章列表（包含作者信息）
+    const listSql = `
+      SELECT 
+        a.*, 
+        u.id as author_id, 
+        u.username, 
+        u.avatar
+      FROM articles a
+      JOIN users u ON a.author_id = u.id
+      WHERE MATCH(a.title, a.content) AGAINST(? IN BOOLEAN MODE) AND a.status = 'published'
+      ORDER BY a.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    // 查询总记录数
+    const countSql = `
+      SELECT COUNT(*) as total FROM articles a
+      WHERE MATCH(a.title, a.content) AGAINST(? IN BOOLEAN MODE) AND a.status = 'published'
+    `;
+
+    // 并行执行两个查询
+    const [listResult, countResult] = await Promise.all([
+      pool.execute<RowDataPacket[]>(listSql, [keyword, limit, offset]),
+      pool.execute<RowDataPacket[]>(countSql, [keyword])
+    ]);
+
+    // 处理结果，添加作者信息
+    const list = (listResult[0] as any[]).map(article => ({
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      cover: article.cover,
+      author_id: article.author_id,
+      category_id: article.category_id,
+      status: article.status,
+      views: article.views,
+      likes: article.likes,
+      created_at: article.created_at,
+      updated_at: article.updated_at,
+      author: {
+        id: article.author_id,
+        username: article.username,
+        avatar: article.avatar
+      }
+    }));
+
     const total = (countResult[0] as RowDataPacket[])[0].total as number;
 
     return { list, total };

@@ -169,6 +169,9 @@ CONSTRAINT `notifications_ibfk_3` FOREIGN KEY (`article_id`) REFERENCES `article
 CONSTRAINT `notifications_ibfk_4` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+为 articles 表的 title 和 content 字段创建全文索引
+ALTER TABLE `articles` ADD FULLTEXT INDEX `ft_title_content` (`title`, `content`) WITH PARSER ngram;
+
 ## 项目配置说明
 
 ### 开发环境配置

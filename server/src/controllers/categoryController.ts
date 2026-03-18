@@ -1,17 +1,22 @@
+/**
+ * 分类控制器
+ * 处理分类相关的HTTP请求
+ */
 import { Request, Response } from 'express';
-import { CategoryModel } from '../models/Category';
+import { CategoryService } from '../services/categoryService';
 
 /**
  * 获取所有分类
  * @param req 请求对象
  * @param res 响应对象
+ * @returns 分类列表
+ * @status 200 - 成功
+ * @status 500 - 服务器内部错误
  */
 export async function getCategories(req: Request, res: Response): Promise<void> {
   try {
-    // 调用模型方法获取所有分类
-    const categories = await CategoryModel.getAllCategories();
+    const categories = await CategoryService.getAllCategories();
     
-    // 返回分类列表
     res.status(200).json(categories);
   } catch (error) {
     console.error('获取分类列表失败:', error);

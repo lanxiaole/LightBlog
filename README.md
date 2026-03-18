@@ -345,6 +345,29 @@ ALTER TABLE `articles` ADD FULLTEXT INDEX `ft_title_content` (`title`, `content`
   - 确保所有新开发的页面和 API 都使用这些工具函数
   - 定期检查代码库，确保工具函数的正确使用
 
+  数据库用户表增加角色字段
+  -- 添加角色字段，默认普通用户
+  ALTER TABLE `users` ADD COLUMN `role` enum('user','admin') NOT NULL DEFAULT 'user' AFTER `bio`;
+
+-- 插入管理员账号（密码暂用占位，稍后使用 bcrypt 加密更新）
+-- 注意：这里的密码是明文，需要加密处理，下面会提供 Node.js 脚本生成加密密码
+-- 我们先插入，稍后更新
+INSERT INTO `users` (`email`, `username`, `password`, `role`, `created_at`, `updated_at`) VALUES
+('lanxiaole@admin.com', 'lanxiaole', 'placeholder', 'admin', NOW(), NOW()),
+('weijiale@admin.com', 'weijiale', 'placeholder', 'admin', NOW(), NOW());
+
+密码加密：需要生成 bcrypt 哈希。你可以编写一个临时脚本或在 Node.js 环境中执行以下代码：
+const bcrypt = require('bcryptjs');
+const password = 'lejiawei1';
+const salt = bcrypt.genSaltSync(10);
+const hash = bcrypt.hashSync(password, salt);
+console.log(hash);
+得到两个哈希后，手动更新数据库：
+
+sql
+UPDATE `users` SET `password` = '哈希值1' WHERE `email` = 'lanxiaole@admin.com';
+UPDATE `users` SET `password` = '哈希值2' WHERE `email` = 'weijiale@admin.com';
+
 ### 后端问题
 
 #### 1. 文章列表获取失败（500 错误）

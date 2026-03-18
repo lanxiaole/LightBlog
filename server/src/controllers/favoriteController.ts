@@ -1,132 +1,114 @@
+/**
+ * 收藏控制器
+ * 处理文章收藏相关的HTTP请求
+ */
 import { Request, Response } from 'express';
-import { FavoriteModel } from '../models/Favorite';
-import { ArticleModel } from '../models/Article';
-import { NotificationModel } from '../models/Notification';
+import { FavoriteService } from '../services/favoriteService';
 
 /**
  * 收藏文章
  * @param req 请求对象
  * @param res 响应对象
+ * @returns 收藏结果和文章信息
+ * @status 200 - 收藏成功
+ * @status 400 - 无效的文章ID
+ * @status 401 - 未授权
+ * @status 404 - 文章不存在
+ * @status 500 - 服务器内部错误
  */
 export async function favoriteArticle(req: Request, res: Response): Promise<void> {
   try {
-    // 从 req.user 获取当前用户 id
     const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: '未授权' });
       return;
     }
 
-    // 从路由参数获取文章 id
     const articleId = parseInt(req.params.id as string);
     if (isNaN(articleId)) {
       res.status(400).json({ message: '无效的文章ID' });
       return;
     }
 
-    // 检查文章是否存在
-    const article = await ArticleModel.getArticleById(articleId);
-    if (!article) {
-      res.status(404).json({ message: '文章不存在' });
-      return;
-    }
+    const result = await FavoriteService.favoriteArticle(userId, articleId);
 
-    // 调用模型插入收藏记录
-    await FavoriteModel.favoriteArticle(userId, articleId);
-
-    // 如果收藏者不是文章作者，创建通知
-    if (userId !== article.author_id) {
-      NotificationModel.createNotification({
-        type: 'favorite',
-        sender_id: userId,
-        receiver_id: article.author_id,
-        article_id: articleId
-      }).catch(error => {
-        console.error('创建收藏通知失败:', error);
-      });
-    }
-
-    // 获取新的收藏总数
-    const favoritesCount = await FavoriteModel.getFavoritesCount(articleId);
-
-    // 返回成功响应
     res.status(200).json({
       message: '收藏成功',
-      favorited: true,
-      favoritesCount
+      ...result
     });
   } catch (error) {
     console.error('收藏失败:', error);
+    if (error instanceof Error && error.message === '文章不存在') {
+      res.status(404).json({ message: error.message });
+      return;
+    }
     res.status(500).json({ message: '服务器内部错误' });
   }
 }
 
 /**
- * 取消收藏
+ * 取消收藏文章
  * @param req 请求对象
  * @param res 响应对象
+ * @returns 取消收藏结果和文章信息
+ * @status 200 - 取消收藏成功
+ * @status 400 - 无效的文章ID
+ * @status 401 - 未授权
+ * @status 404 - 收藏记录不存在
+ * @status 500 - 服务器内部错误
  */
 export async function unfavoriteArticle(req: Request, res: Response): Promise<void> {
   try {
-    // 从 req.user 获取当前用户 id
     const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: '未授权' });
       return;
     }
 
-    // 从路由参数获取文章 id
     const articleId = parseInt(req.params.id as string);
     if (isNaN(articleId)) {
       res.status(400).json({ message: '无效的文章ID' });
       return;
     }
 
-    // 调用模型删除收藏记录
-    const success = await FavoriteModel.unfavoriteArticle(userId, articleId);
+    const result = await FavoriteService.unfavoriteArticle(userId, articleId);
 
-    if (!success) {
-      res.status(404).json({ message: '收藏记录不存在' });
-      return;
-    }
-
-    // 获取新的收藏总数
-    const favoritesCount = await FavoriteModel.getFavoritesCount(articleId);
-
-    // 返回成功响应
     res.status(200).json({
       message: '取消收藏成功',
-      favorited: false,
-      favoritesCount
+      ...result
     });
   } catch (error) {
     console.error('取消收藏失败:', error);
+    if (error instanceof Error && error.message === '收藏记录不存在') {
+      res.status(404).json({ message: error.message });
+      return;
+    }
     res.status(500).json({ message: '服务器内部错误' });
   }
 }
 
 /**
- * 获取用户收藏列表
+ * 获取用户的收藏列表
  * @param req 请求对象
  * @param res 响应对象
+ * @returns 收藏列表和分页信息
+ * @status 200 - 成功
+ * @status 401 - 未授权
+ * @status 500 - 服务器内部错误
  */
 export async function getUserFavorites(req: Request, res: Response): Promise<void> {
   try {
-    // 从 req.user 获取当前用户 id
     const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: '未授权' });
       return;
     }
 
-    // 从查询参数获取 page/pageSize（默认 1, 10）
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 10;
 
-    // 调用模型获取收藏文章列表
-    const { list, total } = await FavoriteModel.getUserFavorites(userId, page, pageSize);
+    const { list, total } = await FavoriteService.getUserFavorites(userId, page, pageSize);
 
-    // 返回成功响应
     res.status(200).json({
       list,
       total,

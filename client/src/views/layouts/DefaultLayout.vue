@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu, Message } from '@element-plus/icons-vue';
-import { ElBadge } from 'element-plus';
+import { ElBadge, ElInput } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { useUserStore } from '@/stores/user';
 import { useNotificationStore } from '@/stores/notification';
@@ -23,6 +23,9 @@ const router = useRouter();
 // 分类和标签数据
 const categories = ref<Category[]>([]);
 const tags = ref<Tag[]>([]);
+
+// 搜索关键词
+const searchKeyword = ref<string>('');
 
 // 轮询定时器
 let pollingTimer: number | null = null;
@@ -114,6 +117,15 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
     stopPolling();
   }
 });
+
+// 搜索方法
+const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    router.push({ path: '/search', query: { keyword: searchKeyword.value.trim() } });
+  } else {
+    router.push('/search');
+  }
+};
 </script>
 
 <template>
@@ -210,9 +222,18 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
 
         <!-- 右侧：用户信息 -->
         <div style="display: flex; align-items: center;">
-          <el-icon class="search-icon" style="margin-right: 20px; cursor: pointer;">
-            <Search />
-          </el-icon>
+          <ElInput
+            v-model="searchKeyword"
+            placeholder="搜索文章"
+            style="width: 200px; margin-right: 10px;"
+            @keyup.enter="handleSearch"
+          >
+            <template #append>
+              <el-icon class="search-icon" style="cursor: pointer;" @click="handleSearch">
+                <Search />
+              </el-icon>
+            </template>
+          </ElInput>
 
           <!-- 消息图标 -->
           <template v-if="userStore.isLoggedIn">

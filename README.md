@@ -325,15 +325,25 @@ ALTER TABLE `articles` ADD FULLTEXT INDEX `ft_title_content` (`title`, `content`
    }
    ```
 
-3. **文档和规范**
-   - 建立 API 设计规范：
-     - 明确路由参数和 API 参数的使用约定
-     - 记录常见问题和解决方案
-     - 为新开发者提供参考文档
-   - 推广使用已创建的工具函数：
-     - 在团队中推广使用 `useUserIdFromUsername` 和 `pagination` 工具函数
-     - 确保所有新开发的页面和 API 都使用这些工具函数
-     - 定期检查代码库，确保工具函数的正确使用
+3. 前端传递的参数 ：即使前端代码中使用的是数字类型，在 HTTP 请求中，所有参数都会被序列化为字符串格式。
+4. 后端接收参数 ：Express 框架默认会将查询参数解析为字符串类型，即使前端传递的是数字。例如， req.query.page 接收到的是字符串 "1"，而不是数字 1。
+5. MySQL 驱动的处理 ：当使用参数化查询时，MySQL 驱动会将所有参数视为字符串类型传递给 MySQL 服务器。虽然 MySQL 通常会自动转换类型，但在 LIMIT 和 OFFSET 子句中，这种自动转换可能会失败，导致 "Incorrect arguments to mysqld_stmt_execute" 错误。
+6. buildPaginationSql 的作用 ：这个函数通过以下步骤解决问题：
+   - 首先使用 validatePagination 验证并转换参数为有效的数字
+   - 然后直接将验证后的数字拼接到 SQL 语句中
+   - 这样 MySQL 服务器接收到的就是直接的数字，而不是需要转换的字符串参数
+     这种方法是安全的，因为 validatePagination 函数会严格验证参数，确保它们是有效的数字，并且限制了 pageSize 的最大值（100），因此不存在 SQL 注入的风险。
+
+总结来说，这是 MySQL 驱动在处理 LIMIT 和 OFFSET 子句时的一个特殊限制，通过使用 buildPaginationSql 函数可以安全地解决这个问题。3. **文档和规范**
+
+- 建立 API 设计规范：
+  - 明确路由参数和 API 参数的使用约定
+  - 记录常见问题和解决方案
+  - 为新开发者提供参考文档
+- 推广使用已创建的工具函数：
+  - 在团队中推广使用 `useUserIdFromUsername` 和 `pagination` 工具函数
+  - 确保所有新开发的页面和 API 都使用这些工具函数
+  - 定期检查代码库，确保工具函数的正确使用
 
 ### 后端问题
 

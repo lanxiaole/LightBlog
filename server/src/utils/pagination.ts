@@ -33,7 +33,9 @@ export function validatePagination(
  * @param page 页码
  * @param pageSize 每页数量
  * @returns SQL 子句和参数值
+ * 由于 MySQL 驱动限制，参数化查询在处理 LIMIT 和 OFFSET 时会失败，建议使用 buildPaginationSql
  */
+/*
 export function buildPaginationClause(
   page: number,
   pageSize: number
@@ -47,9 +49,10 @@ export function buildPaginationClause(
     values: [limit, offset]
   };
 }
+*/
 
 /**
- * 直接构建分页 SQL（需谨慎使用，确保参数已验证）
+ * 直接构建分页 SQL（确保参数已验证）
  * @param page 页码
  * @param pageSize 每页数量
  * @returns 拼接好的 SQL 子句

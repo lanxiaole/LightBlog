@@ -1,7 +1,7 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
 import { Tag } from './Tag';
-import { buildPaginationSql, validatePagination } from '../utils/pagination';
+import { buildPaginationSql } from '../utils/pagination';
 
 // 定义作者接口
 export interface Author {
@@ -396,8 +396,11 @@ export const ArticleModel = {
       return { list: [], total: 0 };
     }
 
-    // 使用分页工具函数验证参数
-    const { offset, limit } = validatePagination(page, pageSize);
+    // 使用分页工具函数构建分页 SQL
+    const paginationClause = buildPaginationSql(page, pageSize);
+
+    // 构建搜索关键词（添加通配符）
+    const searchKeyword = `%${keyword.trim()}%`;
 
     // 查询文章列表（包含作者信息）
     const listSql = `
@@ -408,21 +411,21 @@ export const ArticleModel = {
         u.avatar
       FROM articles a
       JOIN users u ON a.author_id = u.id
-      WHERE MATCH(a.title, a.content) AGAINST(? IN BOOLEAN MODE) AND a.status = 'published'
+      WHERE (a.title LIKE ? OR a.content LIKE ?) AND a.status = 'published'
       ORDER BY a.created_at DESC
-      LIMIT ? OFFSET ?
+      ${paginationClause}
     `;
 
     // 查询总记录数
     const countSql = `
       SELECT COUNT(*) as total FROM articles a
-      WHERE MATCH(a.title, a.content) AGAINST(? IN BOOLEAN MODE) AND a.status = 'published'
+      WHERE (a.title LIKE ? OR a.content LIKE ?) AND a.status = 'published'
     `;
 
     // 并行执行两个查询
     const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [keyword, limit, offset]),
-      pool.execute<RowDataPacket[]>(countSql, [keyword])
+      pool.execute<RowDataPacket[]>(listSql, [searchKeyword, searchKeyword]),
+      pool.execute<RowDataPacket[]>(countSql, [searchKeyword, searchKeyword])
     ]);
 
     // 处理结果，添加作者信息

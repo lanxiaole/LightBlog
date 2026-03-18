@@ -10,6 +10,7 @@ import commentRouter from './routes/comments';
 import favoriteRouter from './routes/favorites';
 import followRouter from './routes/follow';
 import notificationRouter from './routes/notifications';
+import searchRouter from './routes/search';
 
 const app = express();
 
@@ -48,6 +49,9 @@ app.use('/api', followRouter);
 
 // 通知路由
 app.use('/api/notifications', notificationRouter);
+
+// 搜索路由
+app.use('/api/search', searchRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

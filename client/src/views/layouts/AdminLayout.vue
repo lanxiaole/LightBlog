@@ -1,5 +1,5 @@
 <template>
-  <el-container style="height: 100vh; width: 100vw; overflow: hidden;">
+  <el-container style="height: 100vh; width: 100%; overflow: hidden;">
     <!-- 左侧侧边栏 -->
     <el-aside width="200px" style="background-color: #f5f5f5; border-right: 1px solid #e4e7ed;">
       <el-menu
@@ -40,7 +40,7 @@
       <!-- 顶部栏 -->
       <el-header height="60px" style="background-color: #fff; border-bottom: 1px solid #e4e7ed; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
         <div>
-          <span>欢迎您，管理员 {{ username }}</span>
+          <span>欢迎您，{{ userRoleLabel }} {{ username }}</span>
         </div>
         <el-button type="primary" @click="handleLogout">
           <el-icon><SwitchButton /></el-icon>
@@ -86,6 +86,11 @@ const username = computed(() => {
   return userStore.userInfo?.username || '';
 });
 
+// 获取用户角色标签
+const userRoleLabel = computed(() => {
+  return userStore.userInfo?.role === 'admin' ? '管理员' : '用户';
+});
+
 // 处理退出登录
 const handleLogout = () => {
   userStore.logout();
@@ -108,5 +113,11 @@ onMounted(() => {
 
 .el-aside {
   overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.el-main {
+  box-sizing: border-box;
+  width: 100%;
 }
 </style>

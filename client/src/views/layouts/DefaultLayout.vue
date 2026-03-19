@@ -262,6 +262,7 @@ const handleSearch = () => {
                   </template>
                 </el-avatar>
                 <span style="margin-left: 8px; margin-right: 4px;">{{ userStore.userInfo?.username || '' }}</span>
+                <span style="margin-right: 4px; font-size: 12px; color: #909399;">{{ userStore.userInfo?.role === 'admin' ? '管理员' : '用户' }}</span>
                 <el-icon class="el-icon--right">
                   <ArrowDown />
                 </el-icon>
@@ -269,6 +270,7 @@ const handleSearch = () => {
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item @click="router.push(`/user/${userStore.userInfo?.username || ''}`)">个人中心</el-dropdown-item>
+                  <el-dropdown-item v-if="userStore.userInfo?.role === 'admin'" @click="router.push('/admin')">管理后台</el-dropdown-item>
                   <el-dropdown-item @click="router.push('/settings')">设置</el-dropdown-item>
                   <el-dropdown-item divided @click="userStore.logout()">退出登录</el-dropdown-item>
                 </el-dropdown-menu>

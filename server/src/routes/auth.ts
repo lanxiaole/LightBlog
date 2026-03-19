@@ -1,6 +1,6 @@
 import express from 'express';
 import authMiddleware from '../middlewares/auth';
-import { register, login, getCurrentUser } from '../controllers/authController';
+import { register, login, getCurrentUser, adminLogin } from '../controllers/authController';
 
 const router = express.Router();
 
@@ -12,5 +12,8 @@ router.post('/login', login);
 
 // 获取当前用户信息（需要登录）
 router.get('/me', authMiddleware, getCurrentUser);
+
+// 管理员登录路由
+router.post('/admin-login', adminLogin);
 
 export default router;

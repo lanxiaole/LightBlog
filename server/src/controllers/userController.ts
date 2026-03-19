@@ -101,6 +101,52 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
 }
 
 /**
+ * 修改密码
+ * @param req 请求对象
+ * @param res 响应对象
+ * @returns 更新结果
+ * @status 200 - 修改成功
+ * @status 400 - 请求参数错误
+ * @status 401 - 未授权
+ * @status 500 - 服务器内部错误
+ */
+export async function changePassword(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = (req as any).user?.id;
+    
+    if (!userId) {
+      res.status(401).json({ message: '未授权' });
+      return;
+    }
+    
+    const { oldPassword, newPassword } = req.body;
+    
+    if (!oldPassword || !newPassword) {
+      res.status(400).json({ message: '旧密码和新密码不能为空' });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      res.status(400).json({ message: '新密码长度至少为6位' });
+      return;
+    }
+    
+    const success = await UserService.changePassword(userId, oldPassword, newPassword);
+    
+    if (success) {
+      res.status(200).json({ message: '密码修改成功' });
+    }
+  } catch (error) {
+    console.error('修改密码失败:', error);
+    if (error instanceof Error && error.message === '旧密码错误') {
+      res.status(400).json({ message: error.message });
+      return;
+    }
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
+/**
  * 获取用户列表（管理员）
  * @param req 请求对象
  * @param res 响应对象

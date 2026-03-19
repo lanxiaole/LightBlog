@@ -51,6 +51,7 @@ export async function register(req: Request, res: Response): Promise<void> {
  * @status 200 - 登录成功
  * @status 400 - 邮箱格式不正确
  * @status 401 - 邮箱或密码错误
+ * @status 403 - 账号已被禁用
  * @status 500 - 服务器内部错误
  */
 export async function login(req: Request, res: Response): Promise<void> {
@@ -68,6 +69,10 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
     if (error instanceof Error && (error.message === '邮箱或密码错误' || error.message === '密码不能为空')) {
       res.status(401).json({ message: error.message });
+      return;
+    }
+    if (error instanceof Error && error.message === '账号已被禁用，请联系管理员') {
+      res.status(403).json({ message: error.message });
       return;
     }
     res.status(500).json({ message: '服务器内部错误' });
@@ -151,6 +156,12 @@ export async function adminLogin(req: Request, res: Response): Promise<void> {
     // 检查用户角色
     if (user.role !== 'admin') {
       res.status(403).json({ message: '非管理员用户' });
+      return;
+    }
+
+    // 检查用户状态
+    if (!user.is_active) {
+      res.status(403).json({ message: '账号已被禁用，请联系管理员' });
       return;
     }
 

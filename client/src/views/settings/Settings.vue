@@ -5,10 +5,11 @@ import { ArrowLeft } from '@element-plus/icons-vue';
 import { useSettings } from '@/composables/user/useSettings';
 import AvatarUpload from '@/components/user/AvatarUpload.vue';
 import ProfileForm from '@/components/user/ProfileForm.vue';
+import PasswordForm from '@/components/user/PasswordForm.vue';
 
 /**
  * 设置页面
- * 用于编辑用户资料
+ * 用于编辑用户资料和修改密码
  */
 
 const {
@@ -49,6 +50,9 @@ const {
         @cancel="handleCancel"
       />
     </el-card>
+
+    <!-- 修改密码部分 -->
+    <PasswordForm />
   </div>
 </template>
 

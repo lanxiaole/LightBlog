@@ -103,6 +103,7 @@ export const AuthService = {
    * @throws 当邮箱格式不正确时抛出错误
    * @throws 当密码为空时抛出错误
    * @throws 当邮箱或密码错误时抛出错误
+   * @throws 当用户已被禁用时抛出错误
    */
   async login(input: LoginInput): Promise<AuthResponse> {
     const { email, password } = input;
@@ -123,6 +124,10 @@ export const AuthService = {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new Error('邮箱或密码错误');
+    }
+
+    if (!user.is_active) {
+      throw new Error('账号已被禁用，请联系管理员');
     }
 
     const token = jwt.sign(

@@ -160,7 +160,39 @@ export const UserService = {
   },
 
   /**
-   * 重置用户密码
+   * 修改密码
+   * @param userId 用户 ID
+   * @param oldPassword 旧密码
+   * @param newPassword 新密码
+   * @returns 修改成功返回 true
+   * @throws 当用户不存在时抛出错误
+   * @throws 当旧密码错误时抛出错误
+   * @throws 当密码修改失败时抛出错误
+   */
+  async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<boolean> {
+    const user = await UserModel.findUserById(userId);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new Error('旧密码错误');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const success = await UserModel.updatePassword(userId, hashedPassword);
+    if (!success) {
+      throw new Error('密码修改失败');
+    }
+
+    return true;
+  },
+
+  /**
+   * 重置用户密码（管理员）
    * @param userId 用户 ID
    * @returns 新生成的明文密码（用于展示给管理员）
    * @throws 当用户不存在时抛出错误

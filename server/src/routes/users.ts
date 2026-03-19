@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserProfile, getUserArticles, updateProfile } from '../controllers/userController';
+import { getUserProfile, getUserArticles, updateProfile, changePassword } from '../controllers/userController';
 import authMiddleware from '../middlewares/auth';
 
 const router = express.Router();
@@ -12,5 +12,8 @@ router.get('/:username/articles', getUserArticles);
 
 // 更新用户资料路由（需要登录）
 router.put('/profile', authMiddleware, updateProfile);
+
+// 修改密码路由（需要登录）
+router.put('/change-password', authMiddleware, changePassword);
 
 export default router;

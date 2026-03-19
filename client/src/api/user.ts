@@ -78,3 +78,20 @@ export async function updateUserProfile(data: { username?: string; bio?: string;
     throw new Error('更新用户资料失败');
   }
 }
+
+/**
+ * 修改密码
+ * @param data 旧密码和新密码
+ * @returns 响应信息
+ */
+export async function changePassword(data: { oldPassword: string; newPassword: string }): Promise<{ message: string }> {
+  try {
+    const response = await api.put<{ message: string }>('/users/change-password', data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`修改密码失败: ${error.message}`);
+    }
+    throw new Error('修改密码失败');
+  }
+}

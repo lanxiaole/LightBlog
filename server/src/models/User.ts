@@ -10,6 +10,7 @@ export interface User {
   avatar: string | null;
   bio: string | null;
   role: string;
+  is_active: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -39,7 +40,7 @@ export const UserModel = {
    * @returns 用户对象或 null
    */
   async findUserByEmail(email: string): Promise<User | null> {
-    const sql = 'SELECT * FROM users WHERE email = ?';
+    const sql = 'SELECT id, email, username, password, avatar, bio, role, is_active, created_at, updated_at FROM users WHERE email = ?';
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [email]);
     const users = rows as User[];
@@ -52,7 +53,7 @@ export const UserModel = {
    * @returns 用户对象或 null
    */
   async findUserByUsername(username: string): Promise<User | null> {
-    const sql = 'SELECT * FROM users WHERE username = ?';
+    const sql = 'SELECT id, email, username, password, avatar, bio, role, is_active, created_at, updated_at FROM users WHERE username = ?';
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [username]);
     const users = rows as User[];
@@ -65,7 +66,7 @@ export const UserModel = {
    * @returns 用户对象或 null
    */
   async findUserById(id: number): Promise<User | null> {
-    const sql = 'SELECT * FROM users WHERE id = ?';
+    const sql = 'SELECT id, email, username, password, avatar, bio, role, is_active, created_at, updated_at FROM users WHERE id = ?';
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql, [id]);
     const users = rows as User[];
@@ -92,11 +93,9 @@ export const UserModel = {
    * @returns 更新成功返回 true
    */
   async updateUserProfile(userId: number, data: { username?: string; bio?: string; avatar?: string }): Promise<boolean> {
-    // 构建 SET 子句和参数
     const setClauses: string[] = [];
     const params: any[] = [];
     
-    // 动态添加要更新的字段
     if (data.username !== undefined) {
       setClauses.push('username = ?');
       params.push(data.username);
@@ -112,28 +111,84 @@ export const UserModel = {
       params.push(data.avatar);
     }
     
-    // 如果没有要更新的字段，直接返回 true
     if (setClauses.length === 0) {
       return true;
     }
     
-    // 添加 updated_at 字段
     setClauses.push('updated_at = NOW()');
-    
-    // 添加 userId 到参数列表
     params.push(userId);
     
-    // 构建完整的 SQL 语句
     const sql = `
       UPDATE users
       SET ${setClauses.join(', ')}
       WHERE id = ?
     `;
     
-    // 执行更新
     const [result] = await pool.execute<RowDataPacket[]>(sql, params);
     
-    // 检查是否更新成功
+    return (result as any).affectedRows > 0;
+  },
+
+  /**
+   * 获取用户列表
+   * @param params 查询参数
+   * @param params.keyword 搜索关键词（可选），支持按邮箱或用户名模糊搜索
+   * @param params.page 页码（可选），默认为 1
+   * @param params.pageSize 每页数量（可选），默认为 10，最大 100
+   * @returns 用户列表和总记录数
+   */
+  async getUsers(params: { keyword?: string; page?: number; pageSize?: number }): Promise<{ list: User[]; total: number }> {
+    const { keyword = '', page = 1, pageSize = 10 } = params;
+    const validPage = Math.max(1, Number(page));
+    const validPageSize = Math.max(1, Math.min(100, Number(pageSize)));
+    const offset = (validPage - 1) * validPageSize;
+
+    let whereClause = '';
+    let queryParams: any[] = [];
+
+    if (keyword) {
+      whereClause = 'WHERE email LIKE ? OR username LIKE ?';
+      queryParams = [`%${keyword}%`, `%${keyword}%`];
+    }
+
+    const countSql = `SELECT COUNT(*) as total FROM users ${whereClause}`;
+    const [countResult] = await pool.execute<RowDataPacket[]>(countSql, queryParams);
+    const total = (countResult[0] as any).total;
+
+    const listSql = `
+      SELECT id, email, username, password, avatar, bio, role, is_active, created_at, updated_at
+      FROM users
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT ${validPageSize} OFFSET ${offset}
+    `;
+    const [rows] = await pool.execute<RowDataPacket[]>(listSql, queryParams);
+    const list = rows as User[];
+
+    return { list, total };
+  },
+
+  /**
+   * 切换用户状态
+   * @param userId 用户 ID
+   * @param isActive 是否激活
+   * @returns 更新成功返回 true
+   */
+  async toggleUserStatus(userId: number, isActive: boolean): Promise<boolean> {
+    const sql = 'UPDATE users SET is_active = ?, updated_at = NOW() WHERE id = ?';
+    const [result] = await pool.execute<RowDataPacket[]>(sql, [isActive, userId]);
+    return (result as any).affectedRows > 0;
+  },
+
+  /**
+   * 更新用户密码
+   * @param userId 用户 ID
+   * @param hashedPassword 加密后的密码
+   * @returns 更新成功返回 true
+   */
+  async updatePassword(userId: number, hashedPassword: string): Promise<boolean> {
+    const sql = 'UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?';
+    const [result] = await pool.execute<RowDataPacket[]>(sql, [hashedPassword, userId]);
     return (result as any).affectedRows > 0;
   }
 };

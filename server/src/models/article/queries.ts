@@ -1,7 +1,7 @@
 import pool from '../../config/db';
 import { RowDataPacket } from 'mysql2';
 import { buildPaginationSql } from '../../utils/pagination';
-import { Article, Author } from './types';
+import { Article } from './types';
 
 // 导出文章查询相关操作
 export const ArticleQueryModel = {

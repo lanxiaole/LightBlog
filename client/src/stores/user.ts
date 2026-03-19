@@ -8,6 +8,7 @@ interface UserInfo {
   username: string;
   avatar: string | null;
   bio: string | null;
+  role: string;
 }
 
 // 定义登录凭证类型

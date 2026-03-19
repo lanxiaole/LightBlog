@@ -34,6 +34,7 @@ export interface LoginResponse {
     username: string;
     avatar: string | null;
     bio: string | null;
+    role: string;
   };
 }
 
@@ -101,6 +102,30 @@ export async function getCurrentUser(): Promise<LoginResponse['user']> {
       throw error.response.data as ErrorResponse;
     }
     throw { message: '获取用户信息失败' } as ErrorResponse;
+  }
+}
+
+/**
+ * 管理员登录
+ * @param email 邮箱
+ * @param password 密码
+ * @returns 登录成功的 token 和用户信息
+ */
+export async function adminLogin(
+  email: string,
+  password: string
+): Promise<LoginResponse> {
+  try {
+    const response = await api.post<LoginResponse>('/auth/admin-login', {
+      email,
+      password
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data as ErrorResponse;
+    }
+    throw { message: '登录失败' } as ErrorResponse;
   }
 }
 

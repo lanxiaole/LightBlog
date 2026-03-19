@@ -1,8 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // 管理员登录页（独立路由）
+    {
+      path: '/admin-login',
+      name: 'admin-login',
+      component: () => import('@/views/auth/AdminLogin.vue'),
+      meta: { title: '管理员登录' }
+    },
     {
       path: '/',
       component: () => import('@/views/layouts/DefaultLayout.vue'),
@@ -33,7 +42,7 @@ const router = createRouter({
         // 后台管理相关路由
         {
           path: 'admin',
-          meta: { requiresAuth: true, title: '后台管理' },
+          meta: { requiresAuth: true, requiresAdmin: true, title: '后台管理' },
           children: [
             { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/Dashboard.vue'), meta: { title: '仪表盘' } },
             { path: 'users', name: 'admin-users', component: () => import('@/views/admin/Users.vue'), meta: { title: '用户管理' } },
@@ -50,19 +59,40 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   // 检查是否需要登录
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  // 检查是否需要管理员权限
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
 
   // 检查是否有 token
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
+  // 获取用户 store
+  const userStore = useUserStore();
+
+  // 如果需要管理员权限
+  if (requiresAdmin) {
+    // 检查是否已登录
+    if (!token) {
+      return '/admin-login';
+    }
+
+    // 确保用户信息已加载
+    await userStore.initUserInfo();
+
+    // 检查用户是否为管理员
+    if (!userStore.userInfo || userStore.userInfo.role !== 'admin') {
+      ElMessage.error('无权限访问');
+      return '/';
+    }
+  }
   // 如果需要登录但没有 token，跳转到登录页
-  if (requiresAuth && !token) {
+  else if (requiresAuth && !token) {
     return '/login';
   }
-  // 如果已经登录但访问登录或注册页，跳转到首页
-  else if ((to.path === '/login' || to.path === '/register') && token) {
+  // 如果已经登录但访问登录、注册或管理员登录页，跳转到首页
+  else if ((to.path === '/login' || to.path === '/register' || to.path === '/admin-login') && token) {
     return '/';
   }
   // 其他情况正常跳转

@@ -3,7 +3,7 @@
     <el-card class="login-card">
       <template #header>
         <div class="login-header">
-          <h2>用户登录</h2>
+          <h2>管理员登录</h2>
         </div>
       </template>
       <el-form
@@ -31,9 +31,6 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-checkbox v-model="form.rememberMe">记住我</el-checkbox>
-        </el-form-item>
-        <el-form-item>
           <el-button
             type="primary"
             class="login-button"
@@ -45,10 +42,7 @@
           </el-button>
         </el-form-item>
         <div class="register-link">
-          没有账号？<router-link to="/register">立即注册</router-link>
-        </div>
-        <div class="admin-link">
-          <router-link to="/admin-login">管理员登录</router-link>
+          <router-link to="/login">返回普通登录</router-link>
         </div>
       </el-form>
     </el-card>
@@ -60,6 +54,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/user';
+import { adminLogin } from '@/api/auth';
 
 // 表单引用
 const formRef = ref();
@@ -76,8 +71,7 @@ const userStore = useUserStore();
 // 表单数据
 const form = reactive({
   email: '',
-  password: '',
-  rememberMe: false
+  password: ''
 });
 
 // 表单验证规则
@@ -101,18 +95,18 @@ const handleLogin = async () => {
       try {
         loading.value = true;
 
-        // 调用 user store 的 login 方法
-        await userStore.login({
-          email: form.email,
-          password: form.password,
-          rememberMe: form.rememberMe
-        });
+        // 调用 adminLogin API
+        const response = await adminLogin(form.email, form.password);
+
+        // 存储 token 和用户信息
+        userStore.setToken(response.token);
+        userStore.setUserInfo(response.user);
 
         // 登录成功
         ElMessage.success('登录成功');
 
-        // 跳转到首页
-        router.push('/');
+        // 跳转到后台管理首页
+        router.push('/admin');
       } catch (error: any) {
         // 登录失败
         ElMessage.error(error.message || '登录失败');
@@ -176,23 +170,6 @@ const handleLogin = async () => {
 }
 
 .register-link a:hover {
-  text-decoration: underline;
-}
-
-.admin-link {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 12px;
-  color: #909399;
-}
-
-.admin-link a {
-  color: #909399;
-  text-decoration: none;
-}
-
-.admin-link a:hover {
-  color: #409eff;
   text-decoration: underline;
 }
 </style>

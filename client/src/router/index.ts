@@ -39,20 +39,21 @@ const router = createRouter({
             { path: 'about', name: 'user-about', component: () => import('@/views/user/About.vue'), meta: { title: '关于' } }
           ]
         },
-        // 后台管理相关路由
-        {
-          path: 'admin',
-          meta: { requiresAuth: true, requiresAdmin: true, title: '后台管理' },
-          children: [
-            { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/Dashboard.vue'), meta: { title: '仪表盘' } },
-            { path: 'users', name: 'admin-users', component: () => import('@/views/admin/Users.vue'), meta: { title: '用户管理' } },
-            { path: 'articles', name: 'admin-articles', component: () => import('@/views/admin/Articles.vue'), meta: { title: '文章管理' } },
-            { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/Categories.vue'), meta: { title: '分类管理' } },
-            { path: 'tags', name: 'admin-tags', component: () => import('@/views/admin/Tags.vue'), meta: { title: '标签管理' } }
-          ]
-        },
         // 404 页面
         { path: ':pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error/NotFound.vue'), meta: { title: '404' } }
+      ]
+    },
+    // 后台管理路由
+    {
+      path: '/admin',
+      component: () => import('@/views/layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/Dashboard.vue'), meta: { title: '仪表盘' } },
+        { path: 'users', name: 'admin-users', component: () => import('@/views/admin/Users.vue'), meta: { title: '用户管理' } },
+        { path: 'articles', name: 'admin-articles', component: () => import('@/views/admin/Articles.vue'), meta: { title: '文章管理' } },
+        { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/Categories.vue'), meta: { title: '分类管理' } },
+        { path: 'tags', name: 'admin-tags', component: () => import('@/views/admin/Tags.vue'), meta: { title: '标签管理' } }
       ]
     }
   ]

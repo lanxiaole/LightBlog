@@ -856,3 +856,15 @@ UPDATE `users` SET `password` = '哈希值2' WHERE `email` = 'weijiale@admin.com
 1. 添加收藏相关字段 ：在 Article 接口中添加了 favorited 和 favoritesCount 字段
 2. 添加获取收藏状态方法 ：在 useFavorite 组合式函数中添加了 fetchFavoriteStatus 方法，用于从服务器获取初始的收藏状态和数量
 3. 调用获取收藏状态方法 ：在 Detail.vue 页面的 onMounted 钩子中，在文章加载完成后调用 fetchFavoriteStatus 方法来获取初始的收藏状态和数量
+
+问题原因 ：
+
+- 管理员登录成功后，跳转到 /admin 页面
+- 但 /admin 页面会请求 /api/admin/stats 接口
+- 该接口返回 401 错误，导致响应拦截器将用户重定向到 /login 页面
+- 原因是 admin.ts 路由文件中，只使用了 adminMiddleware ，没有使用 authMiddleware
+- adminMiddleware 依赖于 req.user ，而 req.user 是由 authMiddleware 设置的
+  解决方案 ：
+
+- 在 server/src/routes/admin.ts 文件中，为 /stats 路由添加 authMiddleware ，放在 adminMiddleware 之前
+- 这样就能确保 req.user 被正确设置， adminMiddleware 能够正常验证管理员权限

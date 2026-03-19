@@ -11,6 +11,7 @@ import favoriteRouter from './routes/favorites';
 import followRouter from './routes/follow';
 import notificationRouter from './routes/notifications';
 import searchRouter from './routes/search';
+import adminRouter from './routes/admin';
 
 const app = express();
 
@@ -52,6 +53,9 @@ app.use('/api/notifications', notificationRouter);
 
 // 搜索路由
 app.use('/api/search', searchRouter);
+
+// 管理员路由
+app.use('/api/admin', adminRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

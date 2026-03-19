@@ -9,6 +9,7 @@ export interface User {
   password: string;
   avatar: string | null;
   bio: string | null;
+  role: string;
   created_at: Date;
   updated_at: Date;
 }

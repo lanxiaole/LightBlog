@@ -172,6 +172,9 @@ CONSTRAINT `notifications_ibfk_4` FOREIGN KEY (`comment_id`) REFERENCES `comment
 为 articles 表的 title 和 content 字段创建全文索引
 ALTER TABLE `articles` ADD FULLTEXT INDEX `ft_title_content` (`title`, `content`) WITH PARSER ngram;
 
+后端为用户表增加状态字段
+ALTER TABLE `users` ADD COLUMN `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT '账号状态：1启用，0禁用' AFTER `role`;
+
 ## 项目配置说明
 
 ### 开发环境配置

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ElCard } from 'element-plus';
+import { ElCard, ElTag } from 'element-plus';
 import type { Article } from '@/api/article';
 
 /**
@@ -12,12 +12,17 @@ interface Props {
   article: Article;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   /** 点击卡片 */
   click: [id: number];
 }>();
+
+// 判断是否为管理员文章
+const isAdminArticle = () => {
+  return props.article.author?.role === 'admin';
+};
 
 /**
  * 格式化日期
@@ -44,12 +49,15 @@ const getSummary = (content: string): string => {
 
 <template>
   <ElCard
-    class="article-card"
+    :class="['article-card', { 'admin-article': isAdminArticle() }]"
     @click="emit('click', article.id)"
   >
     <template #header>
       <div class="article-header">
-        <h3 class="article-title">{{ article.title }}</h3>
+        <div class="title-container">
+          <h3 class="article-title">{{ article.title }}</h3>
+          <ElTag v-if="isAdminArticle()" type="warning" size="small" effect="dark" style="margin-left: 8px;">管理员</ElTag>
+        </div>
         <span class="article-date">{{ formatDate(article.created_at) }}</span>
       </div>
     </template>
@@ -63,6 +71,7 @@ const getSummary = (content: string): string => {
 .article-card {
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 1px solid #ebeef5;
 }
 
 .article-card:hover {
@@ -70,10 +79,26 @@ const getSummary = (content: string): string => {
   transform: translateY(-2px);
 }
 
+/* 管理员文章样式 */
+.admin-article {
+  border: 2px solid #f5a623;
+  background-color: #fffaf0;
+}
+
+.admin-article:hover {
+  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.2);
+}
+
 .article-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .article-title {

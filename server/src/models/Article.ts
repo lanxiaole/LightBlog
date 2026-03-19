@@ -1,36 +1,12 @@
 import pool from '../config/db';
 import { RowDataPacket } from 'mysql2';
-import { Tag } from './Tag';
-import { buildPaginationSql } from '../utils/pagination';
+import { Article, Author } from './article/types';
+import { ArticleTagModel } from './article/tags';
+import { ArticleCategoryModel } from './article/categories';
+import { ArticleQueryModel } from './article/queries';
 
-// 定义作者接口
-export interface Author {
-  id: number;
-  username: string;
-  avatar: string | null;
-}
-
-// 定义 Article 接口
-export interface Article {
-  id: number;
-  title: string;
-  content: string;
-  cover: string | null;
-  author_id: number;
-  category_id: number | null;
-  status: string;
-  views: number;
-  likes: number;
-  created_at: Date;
-  updated_at: Date;
-  author?: Author;
-  category?: {
-    id: number;
-    name: string;
-    description: string | null;
-  };
-  tags?: Tag[];
-}
+// 重新导出类型
+export type { Article, Author };
 
 // 导出 ArticleModel 对象
 export const ArticleModel = {
@@ -65,43 +41,6 @@ export const ArticleModel = {
   },
 
   /**
-   * 获取文章列表（分页）
-   * @param page 页码，默认 1
-   * @param pageSize 每页数量，默认 10
-   * @returns 包含文章列表和总记录数的对象
-   */
-  async getArticles(page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 使用分页工具函数验证参数
-    const paginationClause = buildPaginationSql(page, pageSize);
-
-    // 查询文章列表
-    const listSql = `
-      SELECT * FROM articles
-      WHERE status = 'published'
-      ORDER BY created_at DESC
-      ${paginationClause}
-    `;
-
-    // 查询总记录数
-    const countSql = `
-      SELECT COUNT(*) as total FROM articles
-      WHERE status = 'published'
-    `;
-
-    // 并行执行两个查询
-    const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql),
-      pool.execute<RowDataPacket[]>(countSql)
-    ]);
-
-    // 处理结果
-    const list = listResult[0] as Article[];
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
-
-    return { list, total };
-  },
-
-  /**
    * 根据文章 id 查询单条文章记录
    * @param id 文章 id
    * @returns 包含作者、分类和标签信息的文章对象，如果不存在返回 null
@@ -113,6 +52,7 @@ export const ArticleModel = {
         u.id as author_id, 
         u.username, 
         u.avatar,
+        u.role as author_role,
         c.id as category_id,
         c.name as category_name,
         c.description as category_description
@@ -131,7 +71,7 @@ export const ArticleModel = {
     const article = result[0] as any;
     
     // 获取文章的标签
-    const tags = await this.getArticleTags(id);
+    const tags = await ArticleTagModel.getArticleTags(id);
     
     return {
       id: article.id,
@@ -148,7 +88,8 @@ export const ArticleModel = {
       author: {
         id: article.author_id,
         username: article.username,
-        avatar: article.avatar
+        avatar: article.avatar,
+        role: article.author_role
       },
       category: article.category_id ? {
         id: Number(article.category_id),
@@ -157,44 +98,6 @@ export const ArticleModel = {
       } : undefined,
       tags: tags
     };
-  },
-  
-  /**
-   * 根据用户 ID 查询该用户发布的文章
-   * @param userId 用户 ID
-   * @param page 页码，默认 1
-   * @param pageSize 每页数量，默认 10
-   * @returns 包含文章列表和总记录数的对象
-   */
-  async getArticlesByUserId(userId: number, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 使用分页工具函数验证参数
-    const paginationClause = buildPaginationSql(page, pageSize);
-
-    // 查询文章列表
-    const listSql = `
-      SELECT * FROM articles
-      WHERE author_id = ? AND status = 'published'
-      ORDER BY created_at DESC
-      ${paginationClause}
-    `;
-
-    // 查询总记录数
-    const countSql = `
-      SELECT COUNT(*) as total FROM articles
-      WHERE author_id = ? AND status = 'published'
-    `;
-
-    // 并行执行两个查询
-    const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [userId]),
-      pool.execute<RowDataPacket[]>(countSql, [userId])
-    ]);
-
-    // 处理结果
-    const list = listResult[0] as Article[];
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
-
-    return { list, total };
   },
 
   /**
@@ -257,199 +160,13 @@ export const ArticleModel = {
     
     return (result as any).affectedRows > 0;
   },
-  
-  /**
-   * 为文章添加标签
-   * @param articleId 文章 ID
-   * @param tagIds 标签 ID 数组
-   */
-  async addArticleTags(articleId: number, tagIds: number[]): Promise<void> {
-    if (tagIds.length === 0) {
-      return;
-    }
-    
-    // 构建批量插入的 SQL 语句
-    const placeholders = tagIds.map(() => '(?, ?)').join(', ');
-    const values = tagIds.flatMap(tagId => [articleId, tagId]);
-    
-    const sql = `
-      INSERT INTO article_tags (article_id, tag_id)
-      VALUES ${placeholders}
-    `;
-    
-    await pool.execute<RowDataPacket[]>(sql, values);
-  },
-  
-  /**
-   * 删除文章的所有标签
-   * @param articleId 文章 ID
-   */
-  async removeArticleTags(articleId: number): Promise<void> {
-    const sql = 'DELETE FROM article_tags WHERE article_id = ?';
-    
-    await pool.execute<RowDataPacket[]>(sql, [articleId]);
-  },
-  
-  /**
-   * 获取文章的所有标签
-   * @param articleId 文章 ID
-   * @returns 标签列表
-   */
-  async getArticleTags(articleId: number): Promise<Tag[]> {
-    const sql = `
-      SELECT t.*
-      FROM tags t
-      JOIN article_tags at ON t.id = at.tag_id
-      WHERE at.article_id = ?
-      ORDER BY t.name ASC
-    `;
-    
-    const [rows] = await pool.execute<RowDataPacket[]>(sql, [articleId]);
-    const tags = rows as Tag[];
-    return tags;
-  },
-  
-  /**
-   * 根据分类名称查询文章（分页）
-   * @param categoryName 分类名称
-   * @param page 页码，默认 1
-   * @param pageSize 每页数量，默认 10
-   * @returns 包含文章列表和总记录数的对象
-   */
-  async getArticlesByCategory(categoryName: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 使用分页工具函数验证参数
-    const paginationClause = buildPaginationSql(page, pageSize);
 
-    const listSql = `
-      SELECT a.* FROM articles a
-      JOIN categories c ON a.category_id = c.id
-      WHERE c.name = ? AND a.status = 'published'
-      ORDER BY a.created_at DESC
-      ${paginationClause}
-    `;
+  // 导入标签相关操作
+  ...ArticleTagModel,
 
-    const countSql = `
-      SELECT COUNT(*) as total FROM articles a
-      JOIN categories c ON a.category_id = c.id
-      WHERE c.name = ? AND a.status = 'published'
-    `;
+  // 导入分类相关操作
+  ...ArticleCategoryModel,
 
-    const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [categoryName]),
-      pool.execute<RowDataPacket[]>(countSql, [categoryName])
-    ]);
-
-    const list = listResult[0] as Article[];
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
-
-    return { list, total };
-  },
-  
-  /**
-   * 根据标签名称查询文章（分页）
-   * @param tagName 标签名称
-   * @param page 页码，默认 1
-   * @param pageSize 每页数量，默认 10
-   * @returns 包含文章列表和总记录数的对象
-   */
-  async getArticlesByTag(tagName: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 使用分页工具函数验证参数
-    const paginationClause = buildPaginationSql(page, pageSize);
-
-    const listSql = `
-      SELECT a.* FROM articles a
-      JOIN article_tags at ON a.id = at.article_id
-      JOIN tags t ON at.tag_id = t.id
-      WHERE t.name = ? AND a.status = 'published'
-      ORDER BY a.created_at DESC
-      ${paginationClause}
-    `;
-
-    const countSql = `
-      SELECT COUNT(*) as total FROM articles a
-      JOIN article_tags at ON a.id = at.article_id
-      JOIN tags t ON at.tag_id = t.id
-      WHERE t.name = ? AND a.status = 'published'
-    `;
-
-    const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [tagName]),
-      pool.execute<RowDataPacket[]>(countSql, [tagName])
-    ]);
-
-    const list = listResult[0] as Article[];
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
-
-    return { list, total };
-  },
-
-  /**
-   * 搜索文章（分页）
-   * @param keyword 搜索关键词
-   * @param page 页码，默认 1
-   * @param pageSize 每页数量，默认 10
-   * @returns 包含文章列表和总记录数的对象
-   */
-  async searchArticles(keyword: string, page: number = 1, pageSize: number = 10): Promise<{ list: Article[]; total: number }> {
-    // 如果关键词为空，返回空列表
-    if (!keyword || keyword.trim() === '') {
-      return { list: [], total: 0 };
-    }
-
-    // 使用分页工具函数构建分页 SQL
-    const paginationClause = buildPaginationSql(page, pageSize);
-
-    // 构建搜索关键词（添加通配符）
-    const searchKeyword = `%${keyword.trim()}%`;
-
-    // 查询文章列表（包含作者信息）
-    const listSql = `
-      SELECT 
-        a.*, 
-        u.id as author_id, 
-        u.username, 
-        u.avatar
-      FROM articles a
-      JOIN users u ON a.author_id = u.id
-      WHERE (a.title LIKE ? OR a.content LIKE ?) AND a.status = 'published'
-      ORDER BY a.created_at DESC
-      ${paginationClause}
-    `;
-
-    // 查询总记录数
-    const countSql = `
-      SELECT COUNT(*) as total FROM articles a
-      WHERE (a.title LIKE ? OR a.content LIKE ?) AND a.status = 'published'
-    `;
-
-    // 并行执行两个查询
-    const [listResult, countResult] = await Promise.all([
-      pool.execute<RowDataPacket[]>(listSql, [searchKeyword, searchKeyword]),
-      pool.execute<RowDataPacket[]>(countSql, [searchKeyword, searchKeyword])
-    ]);
-
-    // 处理结果，添加作者信息
-    const list = (listResult[0] as any[]).map(article => ({
-      id: article.id,
-      title: article.title,
-      content: article.content,
-      cover: article.cover,
-      author_id: article.author_id,
-      category_id: article.category_id,
-      status: article.status,
-      views: article.views,
-      likes: article.likes,
-      created_at: article.created_at,
-      updated_at: article.updated_at,
-      author: {
-        id: article.author_id,
-        username: article.username,
-        avatar: article.avatar
-      }
-    }));
-
-    const total = (countResult[0] as RowDataPacket[])[0].total as number;
-
-    return { list, total };
-  }
+  // 导入查询相关操作
+  ...ArticleQueryModel
 };

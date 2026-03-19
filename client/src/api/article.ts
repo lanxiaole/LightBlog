@@ -6,6 +6,7 @@ export interface Author {
   id: number;
   username: string;
   avatar: string | null;
+  role: string;
 }
 
 // 定义 Article 类型

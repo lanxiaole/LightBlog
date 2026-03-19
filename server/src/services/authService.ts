@@ -34,6 +34,7 @@ export interface AuthResponse {
     username: string;        // 用户名
     avatar: string | null;   // 头像
     bio: string | null;      // 个人简介
+    role: string;            // 用户角色
   };
 }
 
@@ -137,7 +138,8 @@ export const AuthService = {
         email: user.email,
         username: user.username,
         avatar: user.avatar,
-        bio: user.bio
+        bio: user.bio,
+        role: user.role
       }
     };
   },
@@ -148,7 +150,7 @@ export const AuthService = {
    * @returns 用户详细信息
    * @throws 当用户不存在时抛出错误
    */
-  async getCurrentUser(userId: number): Promise<{ id: number; email: string; username: string; avatar: string | null; bio: string | null }> {
+  async getCurrentUser(userId: number): Promise<{ id: number; email: string; username: string; avatar: string | null; bio: string | null; role: string }> {
     const user = await UserModel.findUserById(userId);
     if (!user) {
       throw new Error('用户不存在');
@@ -159,7 +161,8 @@ export const AuthService = {
       email: user.email,
       username: user.username,
       avatar: user.avatar,
-      bio: user.bio
+      bio: user.bio,
+      role: user.role
     };
   }
 };

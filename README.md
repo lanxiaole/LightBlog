@@ -868,3 +868,29 @@ UPDATE `users` SET `password` = '哈希值2' WHERE `email` = 'weijiale@admin.com
 
 - 在 server/src/routes/admin.ts 文件中，为 /stats 路由添加 authMiddleware ，放在 adminMiddleware 之前
 - 这样就能确保 req.user 被正确设置， adminMiddleware 能够正常验证管理员权限
+
+我已经找到了问题的根本原因，并进行了修复：
+
+问题原因 ：
+
+- 滚动条是由 Element Plus 卡片组件的内部 .el-card\_\_body 元素产生的
+- 即使在父容器上设置了 overflow: hidden ，但由于 .el-card\_\_body 是独立的元素，滚动条仍然会显示
+  解决方案 ：
+
+- 使用 :deep() 选择器来穿透组件边界，直接修改 .el-card\_\_body 的样式
+- 添加了 overflow: hidden !important 来强制隐藏滚动条
+- 同时调整了 padding 和 height 以确保内容正常显示
+- 添加了 flex 布局以保持与父容器的布局一致
+  修改内容 ：
+
+```
+/* 覆盖 Element Plus 卡片默认样式 */
+:deep(.el-card__body) {
+  overflow: hidden !important;
+  padding: 15px !important;
+  height: calc(100% - 40px) 
+  !important;
+  display: flex;
+  flex-direction: column;
+}
+```

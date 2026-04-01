@@ -1,36 +1,3 @@
-<script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import ArticleListPage from '@/components/article/ArticleListPage.vue';
-import { getArticlesByTag } from '@/api/article';
-
-/**
- * 标签文章列表页
- * 展示指定标签下的文章列表
- */
-
-const route = useRoute();
-
-// 从路由参数获取标签名称
-const tagName = computed(() => route.params.name as string || '');
-
-/**
- * 获取标签文章列表数据
- * @param params 分页参数
- */
-const fetchArticles = async (params: { page: number; pageSize: number }) => {
-  if (!tagName.value) {
-    throw new Error('标签名称不能为空');
-  }
-
-  const response = await getArticlesByTag(tagName.value, params);
-  return {
-    list: response.list,
-    total: response.total
-  };
-};
-</script>
-
 <template>
   <ArticleListPage
     :title="`标签：${tagName}`"
@@ -66,6 +33,39 @@ const fetchArticles = async (params: { page: number; pageSize: number }) => {
     </template>
   </ArticleListPage>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import ArticleListPage from '@/components/article/ArticleListPage.vue';
+import { getArticlesByTag } from '@/api/article';
+
+/**
+ * 标签文章列表页
+ * 展示指定标签下的文章列表
+ */
+
+const route = useRoute();
+
+// 从路由参数获取标签名称
+const tagName = computed(() => route.params.name as string || '');
+
+/**
+ * 获取标签文章列表数据
+ * @param params 分页参数
+ */
+const fetchArticles = async (params: { page: number; pageSize: number }) => {
+  if (!tagName.value) {
+    throw new Error('标签名称不能为空');
+  }
+
+  const response = await getArticlesByTag(tagName.value, params);
+  return {
+    list: response.list,
+    total: response.total
+  };
+};
+</script>
 
 <style scoped>
 .sidebar-card {

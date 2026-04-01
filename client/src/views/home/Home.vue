@@ -1,3 +1,15 @@
+<template>
+  <ArticleListPage
+    title="文章列表"
+    :fetch-data="fetchArticles"
+    empty-text="暂无文章"
+  >
+    <template #sidebar>
+      <Sidebar :categories="categories" :tags="tags" />
+    </template>
+  </ArticleListPage>
+</template>
+
 <script setup lang="ts">
 import ArticleListPage from '@/components/article/ArticleListPage.vue';
 import Sidebar from '@/components/common/Sidebar.vue';
@@ -49,15 +61,3 @@ onMounted(() => {
   fetchSidebarData();
 });
 </script>
-
-<template>
-  <ArticleListPage
-    title="文章列表"
-    :fetch-data="fetchArticles"
-    empty-text="暂无文章"
-  >
-    <template #sidebar>
-      <Sidebar :categories="categories" :tags="tags" />
-    </template>
-  </ArticleListPage>
-</template>

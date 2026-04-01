@@ -1,3 +1,27 @@
+<template>
+  <div class="edit-article">
+    <h1 class="page-title">编辑文章</h1>
+
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
+      <el-button loading>加载中...</el-button>
+    </div>
+
+    <!-- 编辑表单 -->
+    <ArticleForm
+      v-else
+      ref="articleFormRef"
+      v-model="form"
+      :categories="categories"
+      :existing-tags="existingTags"
+      :submitting="submitting"
+      submit-text="保存修改"
+      @submit="submitForm"
+      @cancel="handleCancel"
+    />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -86,30 +110,6 @@ onMounted(() => {
   loadArticleDetail();
 });
 </script>
-
-<template>
-  <div class="edit-article">
-    <h1 class="page-title">编辑文章</h1>
-
-    <!-- 加载状态 -->
-    <div v-if="loading" class="loading-container">
-      <el-button loading>加载中...</el-button>
-    </div>
-
-    <!-- 编辑表单 -->
-    <ArticleForm
-      v-else
-      ref="articleFormRef"
-      v-model="form"
-      :categories="categories"
-      :existing-tags="existingTags"
-      :submitting="submitting"
-      submit-text="保存修改"
-      @submit="submitForm"
-      @cancel="handleCancel"
-    />
-  </div>
-</template>
 
 <style scoped>
 .edit-article {

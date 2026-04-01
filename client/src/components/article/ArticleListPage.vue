@@ -1,3 +1,59 @@
+<template>
+  <div class="article-list-page" :class="{ 'no-sidebar': !showSidebar }">
+    <div class="main-content">
+      <!-- 左侧文章列表 -->
+      <div class="article-list">
+        <h2 v-if="title" class="page-title">{{ title }}</h2>
+
+        <!-- 加载状态 -->
+        <LoadingState v-if="loading" />
+
+        <!-- 错误状态 -->
+        <ErrorState
+          v-else-if="error"
+          :message="error"
+          @retry="loadData"
+        />
+
+        <!-- 空状态 -->
+        <EmptyState
+          v-else-if="articles.length === 0"
+          :description="emptyText"
+        />
+
+        <!-- 文章列表 -->
+        <div v-else class="article-items">
+          <ArticleCard
+            v-for="article in articles"
+            :key="article.id"
+            :article="article"
+            @click="navigateToArticle"
+          />
+        </div>
+
+        <!-- 分页组件 -->
+        <div v-if="showPagination && !loading && !error && total > 0" class="pagination-container">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+            :pager-count="5"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </div>
+
+      <!-- 右侧侧边栏插槽 -->
+      <div v-if="showSidebar" class="sidebar">
+        <slot name="sidebar" />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -112,62 +168,6 @@ defineExpose({
   pageSize
 });
 </script>
-
-<template>
-  <div class="article-list-page" :class="{ 'no-sidebar': !showSidebar }">
-    <div class="main-content">
-      <!-- 左侧文章列表 -->
-      <div class="article-list">
-        <h2 v-if="title" class="page-title">{{ title }}</h2>
-
-        <!-- 加载状态 -->
-        <LoadingState v-if="loading" />
-
-        <!-- 错误状态 -->
-        <ErrorState
-          v-else-if="error"
-          :message="error"
-          @retry="loadData"
-        />
-
-        <!-- 空状态 -->
-        <EmptyState
-          v-else-if="articles.length === 0"
-          :description="emptyText"
-        />
-
-        <!-- 文章列表 -->
-        <div v-else class="article-items">
-          <ArticleCard
-            v-for="article in articles"
-            :key="article.id"
-            :article="article"
-            @click="navigateToArticle"
-          />
-        </div>
-
-        <!-- 分页组件 -->
-        <div v-if="showPagination && !loading && !error && total > 0" class="pagination-container">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 50]"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="total"
-            :pager-count="5"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </div>
-
-      <!-- 右侧侧边栏插槽 -->
-      <div v-if="showSidebar" class="sidebar">
-        <slot name="sidebar" />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .article-list-page {

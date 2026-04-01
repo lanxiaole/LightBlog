@@ -1,75 +1,3 @@
-<script setup lang="ts">
-import { onMounted, computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { ElButton, ElBacktop, ElIcon } from 'element-plus';
-import { Star, StarFilled } from '@element-plus/icons-vue';
-import { useArticle } from '@/composables/article/useArticle';
-import { useFavorite } from '@/composables/article/useFavorite';
-import { useComments } from '@/composables/comment/useComments';
-import { useFollow } from '@/composables/user/useFollow';
-import ArticleContent from './components/ArticleContent.vue';
-import CommentSection from './components/CommentSection.vue';
-
-const route = useRoute();
-const router = useRouter();
-
-const articleId = computed(() => {
-  const id = route.params.id;
-  return typeof id === 'string' ? parseInt(id) : 0;
-});
-
-const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
-const { favorited, favoritesCount, favoriting, toggleFavorite, fetchFavoriteStatus } = useFavorite(articleId);
-
-// 计算目标用户 ID
-const targetUserId = computed(() => article.value?.author?.id || null);
-
-// 使用关注组合式函数
-const { isFollowing, loading: followLoading, toggleFollow, checkStatus } = useFollow(targetUserId);
-
-// 监听文章变化，确保关注状态正确更新
-watch(article, (newArticle) => {
-  if (newArticle && newArticle.author?.id) {
-    // 当文章加载完成后，检查关注状态
-    checkStatus();
-  }
-}, { immediate: true });
-
-const {
-  comments,
-  totalComments,
-  commentPage,
-  commentPageSize,
-  newComment,
-  replyTo,
-  submitting,
-  commentLoading,
-  commentTree,
-  fetchComments,
-  handleCreateComment,
-  handleDeleteComment,
-  handleReply,
-  handleCancelReply,
-  handlePageChange
-} = useComments(articleId.value);
-
-const handleEdit = () => {
-  if (article.value) {
-    router.push(`/edit/${article.value.id}`);
-  }
-};
-
-onMounted(async () => {
-  await fetchArticleDetail(articleId.value);
-  // 文章加载完成后，检查关注状态和收藏状态
-  if (article.value && article.value.author?.id) {
-    await checkStatus();
-    await fetchFavoriteStatus();
-  }
-  await fetchComments();
-});
-</script>
-
 <template>
   <div class="article-detail">
     <!-- 返回按钮 -->
@@ -145,6 +73,78 @@ onMounted(async () => {
     <el-backtop :right="40" :bottom="40" />
   </div>
 </template>
+
+<script setup lang="ts">
+import { onMounted, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElButton, ElBacktop, ElIcon } from 'element-plus';
+import { Star, StarFilled } from '@element-plus/icons-vue';
+import { useArticle } from '@/composables/article/useArticle';
+import { useFavorite } from '@/composables/article/useFavorite';
+import { useComments } from '@/composables/comment/useComments';
+import { useFollow } from '@/composables/user/useFollow';
+import ArticleContent from './components/ArticleContent.vue';
+import CommentSection from './components/CommentSection.vue';
+
+const route = useRoute();
+const router = useRouter();
+
+const articleId = computed(() => {
+  const id = route.params.id;
+  return typeof id === 'string' ? parseInt(id) : 0;
+});
+
+const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
+const { favorited, favoritesCount, favoriting, toggleFavorite, fetchFavoriteStatus } = useFavorite(articleId);
+
+// 计算目标用户 ID
+const targetUserId = computed(() => article.value?.author?.id || null);
+
+// 使用关注组合式函数
+const { isFollowing, loading: followLoading, toggleFollow, checkStatus } = useFollow(targetUserId);
+
+// 监听文章变化，确保关注状态正确更新
+watch(article, (newArticle) => {
+  if (newArticle && newArticle.author?.id) {
+    // 当文章加载完成后，检查关注状态
+    checkStatus();
+  }
+}, { immediate: true });
+
+const {
+  comments,
+  totalComments,
+  commentPage,
+  commentPageSize,
+  newComment,
+  replyTo,
+  submitting,
+  commentLoading,
+  commentTree,
+  fetchComments,
+  handleCreateComment,
+  handleDeleteComment,
+  handleReply,
+  handleCancelReply,
+  handlePageChange
+} = useComments(articleId.value);
+
+const handleEdit = () => {
+  if (article.value) {
+    router.push(`/edit/${article.value.id}`);
+  }
+};
+
+onMounted(async () => {
+  await fetchArticleDetail(articleId.value);
+  // 文章加载完成后，检查关注状态和收藏状态
+  if (article.value && article.value.author?.id) {
+    await checkStatus();
+    await fetchFavoriteStatus();
+  }
+  await fetchComments();
+});
+</script>
 
 <style scoped>
 .article-detail {

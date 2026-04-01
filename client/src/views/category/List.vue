@@ -1,36 +1,3 @@
-<script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import ArticleListPage from '@/components/article/ArticleListPage.vue';
-import { getArticlesByCategory } from '@/api/article';
-
-/**
- * 分类文章列表页
- * 展示指定分类下的文章列表
- */
-
-const route = useRoute();
-
-// 从路由参数获取分类名称
-const categoryName = computed(() => route.params.name as string || '');
-
-/**
- * 获取分类文章列表数据
- * @param params 分页参数
- */
-const fetchArticles = async (params: { page: number; pageSize: number }) => {
-  if (!categoryName.value) {
-    throw new Error('分类名称不能为空');
-  }
-
-  const response = await getArticlesByCategory(categoryName.value, params);
-  return {
-    list: response.list,
-    total: response.total
-  };
-};
-</script>
-
 <template>
   <ArticleListPage
     :title="`分类：${categoryName}`"
@@ -66,6 +33,39 @@ const fetchArticles = async (params: { page: number; pageSize: number }) => {
     </template>
   </ArticleListPage>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import ArticleListPage from '@/components/article/ArticleListPage.vue';
+import { getArticlesByCategory } from '@/api/article';
+
+/**
+ * 分类文章列表页
+ * 展示指定分类下的文章列表
+ */
+
+const route = useRoute();
+
+// 从路由参数获取分类名称
+const categoryName = computed(() => route.params.name as string || '');
+
+/**
+ * 获取分类文章列表数据
+ * @param params 分页参数
+ */
+const fetchArticles = async (params: { page: number; pageSize: number }) => {
+  if (!categoryName.value) {
+    throw new Error('分类名称不能为空');
+  }
+
+  const response = await getArticlesByCategory(categoryName.value, params);
+  return {
+    list: response.list,
+    total: response.total
+  };
+};
+</script>
 
 <style scoped>
 .sidebar-card {

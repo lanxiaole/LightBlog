@@ -1,3 +1,72 @@
+<template>
+  <div class="notifications-container">
+    <h1 class="page-title">消息中心</h1>
+
+    <!-- 全部已读按钮 -->
+    <div class="actions-bar">
+      <ElButton
+        type="primary"
+        @click="handleMarkAllAsRead"
+        :loading="loading"
+      >
+        全部已读
+      </ElButton>
+    </div>
+
+    <!-- 加载状态 -->
+    <LoadingState v-if="loading" />
+
+    <!-- 错误状态 -->
+    <ErrorState v-else-if="error" :message="error" @retry="fetchNotifications" />
+
+    <!-- 通知列表 -->
+    <div v-else class="notifications-list">
+      <!-- 空状态 -->
+      <EmptyState v-if="list.length === 0" text="暂无通知" />
+
+      <!-- 通知卡片列表 -->
+      <ElCard
+        v-for="notification in list"
+        :key="notification.id"
+        class="notification-card"
+        :class="{ 'unread': !notification.is_read }"
+        @click="handleNotificationClick(notification)"
+      >
+        <div class="notification-content">
+          <!-- 发送者头像 -->
+          <div class="sender-info" @click.stop="handleSenderClick(notification)">
+            <ElAvatar :src="notification.sender?.avatar || ''" :alt="notification.sender?.username">
+              {{ notification.sender?.username?.charAt(0) || 'U' }}
+            </ElAvatar>
+          </div>
+
+          <!-- 通知内容 -->
+          <div class="notification-body">
+            <p class="notification-text">{{ getNotificationText(notification) }}</p>
+            <div class="notification-meta">
+              <span class="notification-time">{{ formatTime(notification.created_at) }}</span>
+              <ElTag v-if="!notification.is_read" size="small" type="danger" effect="plain">未读</ElTag>
+            </div>
+          </div>
+        </div>
+      </ElCard>
+
+      <!-- 分页组件 -->
+      <div v-if="total > 0" class="pagination-container">
+        <ElPagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 30, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="handlePageSizeChange"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -165,75 +234,6 @@ onMounted(() => {
   fetchNotifications();
 });
 </script>
-
-<template>
-  <div class="notifications-container">
-    <h1 class="page-title">消息中心</h1>
-
-    <!-- 全部已读按钮 -->
-    <div class="actions-bar">
-      <ElButton
-        type="primary"
-        @click="handleMarkAllAsRead"
-        :loading="loading"
-      >
-        全部已读
-      </ElButton>
-    </div>
-
-    <!-- 加载状态 -->
-    <LoadingState v-if="loading" />
-
-    <!-- 错误状态 -->
-    <ErrorState v-else-if="error" :message="error" @retry="fetchNotifications" />
-
-    <!-- 通知列表 -->
-    <div v-else class="notifications-list">
-      <!-- 空状态 -->
-      <EmptyState v-if="list.length === 0" text="暂无通知" />
-
-      <!-- 通知卡片列表 -->
-      <ElCard
-        v-for="notification in list"
-        :key="notification.id"
-        class="notification-card"
-        :class="{ 'unread': !notification.is_read }"
-        @click="handleNotificationClick(notification)"
-      >
-        <div class="notification-content">
-          <!-- 发送者头像 -->
-          <div class="sender-info" @click.stop="handleSenderClick(notification)">
-            <ElAvatar :src="notification.sender?.avatar || ''" :alt="notification.sender?.username">
-              {{ notification.sender?.username?.charAt(0) || 'U' }}
-            </ElAvatar>
-          </div>
-
-          <!-- 通知内容 -->
-          <div class="notification-body">
-            <p class="notification-text">{{ getNotificationText(notification) }}</p>
-            <div class="notification-meta">
-              <span class="notification-time">{{ formatTime(notification.created_at) }}</span>
-              <ElTag v-if="!notification.is_read" size="small" type="danger" effect="plain">未读</ElTag>
-            </div>
-          </div>
-        </div>
-      </ElCard>
-
-      <!-- 分页组件 -->
-      <div v-if="total > 0" class="pagination-container">
-        <ElPagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 30, 50]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-          @size-change="handlePageSizeChange"
-          @current-change="handlePageChange"
-        />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .notifications-container {

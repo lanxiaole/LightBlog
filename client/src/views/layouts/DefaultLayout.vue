@@ -1,133 +1,3 @@
-<script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu, Message } from '@element-plus/icons-vue';
-import { ElBadge, ElInput } from 'element-plus';
-import 'element-plus/dist/index.css';
-import { useUserStore } from '@/stores/user';
-import { useNotificationStore } from '@/stores/notification';
-import { useRoute, useRouter } from 'vue-router';
-import { getCategories } from '@/api/category';
-import { getTags } from '@/api/tag';
-import type { Category } from '@/api/category';
-import type { Tag } from '@/api/tag';
-
-// 获取用户 store
-const userStore = useUserStore();
-// 获取通知 store
-const notificationStore = useNotificationStore();
-// 获取当前路由
-const route = useRoute();
-// 获取路由实例
-const router = useRouter();
-
-// 分类和标签数据
-const categories = ref<Category[]>([]);
-const tags = ref<Tag[]>([]);
-
-// 搜索关键词
-const searchKeyword = ref<string>('');
-
-// 轮询定时器
-let pollingTimer: number | null = null;
-
-// 生成面包屑数据
-const breadcrumbItems = computed(() => {
-  // 过滤掉没有 title 的路由
-  return route.matched.filter(item => item.meta.title).map(item => {
-    // 对于根路径，直接使用 '/' 作为路径
-    if (item.path === '') {
-      return {
-        title: item.meta.title,
-        path: '/'
-      };
-    }
-    // 对于其他路径，使用实际路径
-    return {
-      title: item.meta.title,
-      path: item.path
-    };
-  });
-});
-
-// 获取分类和标签数据
-const fetchCategoriesAndTags = async () => {
-  try {
-    // 获取分类
-    const categoryList = await getCategories();
-    categories.value = categoryList;
-
-    // 获取标签
-    const tagList = await getTags();
-    tags.value = tagList;
-  } catch (error) {
-    console.error('获取分类和标签失败:', error);
-  }
-};
-
-// 获取未读消息数
-const fetchUnreadCount = async () => {
-  if (userStore.isLoggedIn) {
-    await notificationStore.fetchUnreadCount();
-  } else {
-    notificationStore.setUnreadCount(0);
-  }
-};
-
-// 启动轮询
-const startPolling = () => {
-  // 清除之前的定时器
-  stopPolling();
-
-  // 每 10 秒获取一次未读消息数
-  pollingTimer = window.setInterval(() => {
-    fetchUnreadCount();
-  }, 10000);
-};
-
-// 停止轮询
-const stopPolling = () => {
-  if (pollingTimer !== null) {
-    clearInterval(pollingTimer);
-    pollingTimer = null;
-  }
-};
-
-// 组件挂载时获取数据
-onMounted(() => {
-  fetchCategoriesAndTags();
-  fetchUnreadCount();
-  // 启动轮询
-  startPolling();
-});
-
-// 组件卸载时清理
-onUnmounted(() => {
-  // 停止轮询
-  stopPolling();
-});
-
-// 监听登录状态变化
-watch(() => userStore.isLoggedIn, (isLoggedIn) => {
-  fetchUnreadCount();
-  if (isLoggedIn) {
-    // 用户登录，启动轮询
-    startPolling();
-  } else {
-    // 用户退出，停止轮询
-    stopPolling();
-  }
-});
-
-// 搜索方法
-const handleSearch = () => {
-  if (searchKeyword.value.trim()) {
-    router.push({ path: '/search', query: { keyword: searchKeyword.value.trim() } });
-  } else {
-    router.push('/search');
-  }
-};
-</script>
-
 <template>
   <el-container class="default-layout" style="min-height: 100vh;">
     <!-- 左侧导航栏 -->
@@ -301,6 +171,136 @@ const handleSearch = () => {
     </el-container>
   </el-container>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { House, User, Plus, Edit, Search, UserFilled, ArrowDown, CollectionTag, Menu, Message } from '@element-plus/icons-vue';
+import { ElBadge, ElInput } from 'element-plus';
+import 'element-plus/dist/index.css';
+import { useUserStore } from '@/stores/user';
+import { useNotificationStore } from '@/stores/notification';
+import { useRoute, useRouter } from 'vue-router';
+import { getCategories } from '@/api/category';
+import { getTags } from '@/api/tag';
+import type { Category } from '@/api/category';
+import type { Tag } from '@/api/tag';
+
+// 获取用户 store
+const userStore = useUserStore();
+// 获取通知 store
+const notificationStore = useNotificationStore();
+// 获取当前路由
+const route = useRoute();
+// 获取路由实例
+const router = useRouter();
+
+// 分类和标签数据
+const categories = ref<Category[]>([]);
+const tags = ref<Tag[]>([]);
+
+// 搜索关键词
+const searchKeyword = ref<string>('');
+
+// 轮询定时器
+let pollingTimer: number | null = null;
+
+// 生成面包屑数据
+const breadcrumbItems = computed(() => {
+  // 过滤掉没有 title 的路由
+  return route.matched.filter(item => item.meta.title).map(item => {
+    // 对于根路径，直接使用 '/' 作为路径
+    if (item.path === '') {
+      return {
+        title: item.meta.title,
+        path: '/'
+      };
+    }
+    // 对于其他路径，使用实际路径
+    return {
+      title: item.meta.title,
+      path: item.path
+    };
+  });
+});
+
+// 获取分类和标签数据
+const fetchCategoriesAndTags = async () => {
+  try {
+    // 获取分类
+    const categoryList = await getCategories();
+    categories.value = categoryList;
+
+    // 获取标签
+    const tagList = await getTags();
+    tags.value = tagList;
+  } catch (error) {
+    console.error('获取分类和标签失败:', error);
+  }
+};
+
+// 获取未读消息数
+const fetchUnreadCount = async () => {
+  if (userStore.isLoggedIn) {
+    await notificationStore.fetchUnreadCount();
+  } else {
+    notificationStore.setUnreadCount(0);
+  }
+};
+
+// 启动轮询
+const startPolling = () => {
+  // 清除之前的定时器
+  stopPolling();
+
+  // 每 10 秒获取一次未读消息数
+  pollingTimer = window.setInterval(() => {
+    fetchUnreadCount();
+  }, 10000);
+};
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollingTimer !== null) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchCategoriesAndTags();
+  fetchUnreadCount();
+  // 启动轮询
+  startPolling();
+});
+
+// 组件卸载时清理
+onUnmounted(() => {
+  // 停止轮询
+  stopPolling();
+});
+
+// 监听登录状态变化
+watch(() => userStore.isLoggedIn, (isLoggedIn) => {
+  fetchUnreadCount();
+  if (isLoggedIn) {
+    // 用户登录，启动轮询
+    startPolling();
+  } else {
+    // 用户退出，停止轮询
+    stopPolling();
+  }
+});
+
+// 搜索方法
+const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    router.push({ path: '/search', query: { keyword: searchKeyword.value.trim() } });
+  } else {
+    router.push('/search');
+  }
+};
+</script>
 
 <style scoped>
 .default-layout {

@@ -1,3 +1,57 @@
+<template>
+  <div class="comment-section">
+    <h3>评论</h3>
+
+    <!-- 评论输入 -->
+    <CommentInput
+      :model-value="newComment"
+      :reply-to="replyTo"
+      :submitting="submitting"
+      @update:model-value="handleCommentUpdate"
+      @submit="emit('submit')"
+      @cancel-reply="emit('cancelReply')"
+    />
+
+    <!-- 评论列表 -->
+    <div class="comment-list">
+      <!-- 加载状态 -->
+      <div v-if="loading" class="comment-loading">
+        <el-skeleton animated>
+          <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 10px;"></el-skeleton-item>
+          <el-skeleton-item variant="text" style="width: 60%; margin-bottom: 10px;"></el-skeleton-item>
+          <el-skeleton-item variant="text" style="width: 70%; margin-bottom: 20px;"></el-skeleton-item>
+        </el-skeleton>
+      </div>
+
+      <!-- 空状态 -->
+      <el-empty v-else-if="totalComments === 0" description="暂无评论" />
+
+      <!-- 评论列表 -->
+      <div v-else>
+        <CommentItem
+          v-for="comment in commentTree"
+          :key="comment.id"
+          :comment="comment"
+          :all-comments="comments"
+          @reply="emit('reply', $event)"
+          @delete="emit('delete', $event)"
+        />
+      </div>
+    </div>
+
+    <!-- 分页 -->
+    <div v-if="totalComments > commentPageSize" class="comment-pagination">
+      <el-pagination
+        :current-page="commentPage"
+        :page-size="commentPageSize"
+        :total="totalComments"
+        layout="prev, pager, next"
+        @current-change="emit('pageChange', $event)"
+      />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ElSkeleton, ElSkeletonItem, ElEmpty, ElPagination } from 'element-plus';
 import CommentInput from '@/components/comment/CommentInput.vue';
@@ -55,60 +109,6 @@ const handleCommentUpdate = (value: string) => {
   emit('update:newComment', value);
 };
 </script>
-
-<template>
-  <div class="comment-section">
-    <h3>评论</h3>
-
-    <!-- 评论输入 -->
-    <CommentInput
-      :model-value="newComment"
-      :reply-to="replyTo"
-      :submitting="submitting"
-      @update:model-value="handleCommentUpdate"
-      @submit="emit('submit')"
-      @cancel-reply="emit('cancelReply')"
-    />
-
-    <!-- 评论列表 -->
-    <div class="comment-list">
-      <!-- 加载状态 -->
-      <div v-if="loading" class="comment-loading">
-        <el-skeleton animated>
-          <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 10px;"></el-skeleton-item>
-          <el-skeleton-item variant="text" style="width: 60%; margin-bottom: 10px;"></el-skeleton-item>
-          <el-skeleton-item variant="text" style="width: 70%; margin-bottom: 20px;"></el-skeleton-item>
-        </el-skeleton>
-      </div>
-
-      <!-- 空状态 -->
-      <el-empty v-else-if="totalComments === 0" description="暂无评论" />
-
-      <!-- 评论列表 -->
-      <div v-else>
-        <CommentItem
-          v-for="comment in commentTree"
-          :key="comment.id"
-          :comment="comment"
-          :all-comments="comments"
-          @reply="emit('reply', $event)"
-          @delete="emit('delete', $event)"
-        />
-      </div>
-    </div>
-
-    <!-- 分页 -->
-    <div v-if="totalComments > commentPageSize" class="comment-pagination">
-      <el-pagination
-        :current-page="commentPage"
-        :page-size="commentPageSize"
-        :total="totalComments"
-        layout="prev, pager, next"
-        @current-change="emit('pageChange', $event)"
-      />
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .comment-section {

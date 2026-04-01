@@ -1,3 +1,23 @@
+<template>
+  <ElCard
+    :class="['article-card', { 'admin-article': isAdminArticle() }]"
+    @click="emit('click', article.id)"
+  >
+    <template #header>
+      <div class="article-header">
+        <div class="title-container">
+          <h3 class="article-title">{{ article.title }}</h3>
+          <ElTag v-if="isAdminArticle()" type="warning" size="small" effect="dark" style="margin-left: 8px;">管理员</ElTag>
+        </div>
+        <span class="article-date">{{ formatDate(article.created_at) }}</span>
+      </div>
+    </template>
+    <div class="article-summary">
+      {{ getSummary(article.content) }}
+    </div>
+  </ElCard>
+</template>
+
 <script setup lang="ts">
 import { ElCard, ElTag } from 'element-plus';
 import type { Article } from '@/api/article';
@@ -46,26 +66,6 @@ const getSummary = (content: string): string => {
   return plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText;
 };
 </script>
-
-<template>
-  <ElCard
-    :class="['article-card', { 'admin-article': isAdminArticle() }]"
-    @click="emit('click', article.id)"
-  >
-    <template #header>
-      <div class="article-header">
-        <div class="title-container">
-          <h3 class="article-title">{{ article.title }}</h3>
-          <ElTag v-if="isAdminArticle()" type="warning" size="small" effect="dark" style="margin-left: 8px;">管理员</ElTag>
-        </div>
-        <span class="article-date">{{ formatDate(article.created_at) }}</span>
-      </div>
-    </template>
-    <div class="article-summary">
-      {{ getSummary(article.content) }}
-    </div>
-  </ElCard>
-</template>
 
 <style scoped>
 .article-card {

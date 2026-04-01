@@ -1,3 +1,34 @@
+<template>
+  <ElCard class="user-card">
+    <div class="user-info">
+      <ElAvatar :size="'large'" :src="user?.avatar || ''" class="user-avatar">
+        {{ user?.username?.charAt(0)?.toUpperCase() || 'U' }}
+      </ElAvatar>
+      <div class="user-details">
+        <h2 class="username">{{ user?.username }}</h2>
+        <p class="bio" v-if="user?.bio">{{ user?.bio }}</p>
+        <p class="bio" v-else>该用户还没有填写个人简介</p>
+        <ElSpace class="user-stats">
+          <span>关注 {{ followingCount }}</span>
+          <span>粉丝 {{ followersCount }}</span>
+          <ElButton v-if="isCurrentUser" type="primary" @click="handleEdit" style="margin-left: 20px;">
+            编辑资料
+          </ElButton>
+          <ElButton
+            v-else-if="targetUserId !== null"
+            :type="isFollowing ? 'default' : 'primary'"
+            @click="handleFollow"
+            :loading="followLoading"
+            style="margin-left: 20px;"
+          >
+            {{ isFollowing ? '取消关注' : '关注' }}
+          </ElButton>
+        </ElSpace>
+      </div>
+    </div>
+  </ElCard>
+</template>
+
 <script setup lang="ts">
 import { ElCard, ElAvatar, ElSpace, ElButton } from 'element-plus';
 import type { User } from '@/api/user';
@@ -53,37 +84,6 @@ const handleFollow = () => {
   emit('follow');
 };
 </script>
-
-<template>
-  <ElCard class="user-card">
-    <div class="user-info">
-      <ElAvatar :size="'large'" :src="user?.avatar || ''" class="user-avatar">
-        {{ user?.username?.charAt(0)?.toUpperCase() || 'U' }}
-      </ElAvatar>
-      <div class="user-details">
-        <h2 class="username">{{ user?.username }}</h2>
-        <p class="bio" v-if="user?.bio">{{ user?.bio }}</p>
-        <p class="bio" v-else>该用户还没有填写个人简介</p>
-        <ElSpace class="user-stats">
-          <span>关注 {{ followingCount }}</span>
-          <span>粉丝 {{ followersCount }}</span>
-          <ElButton v-if="isCurrentUser" type="primary" @click="handleEdit" style="margin-left: 20px;">
-            编辑资料
-          </ElButton>
-          <ElButton
-            v-else-if="targetUserId !== null"
-            :type="isFollowing ? 'default' : 'primary'"
-            @click="handleFollow"
-            :loading="followLoading"
-            style="margin-left: 20px;"
-          >
-            {{ isFollowing ? '取消关注' : '关注' }}
-          </ElButton>
-        </ElSpace>
-      </div>
-    </div>
-  </ElCard>
-</template>
 
 <style scoped>
 .user-card {

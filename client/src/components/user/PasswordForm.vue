@@ -1,3 +1,61 @@
+<template>
+  <el-card class="password-card" shadow="never">
+    <template #header>
+      <div class="card-header">
+        <span>修改密码</span>
+      </div>
+    </template>
+
+    <el-form
+      ref="formRef"
+      :model="passwordForm"
+      :rules="passwordRules"
+      label-width="100px"
+      @submit.prevent="handleSubmit"
+    >
+      <el-form-item label="旧密码" prop="oldPassword">
+        <el-input
+          v-model="passwordForm.oldPassword"
+          type="password"
+          placeholder="请输入旧密码"
+          show-password
+        />
+      </el-form-item>
+
+      <el-form-item label="新密码" prop="newPassword">
+        <el-input
+          v-model="passwordForm.newPassword"
+          type="password"
+          placeholder="请输入新密码（至少6位）"
+          show-password
+        />
+      </el-form-item>
+
+      <el-form-item label="确认密码" prop="confirmPassword">
+        <el-input
+          v-model="passwordForm.confirmPassword"
+          type="password"
+          placeholder="请再次输入新密码"
+          show-password
+        />
+      </el-form-item>
+
+      <el-form-item>
+        <el-button
+          type="primary"
+          :loading="loading"
+          @click="handleSubmit"
+        >
+          修改密码
+        </el-button>
+        <el-button @click="handleReset">
+          重置
+        </el-button>
+      </el-form-item>
+    </el-form>
+  </el-card>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElCard, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus';
@@ -63,64 +121,6 @@ const handleReset = () => {
   };
 };
 </script>
-
-<template>
-  <el-card class="password-card" shadow="never">
-    <template #header>
-      <div class="card-header">
-        <span>修改密码</span>
-      </div>
-    </template>
-
-    <el-form
-      ref="formRef"
-      :model="passwordForm"
-      :rules="passwordRules"
-      label-width="100px"
-      @submit.prevent="handleSubmit"
-    >
-      <el-form-item label="旧密码" prop="oldPassword">
-        <el-input
-          v-model="passwordForm.oldPassword"
-          type="password"
-          placeholder="请输入旧密码"
-          show-password
-        />
-      </el-form-item>
-
-      <el-form-item label="新密码" prop="newPassword">
-        <el-input
-          v-model="passwordForm.newPassword"
-          type="password"
-          placeholder="请输入新密码（至少6位）"
-          show-password
-        />
-      </el-form-item>
-
-      <el-form-item label="确认密码" prop="confirmPassword">
-        <el-input
-          v-model="passwordForm.confirmPassword"
-          type="password"
-          placeholder="请再次输入新密码"
-          show-password
-        />
-      </el-form-item>
-
-      <el-form-item>
-        <el-button
-          type="primary"
-          :loading="loading"
-          @click="handleSubmit"
-        >
-          修改密码
-        </el-button>
-        <el-button @click="handleReset">
-          重置
-        </el-button>
-      </el-form-item>
-    </el-form>
-  </el-card>
-</template>
 
 <style scoped>
 .password-card {

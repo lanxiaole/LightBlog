@@ -1,3 +1,52 @@
+<template>
+  <div class="user-layout">
+    <!-- 加载状态 -->
+    <LoadingState v-if="loading" />
+
+    <!-- 错误状态 -->
+    <ErrorState v-else-if="error && !notFound" :message="error" />
+
+    <!-- 用户不存在状态 -->
+    <div v-else-if="notFound" class="not-found">
+      <ElEmpty description="用户不存在" />
+    </div>
+
+    <!-- 用户信息和标签页 -->
+    <div v-else class="user-content">
+      <!-- 用户信息卡片 -->
+      <UserInfoCard
+        :user="user"
+        :is-current-user="isCurrentUser"
+        :followers-count="followersCount"
+        :following-count="followingCount"
+        :target-user-id="targetUserId"
+        :is-following="isFollowing"
+        :follow-loading="followLoading"
+        @edit="handleEdit"
+        @follow="toggleFollow"
+      />
+
+      <!-- 标签页导航 -->
+      <ElCard class="tabs-card">
+        <ElTabs v-model="activeTab" @tab-click="handleTabClick">
+          <ElTabPane
+            v-for="tab in tabs"
+            :key="tab.name"
+            :label="tab.label"
+            :name="tab.name"
+          >
+          </ElTabPane>
+        </ElTabs>
+      </ElCard>
+
+      <!-- 内容区域 -->
+      <div class="content-area">
+        <router-view />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -101,55 +150,6 @@ const activeTab = computed(() => {
   return route.path.replace('/', '');
 });
 </script>
-
-<template>
-  <div class="user-layout">
-    <!-- 加载状态 -->
-    <LoadingState v-if="loading" />
-
-    <!-- 错误状态 -->
-    <ErrorState v-else-if="error && !notFound" :message="error" />
-
-    <!-- 用户不存在状态 -->
-    <div v-else-if="notFound" class="not-found">
-      <ElEmpty description="用户不存在" />
-    </div>
-
-    <!-- 用户信息和标签页 -->
-    <div v-else class="user-content">
-      <!-- 用户信息卡片 -->
-      <UserInfoCard
-        :user="user"
-        :is-current-user="isCurrentUser"
-        :followers-count="followersCount"
-        :following-count="followingCount"
-        :target-user-id="targetUserId"
-        :is-following="isFollowing"
-        :follow-loading="followLoading"
-        @edit="handleEdit"
-        @follow="toggleFollow"
-      />
-
-      <!-- 标签页导航 -->
-      <ElCard class="tabs-card">
-        <ElTabs v-model="activeTab" @tab-click="handleTabClick">
-          <ElTabPane
-            v-for="tab in tabs"
-            :key="tab.name"
-            :label="tab.label"
-            :name="tab.name"
-          >
-          </ElTabPane>
-        </ElTabs>
-      </ElCard>
-
-      <!-- 内容区域 -->
-      <div class="content-area">
-        <router-view />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .user-layout {

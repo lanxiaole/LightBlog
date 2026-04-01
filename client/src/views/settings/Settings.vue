@@ -1,29 +1,3 @@
-<script setup lang="ts">
-import { ElCard, ElIcon } from 'element-plus';
-import 'element-plus/dist/index.css';
-import { ArrowLeft } from '@element-plus/icons-vue';
-import { useSettings } from '@/composables/user/useSettings';
-import AvatarUpload from '@/components/user/AvatarUpload.vue';
-import ProfileForm from '@/components/user/ProfileForm.vue';
-import PasswordForm from '@/components/user/PasswordForm.vue';
-
-/**
- * 设置页面
- * 用于编辑用户资料和修改密码
- */
-
-const {
-  form,
-  loading,
-  formRules,
-  userAvatar,
-  currentUsername,
-  handleSubmit,
-  handleCancel,
-  handleAvatarUpload
-} = useSettings();
-</script>
-
 <template>
   <div class="settings-container">
     <h1 class="page-title">
@@ -55,6 +29,32 @@ const {
     <PasswordForm />
   </div>
 </template>
+
+<script setup lang="ts">
+import { ElCard, ElIcon } from 'element-plus';
+import 'element-plus/dist/index.css';
+import { ArrowLeft } from '@element-plus/icons-vue';
+import { useSettings } from '@/composables/user/useSettings';
+import AvatarUpload from '@/components/user/AvatarUpload.vue';
+import ProfileForm from '@/components/user/ProfileForm.vue';
+import PasswordForm from '@/components/user/PasswordForm.vue';
+
+/**
+ * 设置页面
+ * 用于编辑用户资料和修改密码
+ */
+
+const {
+  form,
+  loading,
+  formRules,
+  userAvatar,
+  currentUsername,
+  handleSubmit,
+  handleCancel,
+  handleAvatarUpload
+} = useSettings();
+</script>
 
 <style scoped>
 .settings-container {

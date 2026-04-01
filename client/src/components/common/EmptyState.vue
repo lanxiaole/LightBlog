@@ -1,3 +1,9 @@
+<template>
+  <div class="empty-state">
+    <el-empty :description="description" />
+  </div>
+</template>
+
 <script setup lang="ts">
 /**
  * 空状态组件
@@ -13,12 +19,6 @@ withDefaults(defineProps<Props>(), {
   description: '暂无数据'
 });
 </script>
-
-<template>
-  <div class="empty-state">
-    <el-empty :description="description" />
-  </div>
-</template>
 
 <style scoped>
 .empty-state {

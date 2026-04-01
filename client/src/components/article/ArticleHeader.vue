@@ -1,60 +1,3 @@
-<script setup lang="ts">
-/**
- * 文章头部组件
- * 显示文章标题、作者信息、统计数据、分类标签等
- */
-import { ElAvatar, ElButton, ElDivider, ElTag, ElLink } from 'element-plus';
-import { Star, StarFilled, Message, View } from '@element-plus/icons-vue';
-import type { Article } from '@/api/article';
-
-/**
- * 组件属性
- */
-defineProps<{
-  /** 文章数据 */
-  article: Article;
-  /** 是否为文章作者 */
-  isAuthor: boolean;
-  /** 评论总数（可选） */
-  totalComments?: number;
-  /** 点赞数量（可选，优先使用） */
-  likesCount?: number;
-  /** 是否已收藏 */
-  favorited?: boolean;
-  /** 收藏数量 */
-  favoritesCount?: number;
-  /** 收藏操作加载状态 */
-  favoriting?: boolean;
-  /** 目标用户 ID，可为 null */
-  targetUserId: number | null;
-  /** 当前用户是否已关注 */
-  isFollowing?: boolean;
-  /** 关注操作是否正在加载 */
-  followLoading?: boolean;
-}>();
-
-/**
- * 组件事件
- */
-const emit = defineEmits<{
-  /** 编辑文章 */
-  edit: [];
-  /** 删除文章 */
-  delete: [];
-  /** 切换收藏 */
-  favorite: [];
-  /** 切换关注状态 */
-  follow: [];
-}>();
-
-/**
- * 处理关注按钮点击
- */
-const handleFollow = () => {
-  emit('follow');
-};
-</script>
-
 <template>
   <div class="article-header">
     <h1 class="article-title">{{ article.title }}</h1>
@@ -135,6 +78,63 @@ const handleFollow = () => {
     <el-divider />
   </div>
 </template>
+
+<script setup lang="ts">
+/**
+ * 文章头部组件
+ * 显示文章标题、作者信息、统计数据、分类标签等
+ */
+import { ElAvatar, ElButton, ElDivider, ElTag, ElLink } from 'element-plus';
+import { Star, StarFilled, Message, View } from '@element-plus/icons-vue';
+import type { Article } from '@/api/article';
+
+/**
+ * 组件属性
+ */
+defineProps<{
+  /** 文章数据 */
+  article: Article;
+  /** 是否为文章作者 */
+  isAuthor: boolean;
+  /** 评论总数（可选） */
+  totalComments?: number;
+  /** 点赞数量（可选，优先使用） */
+  likesCount?: number;
+  /** 是否已收藏 */
+  favorited?: boolean;
+  /** 收藏数量 */
+  favoritesCount?: number;
+  /** 收藏操作加载状态 */
+  favoriting?: boolean;
+  /** 目标用户 ID，可为 null */
+  targetUserId: number | null;
+  /** 当前用户是否已关注 */
+  isFollowing?: boolean;
+  /** 关注操作是否正在加载 */
+  followLoading?: boolean;
+}>();
+
+/**
+ * 组件事件
+ */
+const emit = defineEmits<{
+  /** 编辑文章 */
+  edit: [];
+  /** 删除文章 */
+  delete: [];
+  /** 切换收藏 */
+  favorite: [];
+  /** 切换关注状态 */
+  follow: [];
+}>();
+
+/**
+ * 处理关注按钮点击
+ */
+const handleFollow = () => {
+  emit('follow');
+};
+</script>
 
 <style scoped>
 .article-header {

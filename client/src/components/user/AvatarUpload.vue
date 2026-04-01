@@ -1,3 +1,15 @@
+<template>
+  <div class="avatar-section">
+    <ElAvatar :size="size" :src="avatar" class="user-avatar">
+      {{ getFallbackText() }}
+    </ElAvatar>
+    <ElButton type="primary" plain @click="handleUpload" style="margin-top: 15px;">
+      <ElIcon><Upload /></ElIcon>
+      上传头像
+    </ElButton>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ElAvatar, ElButton, ElIcon } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
@@ -43,18 +55,6 @@ const getFallbackText = () => {
   return props.username.charAt(0).toUpperCase();
 };
 </script>
-
-<template>
-  <div class="avatar-section">
-    <ElAvatar :size="size" :src="avatar" class="user-avatar">
-      {{ getFallbackText() }}
-    </ElAvatar>
-    <ElButton type="primary" plain @click="handleUpload" style="margin-top: 15px;">
-      <ElIcon><Upload /></ElIcon>
-      上传头像
-    </ElButton>
-  </div>
-</template>
 
 <style scoped>
 .avatar-section {

@@ -1,3 +1,40 @@
+<template>
+  <ElForm
+    :model="modelValue"
+    :rules="rules"
+    ref="formRef"
+    label-width="80px"
+    class="settings-form"
+  >
+    <el-form-item label="用户名" prop="username">
+      <el-input
+        :model-value="modelValue.username"
+        @update:model-value="(val) => handleChange('username', val)"
+        placeholder="请输入用户名"
+      />
+    </el-form-item>
+
+    <el-form-item label="个人简介">
+      <el-input
+        :model-value="modelValue.bio"
+        @update:model-value="(val) => handleChange('bio', val)"
+        type="textarea"
+        placeholder="请输入个人简介"
+        :rows="4"
+      />
+    </el-form-item>
+
+    <el-form-item>
+      <el-button type="primary" @click="handleSubmit($refs.formRef)" :loading="loading">
+        保存
+      </el-button>
+      <el-button @click="handleCancel" style="margin-left: 10px;">
+        取消
+      </el-button>
+    </el-form-item>
+  </ElForm>
+</template>
+
 <script setup lang="ts">
 import { ElForm, ElFormItem, ElInput, ElButton } from 'element-plus';
 
@@ -61,43 +98,6 @@ const handleCancel = () => {
   emit('cancel');
 };
 </script>
-
-<template>
-  <ElForm
-    :model="modelValue"
-    :rules="rules"
-    ref="formRef"
-    label-width="80px"
-    class="settings-form"
-  >
-    <el-form-item label="用户名" prop="username">
-      <el-input 
-        :model-value="modelValue.username"
-        @update:model-value="(val) => handleChange('username', val)"
-        placeholder="请输入用户名" 
-      />
-    </el-form-item>
-
-    <el-form-item label="个人简介">
-      <el-input
-        :model-value="modelValue.bio"
-        @update:model-value="(val) => handleChange('bio', val)"
-        type="textarea"
-        placeholder="请输入个人简介"
-        :rows="4"
-      />
-    </el-form-item>
-
-    <el-form-item>
-      <el-button type="primary" @click="handleSubmit($refs.formRef)" :loading="loading">
-        保存
-      </el-button>
-      <el-button @click="handleCancel" style="margin-left: 10px;">
-        取消
-      </el-button>
-    </el-form-item>
-  </ElForm>
-</template>
 
 <style scoped>
 .settings-form {

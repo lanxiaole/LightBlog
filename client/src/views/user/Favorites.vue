@@ -1,51 +1,3 @@
-<script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { ElEmpty, ElPagination, ElAlert } from 'element-plus';
-import { useUserFavorites } from '@/composables/user/useUserFavorites';
-import { useUserStore } from '@/stores/user';
-import ArticleCard from '@/components/article/ArticleCard.vue';
-import LoadingState from '@/components/common/LoadingState.vue';
-import ErrorState from '@/components/common/ErrorState.vue';
-
-// 获取路由参数
-const route = useRoute();
-const username = computed(() => route.params.username as string);
-
-// 获取用户 store
-const userStore = useUserStore();
-
-// 计算是否是当前登录用户
-const isCurrentUser = computed(() => {
-  return userStore.isLoggedIn && userStore.userInfo?.username === username.value;
-});
-
-// 获取收藏文章列表
-const { articles, total, page, pageSize, loading, error, fetchFavorites } = useUserFavorites();
-
-// 跳转到文章详情
-const navigateToArticle = (id: number) => {
-  window.location.href = `/article/${id}`;
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size: number) => {
-  fetchFavorites(1, size);
-};
-
-// 处理页码变化
-const handleCurrentChange = (current: number) => {
-  fetchFavorites(current, pageSize.value);
-};
-
-// 组件挂载时获取第一页数据
-onMounted(() => {
-  if (isCurrentUser.value) {
-    fetchFavorites(1, 10);
-  }
-});
-</script>
-
 <template>
   <div class="favorites-page">
     <h2 class="page-title">我的收藏</h2>
@@ -94,6 +46,54 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { ElEmpty, ElPagination, ElAlert } from 'element-plus';
+import { useUserFavorites } from '@/composables/user/useUserFavorites';
+import { useUserStore } from '@/stores/user';
+import ArticleCard from '@/components/article/ArticleCard.vue';
+import LoadingState from '@/components/common/LoadingState.vue';
+import ErrorState from '@/components/common/ErrorState.vue';
+
+// 获取路由参数
+const route = useRoute();
+const username = computed(() => route.params.username as string);
+
+// 获取用户 store
+const userStore = useUserStore();
+
+// 计算是否是当前登录用户
+const isCurrentUser = computed(() => {
+  return userStore.isLoggedIn && userStore.userInfo?.username === username.value;
+});
+
+// 获取收藏文章列表
+const { articles, total, page, pageSize, loading, error, fetchFavorites } = useUserFavorites();
+
+// 跳转到文章详情
+const navigateToArticle = (id: number) => {
+  window.location.href = `/article/${id}`;
+};
+
+// 处理分页大小变化
+const handleSizeChange = (size: number) => {
+  fetchFavorites(1, size);
+};
+
+// 处理页码变化
+const handleCurrentChange = (current: number) => {
+  fetchFavorites(current, pageSize.value);
+};
+
+// 组件挂载时获取第一页数据
+onMounted(() => {
+  if (isCurrentUser.value) {
+    fetchFavorites(1, 10);
+  }
+});
+</script>
 
 <style scoped>
 .favorites-page {

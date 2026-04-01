@@ -1,3 +1,66 @@
+<template>
+  <div class="followers-page">
+    <h1 class="page-title">粉丝列表</h1>
+
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
+      <el-skeleton animated>
+        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
+        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
+        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
+      </el-skeleton>
+    </div>
+
+    <!-- 错误状态 -->
+    <el-alert
+      v-else-if="error"
+      type="error"
+      :title="error"
+      show-icon
+      class="error-alert"
+    />
+
+    <!-- 空状态 -->
+    <el-empty
+      v-else-if="list.length === 0 && !loading"
+      description="暂无粉丝"
+      class="empty-state"
+    />
+
+    <!-- 粉丝列表 -->
+    <div v-else class="followers-list">
+      <el-card
+        v-for="user in list"
+        :key="user.id"
+        class="follower-card"
+      >
+        <div class="follower-info" @click="goToUserProfile(user.username)">
+          <el-avatar :src="user.avatar || undefined" size="default">
+            {{ user.username.charAt(0) }}
+          </el-avatar>
+          <div class="follower-details">
+            <h3 class="follower-name">{{ user.username }}</h3>
+            <p v-if="user.bio" class="follower-bio">{{ user.bio }}</p>
+          </div>
+        </div>
+      </el-card>
+
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="(size) => { pageSize = size; fetchFollowers(); }"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -73,69 +136,6 @@ watch(targetUserId, (newUserId) => {
   }
 }, { immediate: true });
 </script>
-
-<template>
-  <div class="followers-page">
-    <h1 class="page-title">粉丝列表</h1>
-
-    <!-- 加载状态 -->
-    <div v-if="loading" class="loading-container">
-      <el-skeleton animated>
-        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
-        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
-        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
-      </el-skeleton>
-    </div>
-
-    <!-- 错误状态 -->
-    <el-alert
-      v-else-if="error"
-      type="error"
-      :title="error"
-      show-icon
-      class="error-alert"
-    />
-
-    <!-- 空状态 -->
-    <el-empty
-      v-else-if="list.length === 0 && !loading"
-      description="暂无粉丝"
-      class="empty-state"
-    />
-
-    <!-- 粉丝列表 -->
-    <div v-else class="followers-list">
-      <el-card
-        v-for="user in list"
-        :key="user.id"
-        class="follower-card"
-      >
-        <div class="follower-info" @click="goToUserProfile(user.username)">
-          <el-avatar :src="user.avatar || undefined" size="default">
-            {{ user.username.charAt(0) }}
-          </el-avatar>
-          <div class="follower-details">
-            <h3 class="follower-name">{{ user.username }}</h3>
-            <p v-if="user.bio" class="follower-bio">{{ user.bio }}</p>
-          </div>
-        </div>
-      </el-card>
-
-      <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-          @size-change="(size) => { pageSize = size; fetchFollowers(); }"
-          @current-change="handlePageChange"
-        />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .followers-page {

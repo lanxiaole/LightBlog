@@ -1,3 +1,89 @@
+<template>
+  <div class="users-container">
+    <h2 class="page-title">用户管理</h2>
+
+    <el-card class="search-card" shadow="never">
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-input
+            v-model="keyword"
+            placeholder="搜索邮箱或用户名"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </el-col>
+        <el-col :span="4">
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+        </el-col>
+      </el-row>
+    </el-card>
+
+    <el-card class="table-card" shadow="never">
+      <el-table
+        v-loading="loading"
+        :data="list"
+        stripe
+        style="width: 100%"
+      >
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="email" label="邮箱" min-width="200" />
+        <el-table-column prop="username" label="用户名" min-width="150" />
+        <el-table-column label="角色" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.role === 'admin' ? 'danger' : 'info'">
+              {{ row.role === 'admin' ? '管理员' : '普通用户' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.is_active ? 'success' : 'danger'">
+              {{ row.is_active ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="注册时间" width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              :type="row.is_active ? 'warning' : 'success'"
+              size="small"
+              @click="handleStatusChange(row.id, !row.is_active)"
+            >
+              {{ row.is_active ? '禁用' : '启用' }}
+            </el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleResetPassword(row.id)"
+            >
+              重置密码
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-empty v-if="!loading && list.length === 0" description="暂无用户数据" />
+
+      <div v-if="total > 0" class="pagination-container">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
+    </el-card>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElButton, ElInput, ElTable, ElTableColumn, ElTag, ElPagination, ElMessage, ElCard, ElRow, ElCol, ElEmpty } from 'element-plus';
@@ -86,92 +172,6 @@ onMounted(() => {
   fetchUsers();
 });
 </script>
-
-<template>
-  <div class="users-container">
-    <h2 class="page-title">用户管理</h2>
-
-    <el-card class="search-card" shadow="never">
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-input
-            v-model="keyword"
-            placeholder="搜索邮箱或用户名"
-            clearable
-            @keyup.enter="handleSearch"
-          />
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-        </el-col>
-      </el-row>
-    </el-card>
-
-    <el-card class="table-card" shadow="never">
-      <el-table
-        v-loading="loading"
-        :data="list"
-        stripe
-        style="width: 100%"
-      >
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="email" label="邮箱" min-width="200" />
-        <el-table-column prop="username" label="用户名" min-width="150" />
-        <el-table-column label="角色" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.role === 'admin' ? 'danger' : 'info'">
-              {{ row.role === 'admin' ? '管理员' : '普通用户' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.is_active ? 'success' : 'danger'">
-              {{ row.is_active ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="注册时间" width="180">
-          <template #default="{ row }">
-            {{ formatDate(row.created_at) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <el-button
-              :type="row.is_active ? 'warning' : 'success'"
-              size="small"
-              @click="handleStatusChange(row.id, !row.is_active)"
-            >
-              {{ row.is_active ? '禁用' : '启用' }}
-            </el-button>
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleResetPassword(row.id)"
-            >
-              重置密码
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-empty v-if="!loading && list.length === 0" description="暂无用户数据" />
-
-      <div v-if="total > 0" class="pagination-container">
-        <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @current-change="handlePageChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
-  </div>
-</template>
 
 <style scoped>
 .users-container {

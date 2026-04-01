@@ -1,3 +1,20 @@
+<template>
+  <div class="editor-container">
+    <Toolbar
+      style="border-bottom: 1px solid #ccc"
+      :editor="editorInstance"
+      :default-config="editorConfig"
+    />
+    <Editor
+      :style="{ height, overflowY: 'auto' }"
+      :model-value="modelValue"
+      :default-config="editorConfig"
+      @on-change="handleEditorChange"
+      @on-created="handleEditorCreated"
+    />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
@@ -75,23 +92,6 @@ defineExpose({
   }
 });
 </script>
-
-<template>
-  <div class="editor-container">
-    <Toolbar
-      style="border-bottom: 1px solid #ccc"
-      :editor="editorInstance"
-      :default-config="editorConfig"
-    />
-    <Editor
-      :style="{ height, overflowY: 'auto' }"
-      :model-value="modelValue"
-      :default-config="editorConfig"
-      @on-change="handleEditorChange"
-      @on-created="handleEditorCreated"
-    />
-  </div>
-</template>
 
 <style scoped>
 .editor-container {

@@ -1,53 +1,3 @@
-<script setup lang="ts">
-import { ElCard, ElTag } from 'element-plus';
-import type { Category } from '@/api/category';
-import type { Tag } from '@/api/tag';
-
-/**
- * 侧边栏组件
- * 展示热门推荐、分类和标签
- */
-
-// 组件属性定义
-interface Props {
-  /** 分类列表 */
-  categories: Category[];
-  /** 标签列表 */
-  tags: Tag[];
-  /** 热门推荐列表（可选） */
-  hotArticles?: string[];
-}
-
-// 定义组件属性并设置默认值
-withDefaults(defineProps<Props>(), {
-  hotArticles: () => ['热门文章 1', '热门文章 2', '热门文章 3', '热门文章 4', '热门文章 5']
-});
-
-// 定义组件事件
-const emit = defineEmits<{
-  /** 分类点击事件 */
-  'category-click': [name: string];
-  /** 标签点击事件 */
-  'tag-click': [name: string];
-}>();
-
-/**
- * 处理分类点击
- * @param name 分类名称
- */
-const handleCategoryClick = (name: string) => {
-  emit('category-click', name);
-};
-
-/**
- * 处理标签点击
- * @param name 标签名称
- */
-const handleTagClick = (name: string) => {
-  emit('tag-click', name);
-};
-</script>
-
 <template>
   <div class="sidebar">
     <!-- 热门推荐 -->
@@ -105,6 +55,56 @@ const handleTagClick = (name: string) => {
     </ElCard>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ElCard, ElTag } from 'element-plus';
+import type { Category } from '@/api/category';
+import type { Tag } from '@/api/tag';
+
+/**
+ * 侧边栏组件
+ * 展示热门推荐、分类和标签
+ */
+
+// 组件属性定义
+interface Props {
+  /** 分类列表 */
+  categories: Category[];
+  /** 标签列表 */
+  tags: Tag[];
+  /** 热门推荐列表（可选） */
+  hotArticles?: string[];
+}
+
+// 定义组件属性并设置默认值
+withDefaults(defineProps<Props>(), {
+  hotArticles: () => ['热门文章 1', '热门文章 2', '热门文章 3', '热门文章 4', '热门文章 5']
+});
+
+// 定义组件事件
+const emit = defineEmits<{
+  /** 分类点击事件 */
+  'category-click': [name: string];
+  /** 标签点击事件 */
+  'tag-click': [name: string];
+}>();
+
+/**
+ * 处理分类点击
+ * @param name 分类名称
+ */
+const handleCategoryClick = (name: string) => {
+  emit('category-click', name);
+};
+
+/**
+ * 处理标签点击
+ * @param name 标签名称
+ */
+const handleTagClick = (name: string) => {
+  emit('tag-click', name);
+};
+</script>
 
 <style scoped>
 .sidebar {

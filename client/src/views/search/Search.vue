@@ -1,3 +1,55 @@
+<template>
+  <div class="search-page">
+    <div class="page-header">
+      <h1>搜索</h1>
+      <div class="search-keyword" v-if="keyword">
+        搜索关键词: <span class="keyword">{{ keyword }}</span>
+      </div>
+    </div>
+
+    <div class="article-list">
+      <!-- 加载状态 -->
+      <LoadingState v-if="loading" />
+
+      <!-- 错误状态 -->
+      <ErrorState
+        v-else-if="error"
+        :message="error"
+        @retry="handleRetry"
+      />
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-else-if="articles.length === 0 && !loading && !error"
+        :description="keyword ? '没有找到相关文章' : '请输入搜索关键词'"
+      />
+
+      <!-- 文章列表 -->
+      <div v-else class="articles">
+        <ArticleCard
+          v-for="article in articles"
+          :key="article.id"
+          :article="article"
+          @click="handleArticleClick(article.id)"
+        />
+      </div>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination" v-if="total > 0 && !loading && !error">
+      <ElPagination
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="(size) => pageSize = size"
+        @current-change="handlePageChange"
+      />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -89,58 +141,6 @@ const handleRetry = () => {
   fetchResults();
 };
 </script>
-
-<template>
-  <div class="search-page">
-    <div class="page-header">
-      <h1>搜索</h1>
-      <div class="search-keyword" v-if="keyword">
-        搜索关键词: <span class="keyword">{{ keyword }}</span>
-      </div>
-    </div>
-
-    <div class="article-list">
-      <!-- 加载状态 -->
-      <LoadingState v-if="loading" />
-
-      <!-- 错误状态 -->
-      <ErrorState
-        v-else-if="error"
-        :message="error"
-        @retry="handleRetry"
-      />
-
-      <!-- 空状态 -->
-      <EmptyState
-        v-else-if="articles.length === 0 && !loading && !error"
-        :description="keyword ? '没有找到相关文章' : '请输入搜索关键词'"
-      />
-
-      <!-- 文章列表 -->
-      <div v-else class="articles">
-        <ArticleCard
-          v-for="article in articles"
-          :key="article.id"
-          :article="article"
-          @click="handleArticleClick(article.id)"
-        />
-      </div>
-    </div>
-
-    <!-- 分页 -->
-    <div class="pagination" v-if="total > 0 && !loading && !error">
-      <ElPagination
-        v-model:current-page="page"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
-        @size-change="(size) => pageSize = size"
-        @current-change="handlePageChange"
-      />
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .search-page {

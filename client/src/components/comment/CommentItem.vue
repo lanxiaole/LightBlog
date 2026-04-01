@@ -1,47 +1,3 @@
-<script setup lang="ts">
-/**
- * 评论项组件
- * 用于显示单条评论及其回复，支持递归渲染多层回复
- */
-import { ref } from 'vue';
-import { ElAvatar, ElButton } from 'element-plus';
-import { useUserStore } from '@/stores/user';
-import type { Comment } from '@/api/comment';
-
-/**
- * 显式声明组件名称，支持递归渲染
- */
-defineOptions({
-  name: 'CommentItem'
-});
-
-/**
- * 组件属性
- */
-defineProps<{
-  /** 评论数据 */
-  comment: Comment;
-  /** 所有评论列表，用于过滤回复 */
-  allComments: Comment[];
-  /** 回复回调函数 */
-  onReply: (commentId: number) => void;
-  /** 删除回调函数 */
-  onDelete: (commentId: number) => void;
-}>();
-
-const userStore = useUserStore();
-
-// 展开/收起回复
-const isExpanded = ref(true);
-
-/**
- * 切换展开/收起状态
- */
-const toggleExpand = () => {
-  isExpanded.value = !isExpanded.value;
-};
-</script>
-
 <template>
   <div class="comment-item">
     <div class="comment-header">
@@ -94,6 +50,50 @@ const toggleExpand = () => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+/**
+ * 评论项组件
+ * 用于显示单条评论及其回复，支持递归渲染多层回复
+ */
+import { ref } from 'vue';
+import { ElAvatar, ElButton } from 'element-plus';
+import { useUserStore } from '@/stores/user';
+import type { Comment } from '@/api/comment';
+
+/**
+ * 显式声明组件名称，支持递归渲染
+ */
+defineOptions({
+  name: 'CommentItem'
+});
+
+/**
+ * 组件属性
+ */
+defineProps<{
+  /** 评论数据 */
+  comment: Comment;
+  /** 所有评论列表，用于过滤回复 */
+  allComments: Comment[];
+  /** 回复回调函数 */
+  onReply: (commentId: number) => void;
+  /** 删除回调函数 */
+  onDelete: (commentId: number) => void;
+}>();
+
+const userStore = useUserStore();
+
+// 展开/收起回复
+const isExpanded = ref(true);
+
+/**
+ * 切换展开/收起状态
+ */
+const toggleExpand = () => {
+  isExpanded.value = !isExpanded.value;
+};
+</script>
 
 <style scoped>
 .comment-item {

@@ -1,3 +1,29 @@
+<template>
+  <div class="cover-upload-wrapper">
+    <el-upload
+      class="cover-upload"
+      action="#"
+      :auto-upload="false"
+      :on-change="handleCoverUpload"
+      :on-remove="handleCoverRemove"
+      :file-list="fileList"
+      :limit="1"
+    >
+      <el-button type="primary" icon="el-icon-upload">
+        选择封面
+      </el-button>
+      <template #tip>
+        <div class="el-upload__tip">
+          请选择一张图片作为封面（可选）
+        </div>
+      </template>
+    </el-upload>
+    <div v-if="modelValue" class="cover-preview">
+      <img :src="modelValue" alt="封面预览" />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ElUpload, ElButton } from 'element-plus';
@@ -49,32 +75,6 @@ const handleCoverRemove = () => {
   emit('update:modelValue', '');
 };
 </script>
-
-<template>
-  <div class="cover-upload-wrapper">
-    <el-upload
-      class="cover-upload"
-      action="#"
-      :auto-upload="false"
-      :on-change="handleCoverUpload"
-      :on-remove="handleCoverRemove"
-      :file-list="fileList"
-      :limit="1"
-    >
-      <el-button type="primary" icon="el-icon-upload">
-        选择封面
-      </el-button>
-      <template #tip>
-        <div class="el-upload__tip">
-          请选择一张图片作为封面（可选）
-        </div>
-      </template>
-    </el-upload>
-    <div v-if="modelValue" class="cover-preview">
-      <img :src="modelValue" alt="封面预览" />
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .cover-upload-wrapper {

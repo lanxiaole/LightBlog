@@ -1,3 +1,82 @@
+<template>
+  <el-form :model="modelValue" label-width="80px" class="article-form">
+    <!-- 标题 -->
+    <el-form-item label="标题" required>
+      <el-input
+        :model-value="modelValue.title"
+        @update:model-value="updateField('title', $event)"
+        placeholder="请输入文章标题"
+        :maxlength="100"
+        show-word-limit
+      />
+    </el-form-item>
+
+    <!-- 分类 -->
+    <el-form-item label="分类">
+      <el-select
+        :model-value="modelValue.category_id"
+        @update:model-value="updateField('category_id', $event)"
+        placeholder="请选择分类"
+        clearable
+      >
+        <el-option
+          v-for="category in categories"
+          :key="category.id"
+          :label="category.name"
+          :value="category.id"
+        />
+      </el-select>
+    </el-form-item>
+
+    <!-- 标签 -->
+    <el-form-item label="标签">
+      <el-select
+        :model-value="modelValue.tags"
+        @update:model-value="updateField('tags', $event)"
+        multiple
+        filterable
+        allow-create
+        default-first-option
+        placeholder="请选择或输入标签"
+      >
+        <el-option
+          v-for="tag in existingTags"
+          :key="tag.id"
+          :label="tag.name"
+          :value="tag.name"
+        />
+      </el-select>
+    </el-form-item>
+
+    <!-- 封面图 -->
+    <el-form-item label="封面图">
+      <CoverUpload
+        :model-value="modelValue.cover"
+        @update:model-value="updateField('cover', $event)"
+      />
+    </el-form-item>
+
+    <!-- 正文 -->
+    <el-form-item label="正文" required>
+      <ArticleEditor
+        ref="articleEditorRef"
+        :model-value="modelValue.content"
+        @update:model-value="updateField('content', $event)"
+      />
+    </el-form-item>
+
+    <!-- 操作按钮 -->
+    <el-form-item>
+      <el-button type="primary" @click="emit('submit')" :loading="submitting">
+        {{ submitText }}
+      </el-button>
+      <el-button @click="emit('cancel')">
+        取消
+      </el-button>
+    </el-form-item>
+  </el-form>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import {
@@ -84,85 +163,6 @@ defineExpose({
   setEditorContent
 });
 </script>
-
-<template>
-  <el-form :model="modelValue" label-width="80px" class="article-form">
-    <!-- 标题 -->
-    <el-form-item label="标题" required>
-      <el-input
-        :model-value="modelValue.title"
-        @update:model-value="updateField('title', $event)"
-        placeholder="请输入文章标题"
-        :maxlength="100"
-        show-word-limit
-      />
-    </el-form-item>
-
-    <!-- 分类 -->
-    <el-form-item label="分类">
-      <el-select
-        :model-value="modelValue.category_id"
-        @update:model-value="updateField('category_id', $event)"
-        placeholder="请选择分类"
-        clearable
-      >
-        <el-option
-          v-for="category in categories"
-          :key="category.id"
-          :label="category.name"
-          :value="category.id"
-        />
-      </el-select>
-    </el-form-item>
-
-    <!-- 标签 -->
-    <el-form-item label="标签">
-      <el-select
-        :model-value="modelValue.tags"
-        @update:model-value="updateField('tags', $event)"
-        multiple
-        filterable
-        allow-create
-        default-first-option
-        placeholder="请选择或输入标签"
-      >
-        <el-option
-          v-for="tag in existingTags"
-          :key="tag.id"
-          :label="tag.name"
-          :value="tag.name"
-        />
-      </el-select>
-    </el-form-item>
-
-    <!-- 封面图 -->
-    <el-form-item label="封面图">
-      <CoverUpload
-        :model-value="modelValue.cover"
-        @update:model-value="updateField('cover', $event)"
-      />
-    </el-form-item>
-
-    <!-- 正文 -->
-    <el-form-item label="正文" required>
-      <ArticleEditor
-        ref="articleEditorRef"
-        :model-value="modelValue.content"
-        @update:model-value="updateField('content', $event)"
-      />
-    </el-form-item>
-
-    <!-- 操作按钮 -->
-    <el-form-item>
-      <el-button type="primary" @click="emit('submit')" :loading="submitting">
-        {{ submitText }}
-      </el-button>
-      <el-button @click="emit('cancel')">
-        取消
-      </el-button>
-    </el-form-item>
-  </el-form>
-</template>
 
 <style scoped>
 .article-form {

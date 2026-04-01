@@ -1,3 +1,12 @@
+<template>
+  <div class="loading-state">
+    <el-icon class="is-loading loading-icon">
+      <Loading />
+    </el-icon>
+    <span class="loading-text">{{ text }}</span>
+  </div>
+</template>
+
 <script setup lang="ts">
 /**
  * 加载状态组件
@@ -13,15 +22,6 @@ withDefaults(defineProps<Props>(), {
   text: '加载中...'
 });
 </script>
-
-<template>
-  <div class="loading-state">
-    <el-icon class="is-loading loading-icon">
-      <Loading />
-    </el-icon>
-    <span class="loading-text">{{ text }}</span>
-  </div>
-</template>
 
 <style scoped>
 .loading-state {

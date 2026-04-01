@@ -1,3 +1,19 @@
+<template>
+  <div class="write-article">
+    <h1 class="page-title">写文章</h1>
+
+    <ArticleForm
+      v-model="form"
+      :categories="categories"
+      :existing-tags="existingTags"
+      :submitting="submitting"
+      submit-text="发布文章"
+      @submit="submitForm"
+      @cancel="handleCancel"
+    />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { createArticle } from '@/api/article';
@@ -41,22 +57,6 @@ const handleCancel = () => {
   router.back();
 };
 </script>
-
-<template>
-  <div class="write-article">
-    <h1 class="page-title">写文章</h1>
-
-    <ArticleForm
-      v-model="form"
-      :categories="categories"
-      :existing-tags="existingTags"
-      :submitting="submitting"
-      submit-text="发布文章"
-      @submit="submitForm"
-      @cancel="handleCancel"
-    />
-  </div>
-</template>
 
 <style scoped>
 .write-article {

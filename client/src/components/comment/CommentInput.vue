@@ -1,3 +1,36 @@
+<template>
+  <div class="comment-input">
+    <el-avatar v-if="userStore.userInfo" :src="userStore.userInfo.avatar || undefined" size="small">
+      {{ userStore.userInfo.username?.charAt(0) || 'U' }}
+    </el-avatar>
+    <el-avatar v-else size="small">U</el-avatar>
+    <div class="input-area">
+      <div v-if="replyTo" class="reply-info">
+        回复评论 #{{ replyTo }}
+        <el-button type="text" size="small" @click="emit('cancelReply')">取消</el-button>
+      </div>
+      <el-input
+        :model-value="modelValue"
+        @update:model-value="emit('update:modelValue', $event)"
+        type="textarea"
+        :rows="3"
+        placeholder="写下你的评论..."
+        :disabled="!userStore.isLoggedIn"
+      />
+      <div class="input-actions">
+        <el-button
+          type="primary"
+          @click="emit('submit')"
+          :loading="submitting"
+          :disabled="!userStore.isLoggedIn || !modelValue.trim()"
+        >
+          发表评论
+        </el-button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 /**
  * 评论输入组件
@@ -32,39 +65,6 @@ const emit = defineEmits<{
 
 const userStore = useUserStore();
 </script>
-
-<template>
-  <div class="comment-input">
-    <el-avatar v-if="userStore.userInfo" :src="userStore.userInfo.avatar || undefined" size="small">
-      {{ userStore.userInfo.username?.charAt(0) || 'U' }}
-    </el-avatar>
-    <el-avatar v-else size="small">U</el-avatar>
-    <div class="input-area">
-      <div v-if="replyTo" class="reply-info">
-        回复评论 #{{ replyTo }}
-        <el-button type="text" size="small" @click="emit('cancelReply')">取消</el-button>
-      </div>
-      <el-input
-        :model-value="modelValue"
-        @update:model-value="emit('update:modelValue', $event)"
-        type="textarea"
-        :rows="3"
-        placeholder="写下你的评论..."
-        :disabled="!userStore.isLoggedIn"
-      />
-      <div class="input-actions">
-        <el-button
-          type="primary"
-          @click="emit('submit')"
-          :loading="submitting"
-          :disabled="!userStore.isLoggedIn || !modelValue.trim()"
-        >
-          发表评论
-        </el-button>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .comment-input {

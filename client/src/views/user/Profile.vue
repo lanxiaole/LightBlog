@@ -1,41 +1,3 @@
-<script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { computed } from 'vue';
-import { ElPagination } from 'element-plus';
-import 'element-plus/dist/index.css';
-import { useUserArticles } from '@/composables/user/useUserArticles';
-import ArticleCard from '@/components/article/ArticleCard.vue';
-import LoadingState from '@/components/common/LoadingState.vue';
-import ErrorState from '@/components/common/ErrorState.vue';
-import EmptyState from '@/components/common/EmptyState.vue';
-
-/**
- * 用户文章列表页面
- * 展示用户发布的文章列表
- */
-
-const route = useRoute();
-const router = useRouter();
-const username = computed(() => route.params.username as string);
-
-// 处理文章卡片点击
-const handleArticleClick = (id: number) => {
-  router.push(`/article/${id}`);
-};
-
-const {
-  articles,
-  total,
-  page,
-  pageSize,
-  loading,
-  error,
-  fetchArticles,
-  setPage,
-  setPageSize
-} = useUserArticles(username);
-</script>
-
 <template>
   <div class="profile-container">
     <!-- 加载状态 -->
@@ -74,6 +36,44 @@ const {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { ElPagination } from 'element-plus';
+import 'element-plus/dist/index.css';
+import { useUserArticles } from '@/composables/user/useUserArticles';
+import ArticleCard from '@/components/article/ArticleCard.vue';
+import LoadingState from '@/components/common/LoadingState.vue';
+import ErrorState from '@/components/common/ErrorState.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
+
+/**
+ * 用户文章列表页面
+ * 展示用户发布的文章列表
+ */
+
+const route = useRoute();
+const router = useRouter();
+const username = computed(() => route.params.username as string);
+
+// 处理文章卡片点击
+const handleArticleClick = (id: number) => {
+  router.push(`/article/${id}`);
+};
+
+const {
+  articles,
+  total,
+  page,
+  pageSize,
+  loading,
+  error,
+  fetchArticles,
+  setPage,
+  setPageSize
+} = useUserArticles(username);
+</script>
 
 <style scoped>
 .profile-container {

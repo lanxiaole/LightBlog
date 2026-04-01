@@ -1,3 +1,17 @@
+<template>
+  <div class="error-state">
+    <el-alert
+      :title="message"
+      type="error"
+      show-icon
+      :closable="false"
+    />
+    <el-button type="primary" @click="emit('retry')" class="retry-btn">
+      {{ retryText }}
+    </el-button>
+  </div>
+</template>
+
 <script setup lang="ts">
 /**
  * 错误状态组件
@@ -20,20 +34,6 @@ const emit = defineEmits<{
   retry: [];
 }>();
 </script>
-
-<template>
-  <div class="error-state">
-    <el-alert
-      :title="message"
-      type="error"
-      show-icon
-      :closable="false"
-    />
-    <el-button type="primary" @click="emit('retry')" class="retry-btn">
-      {{ retryText }}
-    </el-button>
-  </div>
-</template>
 
 <style scoped>
 .error-state {

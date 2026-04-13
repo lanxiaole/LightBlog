@@ -27,7 +27,7 @@ export const ArticleCategoryModel = {
       JOIN categories c ON a.category_id = c.id
       JOIN users u ON a.author_id = u.id
       WHERE c.name = ? AND a.status = 'published'
-      ORDER BY a.created_at DESC
+      ORDER BY a.is_pinned DESC, a.created_at DESC
       ${paginationClause}
     `;
 
@@ -53,6 +53,7 @@ export const ArticleCategoryModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {

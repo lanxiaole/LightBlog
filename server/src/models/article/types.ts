@@ -19,6 +19,7 @@ export interface Article {
   status: string;
   views: number;
   likes: number;
+  is_pinned: boolean;
   created_at: Date;
   updated_at: Date;
   author?: Author;

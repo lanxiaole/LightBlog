@@ -7,6 +7,7 @@
       <div class="article-header">
         <div class="title-container">
           <h3 class="article-title">{{ article.title }}</h3>
+          <ElTag v-if="article.is_pinned" type="success" size="small" effect="dark" style="margin-left: 8px;">置顶</ElTag>
           <ElTag v-if="isAdminArticle()" type="warning" size="small" effect="dark" style="margin-left: 8px;">管理员</ElTag>
         </div>
         <span class="article-date">{{ formatDate(article.created_at) }}</span>

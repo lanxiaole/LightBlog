@@ -26,7 +26,7 @@ export const ArticleQueryModel = {
       FROM articles a
       JOIN users u ON a.author_id = u.id
       WHERE a.status = 'published'
-      ORDER BY a.created_at DESC
+      ORDER BY a.is_pinned DESC, a.created_at DESC
       ${paginationClause}
     `;
 
@@ -53,6 +53,7 @@ export const ArticleQueryModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {
@@ -89,7 +90,7 @@ export const ArticleQueryModel = {
       FROM articles a
       JOIN users u ON a.author_id = u.id
       WHERE a.author_id = ? AND a.status = 'published'
-      ORDER BY a.created_at DESC
+      ORDER BY a.is_pinned DESC, a.created_at DESC
       ${paginationClause}
     `;
 
@@ -116,6 +117,7 @@ export const ArticleQueryModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {
@@ -155,7 +157,7 @@ export const ArticleQueryModel = {
       JOIN tags t ON at.tag_id = t.id
       JOIN users u ON a.author_id = u.id
       WHERE t.name = ? AND a.status = 'published'
-      ORDER BY a.created_at DESC
+      ORDER BY a.is_pinned DESC, a.created_at DESC
       ${paginationClause}
     `;
 
@@ -182,6 +184,7 @@ export const ArticleQueryModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {
@@ -226,7 +229,7 @@ export const ArticleQueryModel = {
       FROM articles a
       JOIN users u ON a.author_id = u.id
       WHERE (a.title LIKE ? OR a.content LIKE ?) AND a.status = 'published'
-      ORDER BY a.created_at DESC
+      ORDER BY a.is_pinned DESC, a.created_at DESC
       ${paginationClause}
     `;
 
@@ -253,6 +256,7 @@ export const ArticleQueryModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {
@@ -339,6 +343,7 @@ export const ArticleQueryModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {

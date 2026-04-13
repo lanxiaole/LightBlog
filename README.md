@@ -175,6 +175,9 @@ ALTER TABLE `articles` ADD FULLTEXT INDEX `ft_title_content` (`title`, `content`
 后端为用户表增加状态字段
 ALTER TABLE `users` ADD COLUMN `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT '账号状态：1启用，0禁用' AFTER `role`;
 
+在数据库文章表中添加banned字段，修复无法下架文章的问题
+ALTER TABLE `articles` MODIFY COLUMN `status` enum('draft','published','banned') DEFAULT 'published';
+
 ## 项目配置说明
 
 ### 开发环境配置

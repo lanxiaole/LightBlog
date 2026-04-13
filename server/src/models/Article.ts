@@ -83,6 +83,7 @@ export const ArticleModel = {
       status: article.status,
       views: article.views,
       likes: article.likes,
+      is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
       author: {

@@ -465,7 +465,7 @@ export async function adminDeleteArticle(req: Request, res: Response): Promise<v
       return;
     }
     
-    const success = await ArticleService.deleteArticle(id);
+    const success = await ArticleService.adminDeleteArticle(id);
     
     if (success) {
       res.status(200).json({ message: '删除成功' });

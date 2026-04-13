@@ -27,7 +27,7 @@ export const ArticleCategoryModel = {
       JOIN categories c ON a.category_id = c.id
       JOIN users u ON a.author_id = u.id
       WHERE c.name = ? AND a.status = 'published'
-      ORDER BY (u.role = 'admin') DESC, a.created_at DESC
+      ORDER BY a.created_at DESC
       ${paginationClause}
     `;
 

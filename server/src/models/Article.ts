@@ -161,6 +161,34 @@ export const ArticleModel = {
     return (result as any).affectedRows > 0;
   },
 
+  /**
+   * 设置文章置顶状态
+   * @param id 文章 ID
+   * @param isPinned 是否置顶
+   * @returns 是否更新成功
+   */
+  async togglePin(id: number, isPinned: boolean): Promise<boolean> {
+    const sql = 'UPDATE articles SET is_pinned = ?, updated_at = NOW() WHERE id = ?';
+    
+    const [result] = await pool.execute<RowDataPacket[]>(sql, [isPinned, id]);
+    
+    return (result as any).affectedRows > 0;
+  },
+
+  /**
+   * 更新文章状态
+   * @param id 文章 ID
+   * @param status 文章状态
+   * @returns 是否更新成功
+   */
+  async updateArticleStatus(id: number, status: string): Promise<boolean> {
+    const sql = 'UPDATE articles SET status = ?, updated_at = NOW() WHERE id = ?';
+    
+    const [result] = await pool.execute<RowDataPacket[]>(sql, [status, id]);
+    
+    return (result as any).affectedRows > 0;
+  },
+
   // 导入标签相关操作
   ...ArticleTagModel,
 

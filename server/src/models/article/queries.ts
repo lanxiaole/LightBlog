@@ -266,5 +266,91 @@ export const ArticleQueryModel = {
     const total = (countResult[0] as RowDataPacket[])[0].total as number;
 
     return { list, total };
+  },
+
+  /**
+   * 获取所有文章（用于管理后台）
+   * @param params 查询参数
+   * @returns 包含文章列表和总记录数的对象
+   */
+  async getAllArticles(params: { keyword?: string; categoryId?: number; status?: string; page?: number; pageSize?: number }): Promise<{ list: Article[]; total: number }> {
+    const { keyword, categoryId, status, page = 1, pageSize = 10 } = params;
+    
+    // 使用分页工具函数构建分页 SQL
+    const paginationClause = buildPaginationSql(page, pageSize);
+    
+    // 构建查询条件
+    const conditions: string[] = [];
+    const values: any[] = [];
+    
+    if (keyword && keyword.trim() !== '') {
+      conditions.push('(a.title LIKE ? OR a.content LIKE ?)');
+      const searchKeyword = `%${keyword.trim()}%`;
+      values.push(searchKeyword, searchKeyword);
+    }
+    
+    if (categoryId) {
+      conditions.push('a.category_id = ?');
+      values.push(categoryId);
+    }
+    
+    if (status) {
+      conditions.push('a.status = ?');
+      values.push(status);
+    }
+    
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    
+    // 查询文章列表（包含作者信息）
+    const listSql = `
+      SELECT 
+        a.*, 
+        u.id as author_id, 
+        u.username, 
+        u.avatar,
+        u.role as author_role
+      FROM articles a
+      JOIN users u ON a.author_id = u.id
+      ${whereClause}
+      ORDER BY a.is_pinned DESC, a.created_at DESC
+      ${paginationClause}
+    `;
+    
+    // 查询总记录数
+    const countSql = `
+      SELECT COUNT(*) as total FROM articles a
+      ${whereClause}
+    `;
+    
+    // 并行执行两个查询
+    const [listResult, countResult] = await Promise.all([
+      pool.execute<RowDataPacket[]>(listSql, values),
+      pool.execute<RowDataPacket[]>(countSql, values)
+    ]);
+    
+    // 处理结果，添加作者信息
+    const list = (listResult[0] as any[]).map(article => ({
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      cover: article.cover,
+      author_id: article.author_id,
+      category_id: article.category_id,
+      status: article.status,
+      views: article.views,
+      likes: article.likes,
+      created_at: article.created_at,
+      updated_at: article.updated_at,
+      author: {
+        id: article.author_id,
+        username: article.username,
+        avatar: article.avatar,
+        role: article.author_role
+      }
+    }));
+    
+    const total = (countResult[0] as RowDataPacket[])[0].total as number;
+    
+    return { list, total };
   }
 };

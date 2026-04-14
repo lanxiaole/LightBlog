@@ -9,6 +9,7 @@ import { AdminStatsService, AdminStats } from './adminStatsService';
 import { AdminArticleService } from './adminArticleService';
 import { AdminUserService } from './adminUserService';
 import { CategoryService } from './categoryService';
+import { TagService } from './tagService';
 
 // 导出类型
 export type { AdminStats };
@@ -36,5 +37,11 @@ export const AdminService = {
   getCategories: CategoryService.getCategories,
   createCategory: CategoryService.createCategory,
   updateCategory: CategoryService.updateCategory,
-  deleteCategory: CategoryService.deleteCategory
+  deleteCategory: CategoryService.deleteCategory,
+  
+  // 标签管理相关
+  getTags: TagService.getTags,
+  createTag: TagService.createTag,
+  updateTag: TagService.updateTag,
+  deleteTag: TagService.deleteTag
 };

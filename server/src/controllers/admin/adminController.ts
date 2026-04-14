@@ -9,6 +9,7 @@ import adminStats from './adminStats';
 import adminArticle from './adminArticle';
 import adminUser from './adminUser';
 import adminCategory from './categoryController';
+import adminTag from './tagController';
 
 // 导出各个模块的函数
 export * from './adminAuth';
@@ -16,6 +17,7 @@ export * from './adminStats';
 export * from './adminArticle';
 export * from './adminUser';
 export * from './categoryController';
+export * from './tagController';
 
 // 导出默认对象，包含所有控制器函数
 const adminController = {
@@ -23,7 +25,8 @@ const adminController = {
   ...adminStats,
   ...adminArticle,
   ...adminUser,
-  ...adminCategory
+  ...adminCategory,
+  ...adminTag
 };
 
 export default adminController;

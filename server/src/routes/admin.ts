@@ -1,7 +1,7 @@
 import express from 'express';
 import authMiddleware from '../middlewares/auth';
 import adminMiddleware from '../middlewares/admin';
-import { getStats, adminDeleteArticle, getUsers, toggleUserStatus, resetUserPassword, getAllArticles, togglePin, updateStatus, getCategories, createCategory, updateCategory, deleteCategory } from '../controllers/admin/adminController';
+import { getStats, adminDeleteArticle, getUsers, toggleUserStatus, resetUserPassword, getAllArticles, togglePin, updateStatus, getCategories, createCategory, updateCategory, deleteCategory, getTags, createTag, updateTag, deleteTag } from '../controllers/admin/adminController';
 
 const router = express.Router();
 
@@ -24,5 +24,11 @@ router.get('/categories', authMiddleware, adminMiddleware, getCategories);
 router.post('/categories', authMiddleware, adminMiddleware, createCategory);
 router.put('/categories/:id', authMiddleware, adminMiddleware, updateCategory);
 router.delete('/categories/:id', authMiddleware, adminMiddleware, deleteCategory);
+
+// 标签管理
+router.get('/tags', authMiddleware, adminMiddleware, getTags);
+router.post('/tags', authMiddleware, adminMiddleware, createTag);
+router.put('/tags/:id', authMiddleware, adminMiddleware, updateTag);
+router.delete('/tags/:id', authMiddleware, adminMiddleware, deleteTag);
 
 export default router;

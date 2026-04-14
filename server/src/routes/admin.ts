@@ -1,9 +1,7 @@
 import express from 'express';
 import authMiddleware from '../middlewares/auth';
-import adminMiddleware from '../middlewares/admin';
-import { getStats } from '../controllers/adminController';
-import { getUsers, toggleUserStatus, resetUserPassword } from '../controllers/userController';
-import { getAllArticles, togglePin, updateStatus, adminDeleteArticle } from '../controllers/articleController';
+import adminMiddleware from '../middlewares/admin/admin';
+import { getStats, adminDeleteArticle, getUsers, toggleUserStatus, resetUserPassword, getAllArticles, togglePin, updateStatus } from '../controllers/admin/adminController';
 
 const router = express.Router();
 

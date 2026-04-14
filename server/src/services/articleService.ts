@@ -235,41 +235,5 @@ export const ArticleService = {
     return await ArticleModel.searchArticles(keyword, page, pageSize);
   },
 
-  /**
-   * 获取所有文章（用于管理后台）
-   * @param params 查询参数
-   * @returns 文章列表和总记录数
-   */
-  async getAllArticles(params: { keyword?: string; categoryId?: number; status?: string; page?: number; pageSize?: number }): Promise<{ list: Article[]; total: number }> {
-    return await ArticleModel.getAllArticles(params);
-  },
 
-  /**
-   * 设置文章置顶状态
-   * @param articleId 文章ID
-   * @param isPinned 是否置顶
-   * @returns 是否操作成功
-   */
-  async togglePin(articleId: number, isPinned: boolean): Promise<boolean> {
-    return await ArticleModel.togglePin(articleId, isPinned);
-  },
-
-  /**
-   * 更新文章状态
-   * @param articleId 文章ID
-   * @param status 文章状态
-   * @returns 是否操作成功
-   */
-  async updateArticleStatus(articleId: number, status: string): Promise<boolean> {
-    return await ArticleModel.updateArticleStatus(articleId, status);
-  },
-
-  /**
-   * 删除文章（物理删除，外键级联已设置）
-   * @param articleId 文章ID
-   * @returns 是否操作成功
-   */
-  async adminDeleteArticle(articleId: number): Promise<boolean> {
-    return await ArticleModel.deleteArticle(articleId);
-  }
 };

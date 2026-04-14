@@ -118,48 +118,6 @@ export const UserService = {
   },
 
   /**
-   * 获取用户列表
-   * @param params 查询参数
-   * @param params.keyword 搜索关键词（可选），支持按邮箱或用户名模糊搜索
-   * @param params.page 页码（可选），默认为 1
-   * @param params.pageSize 每页数量（可选），默认为 10，最大 100
-   * @returns 用户列表（不包含密码）和总记录数
-   * @throws 当查询失败时抛出错误
-   */
-  async getUsers(params: { keyword?: string; page?: number; pageSize?: number }): Promise<{ list: any[]; total: number }> {
-    const result = await UserModel.getUsers(params);
-    return {
-      list: result.list.map(user => ({
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        avatar: user.avatar,
-        bio: user.bio,
-        role: user.role,
-        is_active: user.is_active,
-        created_at: user.created_at,
-        updated_at: user.updated_at
-      })),
-      total: result.total
-    };
-  },
-
-  /**
-   * 切换用户状态
-   * @param userId 用户 ID
-   * @param isActive 是否激活
-   * @returns 更新成功返回 true
-   * @throws 当用户不存在时抛出错误
-   */
-  async toggleUserStatus(userId: number, isActive: boolean): Promise<boolean> {
-    const user = await UserModel.findUserById(userId);
-    if (!user) {
-      throw new Error('用户不存在');
-    }
-    return await UserModel.toggleUserStatus(userId, isActive);
-  },
-
-  /**
    * 修改密码
    * @param userId 用户 ID
    * @param oldPassword 旧密码
@@ -189,35 +147,5 @@ export const UserService = {
     }
 
     return true;
-  },
-
-  /**
-   * 重置用户密码（管理员）
-   * @param userId 用户 ID
-   * @returns 新生成的明文密码（用于展示给管理员）
-   * @throws 当用户不存在时抛出错误
-   * @throws 当密码重置失败时抛出错误
-   */
-  async resetPassword(userId: number): Promise<string> {
-    const user = await UserModel.findUserById(userId);
-    if (!user) {
-      throw new Error('用户不存在');
-    }
-
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let newPassword = '';
-    for (let i = 0; i < 8; i++) {
-      newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    const success = await UserModel.updatePassword(userId, hashedPassword);
-    if (!success) {
-      throw new Error('密码重置失败');
-    }
-
-    return newPassword;
   }
 };

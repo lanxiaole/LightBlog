@@ -900,3 +900,19 @@ UPDATE `users` SET `password` = '哈希值2' WHERE `email` = 'weijiale@admin.com
   flex-direction: column;
 }
 ```
+
+## 1. 置顶功能问题
+
+- 问题 ：置顶功能只在管理员页面中生效，没有在文章列表页面生效，而且置顶后无法取消置顶
+- 解决方法 ：
+  - 在所有文章查询方法中添加了按 is_pinned 降序、 created_at 降序的排序逻辑
+  - 确保所有查询方法都返回 is_pinned 字段
+  - 在前端 ArticleCard 组件中显示置顶状态
+
+## 2. 下架功能问题
+
+- 问题 ：点击下架按钮后出现 500 错误
+- 解决方法 ：
+  - 发现数据库表结构中 status 字段的枚举列表缺少 'banned' 值
+  - 执行 SQL 语句修改数据库表结构，将 'banned' 添加到 status 字段的枚举列表中
+  - 同时添加了 is_pinned 字段，用于支持文章置顶功能

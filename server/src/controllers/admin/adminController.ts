@@ -8,19 +8,22 @@ import adminAuth from './adminAuth';
 import adminStats from './adminStats';
 import adminArticle from './adminArticle';
 import adminUser from './adminUser';
+import adminCategory from './categoryController';
 
 // 导出各个模块的函数
 export * from './adminAuth';
 export * from './adminStats';
 export * from './adminArticle';
 export * from './adminUser';
+export * from './categoryController';
 
 // 导出默认对象，包含所有控制器函数
 const adminController = {
   ...adminAuth,
   ...adminStats,
   ...adminArticle,
-  ...adminUser
+  ...adminUser,
+  ...adminCategory
 };
 
 export default adminController;

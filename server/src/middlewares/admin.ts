@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserModel } from '../../models/User';
+import { UserModel } from '../models/User';
 
 /**
  * 管理员权限验证中间件

@@ -916,3 +916,48 @@ UPDATE `users` SET `password` = '哈希值2' WHERE `email` = 'weijiale@admin.com
   - 发现数据库表结构中 status 字段的枚举列表缺少 'banned' 值
   - 执行 SQL 语句修改数据库表结构，将 'banned' 添加到 status 字段的枚举列表中
   - 同时添加了 is_pinned 字段，用于支持文章置顶功能
+
+界面美化：
+
+1. 首页UI重构
+   技术实现：
+   使用SCSS进行样式管理
+   实现了响应式断点：≤767px移动端、768-1199px平板、≥1200px PC
+2. 侧边栏个人信息卡片改造
+   技术实现：
+
+使用useUserStore获取当前用户信息
+通过getUserArticles接口获取用户文章列表
+对每个文章调用getArticleDetail接口获取完整信息
+计算统计数据：文章总数、总获赞数、总收藏数3. 数据显示问题修复
+具体操作：
+修正文章数量显示为当前用户的文章数
+修正获赞和收藏量显示，确保显示的是用户获得的收藏量
+优化数据获取逻辑，确保数据准确性
+技术实现：
+替换数据获取接口：从getArticles改为getUserArticles
+传入当前用户的用户名作为参数
+使用Promise.all并行请求文章详情，提高性能
+计算总获赞时优先使用article.likesCount，不存在则使用article.likes 4. CSS兼容性优化
+具体操作：
+为所有使用 -webkit-line-clamp 的地方添加了标准的 line-clamp 属性
+确保在现代浏览器和旧版浏览器中都能正常显示文本截断效果
+技术实现：
+在Sidebar.vue文件中添加line-clamp: 2;
+在ArticleCard.vue文件中为多个位置添加line-clamp属性
+保持-webkit-line-clamp作为 fallback 方案6. 问题解决过程
+SCSS依赖缺失：
+识别错误：控制台提示“Preprocessor dependency "sass-embedded" not found”
+解决方案：运行 npm install -D sass 安装sass依赖
+数据统计逻辑错误：
+
+识别错误：个人信息卡片中文章数量显示总数量而非当前用户数量
+解决方案：修改数据获取接口为getUserArticles，传入当前用户的用户名
+API返回数据不完整：
+
+识别错误：后端未返回favoritesCount字段
+解决方案：对每个文章调用详情接口来获取完整信息
+获赞数显示问题：
+
+识别错误：获赞数无法显示，只能显示0
+解决方案：修改前端代码，优先使用article.likesCount字段

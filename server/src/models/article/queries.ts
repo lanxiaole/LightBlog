@@ -15,14 +15,16 @@ export const ArticleQueryModel = {
     // 使用分页工具函数验证参数
     const paginationClause = buildPaginationSql(page, pageSize);
 
-    // 查询文章列表（包含作者信息）
+    // 查询文章列表（包含作者信息、点赞数和收藏数）
     const listSql = `
       SELECT 
         a.*, 
         u.id as author_id, 
         u.username, 
         u.avatar,
-        u.role as author_role
+        u.role as author_role,
+        (SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount,
+        (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount
       FROM articles a
       JOIN users u ON a.author_id = u.id
       WHERE a.status = 'published'
@@ -42,7 +44,7 @@ export const ArticleQueryModel = {
       pool.execute<RowDataPacket[]>(countSql)
     ]);
 
-    // 处理结果，添加作者信息
+    // 处理结果，添加作者信息、点赞数和收藏数
     const list = (listResult[0] as any[]).map(article => ({
       id: article.id,
       title: article.title,
@@ -56,6 +58,8 @@ export const ArticleQueryModel = {
       is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
+      likesCount: article.likesCount,
+      favoritesCount: article.favoritesCount,
       author: {
         id: article.author_id,
         username: article.username,
@@ -79,14 +83,16 @@ export const ArticleQueryModel = {
     // 使用分页工具函数验证参数
     const paginationClause = buildPaginationSql(page, pageSize);
 
-    // 查询文章列表（包含作者信息）
+    // 查询文章列表（包含作者信息、点赞数和收藏数）
     const listSql = `
       SELECT 
         a.*, 
         u.id as author_id, 
         u.username, 
         u.avatar,
-        u.role as author_role
+        u.role as author_role,
+        (SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount,
+        (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount
       FROM articles a
       JOIN users u ON a.author_id = u.id
       WHERE a.author_id = ? AND a.status = 'published'
@@ -106,7 +112,7 @@ export const ArticleQueryModel = {
       pool.execute<RowDataPacket[]>(countSql, [userId])
     ]);
 
-    // 处理结果，添加作者信息
+    // 处理结果，添加作者信息、点赞数和收藏数
     const list = (listResult[0] as any[]).map(article => ({
       id: article.id,
       title: article.title,
@@ -120,6 +126,8 @@ export const ArticleQueryModel = {
       is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
+      likesCount: article.likesCount,
+      favoritesCount: article.favoritesCount,
       author: {
         id: article.author_id,
         username: article.username,
@@ -151,7 +159,9 @@ export const ArticleQueryModel = {
         u.id as author_id, 
         u.username, 
         u.avatar,
-        u.role as author_role
+        u.role as author_role,
+        (SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount,
+        (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount
       FROM articles a
       JOIN article_tags at ON a.id = at.article_id
       JOIN tags t ON at.tag_id = t.id
@@ -173,7 +183,7 @@ export const ArticleQueryModel = {
       pool.execute<RowDataPacket[]>(countSql, [tagName])
     ]);
 
-    // 处理结果，添加作者信息
+    // 处理结果，添加作者信息、点赞数和收藏数
     const list = (listResult[0] as any[]).map(article => ({
       id: article.id,
       title: article.title,
@@ -187,6 +197,8 @@ export const ArticleQueryModel = {
       is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
+      likesCount: article.likesCount,
+      favoritesCount: article.favoritesCount,
       author: {
         id: article.author_id,
         username: article.username,
@@ -218,14 +230,16 @@ export const ArticleQueryModel = {
     // 构建搜索关键词（添加通配符）
     const searchKeyword = `%${keyword.trim()}%`;
 
-    // 查询文章列表（包含作者信息）
+    // 查询文章列表（包含作者信息、点赞数和收藏数）
     const listSql = `
       SELECT 
         a.*, 
         u.id as author_id, 
         u.username, 
         u.avatar,
-        u.role as author_role
+        u.role as author_role,
+        (SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount,
+        (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount
       FROM articles a
       JOIN users u ON a.author_id = u.id
       WHERE (a.title LIKE ? OR a.content LIKE ?) AND a.status = 'published'
@@ -245,7 +259,7 @@ export const ArticleQueryModel = {
       pool.execute<RowDataPacket[]>(countSql, [searchKeyword, searchKeyword])
     ]);
 
-    // 处理结果，添加作者信息
+    // 处理结果，添加作者信息、点赞数和收藏数
     const list = (listResult[0] as any[]).map(article => ({
       id: article.id,
       title: article.title,
@@ -259,6 +273,8 @@ export const ArticleQueryModel = {
       is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
+      likesCount: article.likesCount,
+      favoritesCount: article.favoritesCount,
       author: {
         id: article.author_id,
         username: article.username,
@@ -305,14 +321,16 @@ export const ArticleQueryModel = {
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     
-    // 查询文章列表（包含作者信息）
+    // 查询文章列表（包含作者信息、点赞数和收藏数）
     const listSql = `
       SELECT 
         a.*, 
         u.id as author_id, 
         u.username, 
         u.avatar,
-        u.role as author_role
+        u.role as author_role,
+        (SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount,
+        (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount
       FROM articles a
       JOIN users u ON a.author_id = u.id
       ${whereClause}
@@ -332,7 +350,7 @@ export const ArticleQueryModel = {
       pool.execute<RowDataPacket[]>(countSql, values)
     ]);
     
-    // 处理结果，添加作者信息
+    // 处理结果，添加作者信息、点赞数和收藏数
     const list = (listResult[0] as any[]).map(article => ({
       id: article.id,
       title: article.title,
@@ -346,6 +364,8 @@ export const ArticleQueryModel = {
       is_pinned: article.is_pinned,
       created_at: article.created_at,
       updated_at: article.updated_at,
+      likesCount: article.likesCount,
+      favoritesCount: article.favoritesCount,
       author: {
         id: article.author_id,
         username: article.username,

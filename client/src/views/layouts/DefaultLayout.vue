@@ -12,9 +12,16 @@
         <!-- 中间：导航菜单（PC端显示） -->
         <nav class="navbar-menu">
           <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">首页</router-link>
-          <router-link to="/category" class="nav-link" :class="{ active: $route.path.startsWith('/category') }">分类</router-link>
-          <router-link to="/tag" class="nav-link" :class="{ active: $route.path.startsWith('/tag') }">标签</router-link>
-          <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">关于我</router-link>
+          <router-link to="/category" class="nav-link" :class="{ active: $route.path === '/category' || $route.path.startsWith('/category/') }">分类</router-link>
+          <router-link to="/tag" class="nav-link" :class="{ active: $route.path === '/tag' || $route.path.startsWith('/tag/') }">标签</router-link>
+          <router-link to="/write" class="nav-link" :class="{ active: $route.path === '/write' }">写文章</router-link>
+          <router-link
+            v-if="userStore.isLoggedIn"
+            :to="`/user/${userStore.userInfo?.username || ''}`"
+            class="nav-link"
+            :class="{ active: $route.path.startsWith('/user') }"
+          >关于我</router-link>
+          <router-link v-else to="/login" class="nav-link" :class="{ active: $route.path === '/login' }">关于我</router-link>
         </nav>
 
         <!-- 右侧：用户操作 -->
@@ -107,7 +114,9 @@
           <router-link to="/" class="mobile-menu-item" @click="mobileMenuVisible = false">首页</router-link>
           <router-link to="/category" class="mobile-menu-item" @click="mobileMenuVisible = false">分类</router-link>
           <router-link to="/tag" class="mobile-menu-item" @click="mobileMenuVisible = false">标签</router-link>
-          <router-link to="/about" class="mobile-menu-item" @click="mobileMenuVisible = false">关于我</router-link>
+          <router-link v-if="userStore.isLoggedIn" to="/write" class="mobile-menu-item" @click="mobileMenuVisible = false">写文章</router-link>
+          <router-link v-if="userStore.isLoggedIn" :to="`/user/${userStore.userInfo?.username || ''}`" class="mobile-menu-item" @click="mobileMenuVisible = false">关于我</router-link>
+          <router-link v-else to="/login" class="mobile-menu-item" @click="mobileMenuVisible = false">关于我</router-link>
         </div>
         <div class="mobile-menu-divider"></div>
         <div class="mobile-menu-items">

@@ -961,3 +961,80 @@ API返回数据不完整：
 
 识别错误：获赞数无法显示，只能显示0
 解决方案：修改前端代码，优先使用article.likesCount字段
+
+
+用户信息卡片统计数据实现总结
+1. 数据来源与获取过程
+文章数量
+来源：后端API返回的用户文章列表的总记录数
+获取过程：
+前端调用 getUserArticles 接口获取用户文章列表
+后端通过 UserService.getUserArticles 方法处理请求
+后端查询数据库获取用户文章总数
+前端接收包含 total 字段的响应，直接使用该值
+获赞数量
+来源：后端在SQL查询中计算每篇文章的点赞数，前端累加
+获取过程：
+后端在SQL查询中使用子查询计算每篇文章的点赞数：
+SQL
+
+
+
+(SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount
+前端调用 getUserArticles 接口获取包含 likesCount 字段的文章列表
+前端遍历文章列表，累加每篇文章的 likesCount：
+TypeScript
+
+
+
+totalLikes += article.likesCount || article.likes || 0;
+收藏数量
+来源：后端在SQL查询中计算每篇文章的收藏数，前端累加
+获取过程：
+后端在SQL查询中使用子查询计算每篇文章的收藏数：
+SQL
+
+
+
+(SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount
+前端调用 getUserArticles 接口获取包含 favoritesCount 字段的文章列表
+前端遍历文章列表，累加每篇文章的 favoritesCount：
+TypeScript
+
+
+
+totalFavorites += article.favoritesCount || 0;
+2. 技术实现细节
+后端实现
+文件：server/src/models/article/queries.ts
+实现：
+为所有文章查询方法添加了点赞数和收藏数的计算
+在SQL查询中使用子查询获取每篇文章的点赞数和收藏数
+在结果处理中，将这些字段添加到返回的文章对象中
+前端实现
+文件：client/src/components/common/Sidebar.vue
+实现：
+定义 fetchUserStats 函数获取用户统计信息
+调用 getUserArticles 接口获取用户文章列表
+遍历文章列表，计算总获赞数和总收藏数
+将计算结果更新到 userStats 响应式对象中
+在模板中显示统计数据
+3. 优化与改进
+性能优化：
+
+避免了为每篇文章单独调用详情接口来获取点赞数和收藏数
+后端直接在SQL查询中计算点赞数和收藏数，减少了网络请求
+数据一致性：
+
+所有文章查询接口都返回一致的数据结构，包含点赞数和收藏数
+前端使用统一的计算逻辑处理数据
+错误处理：
+
+前端添加了错误处理，确保在API调用失败时显示默认值
+后端添加了数据验证，确保返回的数据结构正确
+4. 数据流向
+前端通过 getUserArticles 接口请求用户文章列表
+后端在SQL查询中计算每篇文章的点赞数和收藏数
+后端返回包含文章列表、总记录数、点赞数和收藏数的响应
+前端接收响应，计算总获赞数和总收藏数
+前端更新用户信息卡片显示

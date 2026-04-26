@@ -6,6 +6,7 @@ export interface Tag {
   id: number;
   name: string;
   created_at: Date;
+  articleCount?: number;
 }
 
 // 导出 TagModel 对象
@@ -15,7 +16,14 @@ export const TagModel = {
    * @returns 标签列表，按 name 排序
    */
   async getAllTags(): Promise<Tag[]> {
-    const sql = 'SELECT * FROM tags ORDER BY name ASC';
+    const sql = `
+      SELECT t.id, t.name, t.created_at, COUNT(at.article_id) as articleCount
+      FROM tags t
+      LEFT JOIN article_tags at ON t.id = at.tag_id
+      LEFT JOIN articles a ON at.article_id = a.id AND a.status = 'published'
+      GROUP BY t.id, t.name, t.created_at
+      ORDER BY t.name ASC
+    `;
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql);
     const tags = rows as Tag[];

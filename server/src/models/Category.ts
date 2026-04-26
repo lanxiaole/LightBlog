@@ -7,6 +7,7 @@ export interface Category {
   name: string;
   description: string | null;
   created_at: Date;
+  articleCount?: number;
 }
 
 // 导出 CategoryModel 对象
@@ -16,7 +17,13 @@ export const CategoryModel = {
    * @returns 分类列表，按 name 排序
    */
   async getAllCategories(): Promise<Category[]> {
-    const sql = 'SELECT * FROM categories ORDER BY name ASC';
+    const sql = `
+      SELECT c.id, c.name, c.description, c.created_at, COUNT(a.id) as articleCount
+      FROM categories c
+      LEFT JOIN articles a ON c.id = a.category_id AND a.status = 'published'
+      GROUP BY c.id, c.name, c.description, c.created_at
+      ORDER BY c.name ASC
+    `;
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql);
     const categories = rows as Category[];

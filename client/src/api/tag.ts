@@ -4,6 +4,7 @@ import api from './index';
 export interface Tag {
   id: number;
   name: string;
+  articleCount?: number;
 }
 
 /**

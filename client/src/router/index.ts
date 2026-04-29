@@ -37,8 +37,7 @@ const router = createRouter({
             { path: '', name: 'user-profile', component: () => import('@/views/user/Profile.vue'), meta: { title: '个人主页' } },
             { path: 'favorites', name: 'user-favorites', component: () => import('@/views/user/Favorites.vue'), meta: { title: '收藏' } },
             { path: 'followers', name: 'user-followers', component: () => import('@/views/user/Followers.vue'), meta: { title: '关注者' } },
-            { path: 'following', name: 'user-following', component: () => import('@/views/user/Following.vue'), meta: { title: '关注' } },
-            { path: 'about', name: 'user-about', component: () => import('@/views/user/About.vue'), meta: { title: '关于' } }
+            { path: 'following', name: 'user-following', component: () => import('@/views/user/Following.vue'), meta: { title: '关注' } }
           ]
         },
         // 404 页面

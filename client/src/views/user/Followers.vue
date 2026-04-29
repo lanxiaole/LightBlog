@@ -1,53 +1,38 @@
 <template>
   <div class="followers-page">
-    <h1 class="page-title">粉丝列表</h1>
-
     <!-- 加载状态 -->
-    <div v-if="loading" class="loading-container">
-      <el-skeleton animated>
-        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
-        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
-        <el-skeleton-item variant="p" style="margin-bottom: 20px;"></el-skeleton-item>
-      </el-skeleton>
-    </div>
+    <LoadingState v-if="loading" />
 
     <!-- 错误状态 -->
-    <el-alert
-      v-else-if="error"
-      type="error"
-      :title="error"
-      show-icon
-      class="error-alert"
-    />
+    <ErrorState v-else-if="error" :message="error" />
 
     <!-- 空状态 -->
-    <el-empty
-      v-else-if="list.length === 0 && !loading"
-      description="暂无粉丝"
-      class="empty-state"
-    />
+    <div v-else-if="list.length === 0 && !loading" class="empty-state">
+      <ElEmpty description="暂无粉丝" />
+    </div>
 
     <!-- 粉丝列表 -->
     <div v-else class="followers-list">
-      <el-card
+      <div
         v-for="user in list"
         :key="user.id"
-        class="follower-card"
+        class="user-card"
+        @click="goToUserProfile(user.username)"
       >
-        <div class="follower-info" @click="goToUserProfile(user.username)">
-          <el-avatar :src="user.avatar || undefined" size="default">
-            {{ user.username.charAt(0) }}
-          </el-avatar>
-          <div class="follower-details">
-            <h3 class="follower-name">{{ user.username }}</h3>
-            <p v-if="user.bio" class="follower-bio">{{ user.bio }}</p>
-          </div>
+        <div class="avatar-wrapper">
+          <ElAvatar :size="80" :src="user.avatar || undefined" class="avatar">
+            {{ user.username.charAt(0).toUpperCase() }}
+          </ElAvatar>
         </div>
-      </el-card>
+        <div class="user-info">
+          <h3 class="username">{{ user.username }}</h3>
+          <p v-if="user.bio" class="bio">{{ user.bio }}</p>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
-        <el-pagination
+        <ElPagination
           v-model:current-page="page"
           v-model:page-size="pageSize"
           :page-sizes="[10, 20, 50]"
@@ -64,10 +49,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElCard, ElAvatar, ElPagination, ElSkeleton, ElEmpty, ElAlert } from 'element-plus';
+import { ElAvatar, ElPagination, ElEmpty } from 'element-plus';
 import { getFollowers } from '@/api/follow';
 import { useUserIdFromUsername } from '@/composables/user/useUserIdFromUsername';
 import type { User } from '@/api/user';
+import LoadingState from '@/components/common/LoadingState.vue';
+import ErrorState from '@/components/common/ErrorState.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -96,7 +83,6 @@ const fetchFollowers = async () => {
   error.value = null;
 
   try {
-    // 使用获取到的用户 ID 调用 getFollowers API
     const response = await getFollowers(
       targetUserId.value,
       {
@@ -139,66 +125,67 @@ watch(targetUserId, (newUserId) => {
 
 <style scoped>
 .followers-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 30px;
-  color: #303133;
-}
-
-.loading-container {
-  margin: 40px 0;
-}
-
-.error-alert {
-  margin: 40px 0;
+  padding: 0;
 }
 
 .empty-state {
-  margin: 60px 0;
+  padding: 60px 0;
 }
 
 .followers-list {
   margin-bottom: 40px;
 }
 
-.follower-card {
+.user-card {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 16px 20px;
   margin-bottom: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s linear;
 }
 
-.follower-card:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+.user-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
-.follower-info {
-  display: flex;
-  align-items: flex-start;
+.avatar-wrapper {
+  flex-shrink: 0;
+  margin-right: 16px;
 }
 
-.follower-details {
-  margin-left: 16px;
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #1E3A8A;
+}
+
+.user-info {
   flex: 1;
+  min-width: 0;
 }
 
-.follower-name {
+.username {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: bold;
+  color: #111827;
   margin: 0 0 8px 0;
-  color: #303133;
 }
 
-.follower-bio {
+.bio {
   font-size: 14px;
-  color: #606266;
+  color: #6B7280;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .pagination-container {
@@ -207,23 +194,20 @@ watch(targetUserId, (newUserId) => {
   justify-content: center;
 }
 
-@media (max-width: 768px) {
-  .followers-page {
-    padding: 10px;
-  }
-
-  .page-title {
-    font-size: 20px;
-  }
-
-  .follower-info {
+@media (max-width: 767px) {
+  .user-card {
     flex-direction: column;
     align-items: flex-start;
+    padding: 16px;
   }
 
-  .follower-details {
-    margin-left: 0;
-    margin-top: 12px;
+  .avatar-wrapper {
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .username {
+    font-size: 16px;
   }
 }
 </style>

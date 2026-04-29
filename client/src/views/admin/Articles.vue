@@ -4,114 +4,127 @@
     
     <!-- 筛选栏 -->
     <div class="filter-bar">
-      <el-input
-        v-model="keyword"
-        placeholder="搜索文章标题"
-        style="width: 200px; margin-right: 10px"
-        clearable
-      />
-      <el-select
-        v-model="categoryId"
-        placeholder="选择分类"
-        style="width: 150px; margin-right: 10px"
-        clearable
-      >
-        <el-option
-          v-for="category in categories"
-          :key="category.id"
-          :label="category.name"
-          :value="category.id"
+      <div class="filter-left">
+        <el-select
+          v-model="status"
+          placeholder="选择状态"
+          clearable
+          class="filter-select"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="已发布" value="published" />
+          <el-option label="草稿" value="draft" />
+          <el-option label="下架" value="banned" />
+        </el-select>
+        
+        <el-select
+          v-model="categoryId"
+          placeholder="选择分类"
+          clearable
+          class="filter-select"
+        >
+          <el-option
+            v-for="category in categories"
+            :key="category.id"
+            :label="category.name"
+            :value="category.id"
+          />
+        </el-select>
+        
+        <el-input
+          v-model="keyword"
+          placeholder="搜索文章标题"
+          class="filter-input"
+          clearable
+          @keyup.enter="handleSearch"
         />
-      </el-select>
-      <el-select
-        v-model="status"
-        placeholder="选择状态"
-        style="width: 120px; margin-right: 10px"
-        clearable
-      >
-        <el-option label="全部" value="" />
-        <el-option label="已发布" value="published" />
-        <el-option label="草稿" value="draft" />
-        <el-option label="下架" value="banned" />
-      </el-select>
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
+        
+        <el-button class="search-btn" @click="handleSearch">搜索</el-button>
+      </div>
+      
+      <div class="filter-right">
+        <el-button type="primary" class="add-btn" @click="$router.push('/write')">
+          新增文章
+        </el-button>
+      </div>
     </div>
     
     <!-- 文章列表 -->
-    <el-table
-      v-loading="loading"
-      :data="list"
-      style="width: 100%"
-      border
-    >
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="title" label="标题" min-width="200">
-        <template #default="scope">
-          <span class="article-title">{{ scope.row.title }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="作者" width="120">
-        <template #default="scope">
-          {{ scope.row.author?.username || '未知' }}
-        </template>
-      </el-table-column>
-      <el-table-column label="分类" width="120">
-        <template #default="scope">
-          {{ scope.row.category?.name || '未分类' }}
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="100">
-        <template #default="scope">
-          <el-tag
-            :type="getTagType(scope.row.status)"
-          >
-            {{ getStatusText(scope.row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="created_at" label="发布时间" width="180">
-        <template #default="scope">
-          {{ formatDate(scope.row.created_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="views" label="阅读量" width="100" />
-      <el-table-column label="置顶" width="80">
-        <template #default="scope">
-          <el-tag v-if="scope.row.is_pinned" type="success">置顶</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="300" fixed="right">
-        <template #default="scope">
-          <el-button
-            size="small"
-            @click="handleTogglePin(scope.row.id, !scope.row.is_pinned)"
-          >
-            {{ scope.row.is_pinned ? '取消置顶' : '置顶' }}
-          </el-button>
-          <el-button
-            size="small"
-            :type="scope.row.status === 'published' ? 'danger' : 'success'"
-            @click="handleStatusChange(scope.row.id, scope.row.status === 'published' ? 'banned' : 'published')"
-          >
-            {{ scope.row.status === 'published' ? '下架' : '发布' }}
-          </el-button>
-          <el-button
-            size="small"
-            type="warning"
-            @click="$router.push(`/edit/${scope.row.id}`)"
-          >
-            编辑
-          </el-button>
-          <el-button
-            size="small"
-            type="danger"
-            @click="handleDelete(scope.row.id)"
-          >
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div class="table-card">
+      <el-table
+        v-loading="loading"
+        :data="list"
+        style="width: 100%"
+        :border="false"
+        :highlight-current-row="false"
+      >
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="title" label="标题" min-width="200">
+          <template #default="scope">
+            <span class="article-title">{{ scope.row.title }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="作者" width="120">
+          <template #default="scope">
+            {{ scope.row.author?.username || '未知' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="分类" width="120">
+          <template #default="scope">
+            {{ scope.row.category?.name || '未分类' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="scope">
+            <el-tag
+              :class="getStatusTagClass(scope.row.status, scope.row.is_pinned)"
+            >
+              {{ getStatusText(scope.row.status, scope.row.is_pinned) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="created_at" label="发布时间" width="180">
+          <template #default="scope">
+            {{ formatDate(scope.row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="views" label="阅读量" width="100" />
+        <el-table-column label="操作" width="300" fixed="right">
+          <template #default="scope">
+            <button
+              class="action-btn action-pin"
+              @click="handleTogglePin(scope.row.id, !scope.row.is_pinned)"
+            >
+              {{ scope.row.is_pinned ? '取消置顶' : '置顶' }}
+            </button>
+            <button
+              class="action-btn action-status"
+              @click="handleStatusChange(scope.row.id, scope.row.status === 'published' ? 'banned' : 'published')"
+            >
+              {{ scope.row.status === 'published' ? '下架' : '发布' }}
+            </button>
+            <button
+              class="action-btn action-edit"
+              @click="$router.push(`/article/edit/${scope.row.id}`)"
+            >
+              编辑
+            </button>
+            <button
+              class="action-btn action-delete"
+              @click="handleDelete(scope.row.id)"
+            >
+              删除
+            </button>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <!-- 空状态 -->
+      <div v-if="!loading && list.length === 0" class="empty-state">
+        <div class="empty-icon">暂无文章</div>
+        <el-button type="primary" @click="$router.push('/write')">新增文章</el-button>
+      </div>
+    </div>
     
     <!-- 分页 -->
     <div class="pagination-container">
@@ -159,29 +172,31 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-// 获取标签类型
-const getTagType = (status: string): string => {
+// 获取状态标签样式类
+const getStatusTagClass = (status: string, isPinned: boolean): string => {
+  if (isPinned) return 'status-tag pinned';
   switch (status) {
     case 'published':
-      return 'success';
+      return 'status-tag published';
     case 'draft':
-      return 'info';
+      return 'status-tag draft';
     case 'banned':
-      return 'danger';
+      return 'status-tag banned';
     default:
-      return '';
+      return 'status-tag';
   }
 };
 
 // 获取状态文本
-const getStatusText = (status: string): string => {
+const getStatusText = (status: string, isPinned: boolean): string => {
+  if (isPinned) return '置顶';
   switch (status) {
     case 'published':
       return '已发布';
     case 'draft':
       return '草稿';
     case 'banned':
-      return '下架';
+      return '已下架';
     default:
       return status;
   }
@@ -286,30 +301,100 @@ onMounted(() => {
 
 <style scoped>
 .articles-admin {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: 100%;
 }
 
 .page-title {
   font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #333;
+  font-weight: bold;
+  color: #111827;
+  margin: 0 0 24px 0;
 }
 
+/* 筛选栏 */
 .filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filter-left {
   display: flex;
   align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
+.filter-select {
+  width: 150px;
+  border-radius: 6px;
+}
+
+.filter-input {
+  width: 220px;
+  border-radius: 6px;
+}
+
+.search-btn {
+  border-radius: 6px;
+}
+
+.add-btn {
+  border-radius: 6px;
+  background-color: #1E3A8A;
+  border-color: #1E3A8A;
+}
+
+.add-btn:hover {
+  background-color: #1E40AF;
+  border-color: #1E40AF;
+}
+
+/* 表格卡片 */
+.table-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* 表格样式 */
+.table-card :deep(.el-table) {
+  width: 100%;
+}
+
+.table-card :deep(.el-table__header) {
+  background-color: #F3F4F6;
+}
+
+.table-card :deep(.el-table__header th) {
+  height: 50px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 0 12px;
+}
+
+.table-card :deep(.el-table__body tr) {
+  height: 50px;
+}
+
+.table-card :deep(.el-table__body tr:nth-child(even)) {
+  background-color: #FAFAFA;
+}
+
+.table-card :deep(.el-table__body tr:hover) {
+  background-color: #F3F4F6;
+}
+
+.table-card :deep(.el-table__body td) {
+  padding: 0 12px;
+  border-bottom: 1px solid #F3F4F6;
+  color: #374151;
 }
 
 .article-title {
@@ -317,13 +402,147 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 14px;
 }
 
-.el-table .el-button {
+/* 状态标签 */
+.status-tag {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.status-tag.pinned {
+  background-color: #FFF7ED;
+  color: #F97316;
+}
+
+.status-tag.published {
+  background-color: #ECFDF5;
+  color: #10B981;
+}
+
+.status-tag.draft {
+  background-color: #F3F4F6;
+  color: #9CA3AF;
+}
+
+.status-tag.banned {
+  background-color: #FEF2F2;
+  color: #EF4444;
+}
+
+/* 操作按钮 */
+.action-btn {
+  font-size: 13px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   margin-right: 8px;
+  transition: background-color 0.2s linear;
 }
 
-.el-table .el-button:last-child {
+.action-btn:last-child {
   margin-right: 0;
+}
+
+.action-edit {
+  color: #1E3A8A;
+  background-color: transparent;
+}
+
+.action-edit:hover {
+  background-color: #EEF2FF;
+}
+
+.action-delete {
+  color: #EF4444;
+  background-color: transparent;
+}
+
+.action-delete:hover {
+  background-color: #FEF2F2;
+}
+
+.action-status {
+  color: #F97316;
+  background-color: transparent;
+}
+
+.action-status:hover {
+  background-color: #FFF7ED;
+}
+
+.action-pin {
+  color: #10B981;
+  background-color: transparent;
+}
+
+.action-pin:hover {
+  background-color: #ECFDF5;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #9CA3AF;
+}
+
+.empty-icon {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+/* 分页 */
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination-container :deep(.el-pagination) {
+  display: flex;
+  align-items: center;
+}
+
+/* 响应式适配 */
+@media (max-width: 767px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-left {
+    order: 2;
+  }
+  
+  .filter-right {
+    order: 1;
+  }
+  
+  .filter-select,
+  .filter-input {
+    width: 100%;
+  }
+  
+  .add-btn {
+    width: 100%;
+  }
+  
+  .table-card {
+    overflow-x: auto;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .table-card {
+    overflow-x: auto;
+  }
 }
 </style>

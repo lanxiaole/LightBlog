@@ -7,13 +7,15 @@
       编辑资料
     </h1>
 
-    <el-card class="settings-card">
+    <div class="settings-card">
       <!-- 头像部分 -->
-      <AvatarUpload
-        :avatar="userAvatar"
-        :username="currentUsername"
-        @upload="handleAvatarUpload"
-      />
+      <div class="avatar-section">
+        <AvatarUpload
+          :avatar="userAvatar"
+          :username="currentUsername"
+          @upload="handleAvatarUpload"
+        />
+      </div>
 
       <!-- 表单部分 -->
       <ProfileForm
@@ -23,16 +25,17 @@
         @submit="handleSubmit"
         @cancel="handleCancel"
       />
-    </el-card>
+    </div>
 
     <!-- 修改密码部分 -->
-    <PasswordForm />
+    <div class="settings-card password-card">
+      <PasswordForm />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ElCard, ElIcon } from 'element-plus';
-import 'element-plus/dist/index.css';
+import { ElIcon } from 'element-plus';
 import { ArrowLeft } from '@element-plus/icons-vue';
 import { useSettings } from '@/composables/user/useSettings';
 import AvatarUpload from '@/components/user/AvatarUpload.vue';
@@ -58,33 +61,52 @@ const {
 
 <style scoped>
 .settings-container {
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 32px 24px;
 }
 
 .page-title {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
   display: flex;
   align-items: center;
-  color: #303133;
+  color: #111827;
 }
 
 .settings-card {
+  background: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 24px;
 }
 
-@media (max-width: 768px) {
+.avatar-section {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #E5E7EB;
+  margin-bottom: 24px;
+}
+
+.password-card {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+}
+
+@media (max-width: 767px) {
   .settings-container {
-    padding: 10px;
+    padding: 16px;
   }
 
   .settings-card {
-    padding: 20px;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .settings-container {
+    max-width: 700px;
   }
 }
 </style>

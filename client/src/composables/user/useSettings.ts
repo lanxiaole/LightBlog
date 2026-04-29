@@ -18,6 +18,7 @@ export function useSettings() {
   /** 表单数据 */
   const form = ref({
     username: '',
+    email: '',
     bio: ''
   });
 
@@ -53,6 +54,7 @@ export function useSettings() {
     if (userStore.userInfo) {
       form.value = {
         username: userStore.userInfo.username,
+        email: userStore.userInfo.email || '',
         bio: userStore.userInfo.bio || ''
       };
     }

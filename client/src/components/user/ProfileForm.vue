@@ -3,35 +3,51 @@
     :model="modelValue"
     :rules="rules"
     ref="formRef"
-    label-width="80px"
-    class="settings-form"
+    label-width="100px"
+    class="profile-form"
   >
-    <el-form-item label="用户名" prop="username">
-      <el-input
-        :model-value="modelValue.username"
-        @update:model-value="(val) => handleChange('username', val)"
-        placeholder="请输入用户名"
-      />
-    </el-form-item>
+    <div class="form-row">
+      <el-form-item label="用户名" prop="username">
+        <el-input
+          :model-value="modelValue.username"
+          @update:model-value="(val) => handleChange('username', val)"
+          placeholder="请输入用户名"
+          class="form-input"
+        />
+      </el-form-item>
 
-    <el-form-item label="个人简介">
-      <el-input
-        :model-value="modelValue.bio"
-        @update:model-value="(val) => handleChange('bio', val)"
-        type="textarea"
-        placeholder="请输入个人简介"
-        :rows="4"
-      />
-    </el-form-item>
+      <el-form-item label="邮箱" prop="email">
+        <el-input
+          :model-value="modelValue.email"
+          @update:model-value="(val) => handleChange('email', val)"
+          placeholder="请输入邮箱"
+          class="form-input"
+          disabled
+        />
+      </el-form-item>
+    </div>
 
-    <el-form-item>
-      <el-button type="primary" @click="handleSubmit($refs.formRef)" :loading="loading">
+    <div class="form-row">
+      <el-form-item label="个人简介" prop="bio">
+        <el-input
+          :model-value="modelValue.bio"
+          @update:model-value="(val) => handleChange('bio', val)"
+          type="textarea"
+          placeholder="请输入个人简介"
+          :rows="4"
+          class="form-input bio-input"
+        />
+      </el-form-item>
+    </div>
+
+    <div class="form-actions">
+      <el-button type="primary" class="submit-btn" @click="handleSubmit($refs.formRef)" :loading="loading">
         保存
       </el-button>
-      <el-button @click="handleCancel" style="margin-left: 10px;">
+      <el-button class="cancel-btn" @click="handleCancel">
         取消
       </el-button>
-    </el-form-item>
+    </div>
   </ElForm>
 </template>
 
@@ -48,6 +64,7 @@ interface Props {
   /** 表单数据 */
   modelValue: {
     username: string;
+    email: string;
     bio: string;
   };
   /** 表单验证规则 */
@@ -64,7 +81,7 @@ const props = withDefaults(defineProps<Props>(), {
 // 定义组件事件
 const emit = defineEmits<{
   /** 表单数据更新事件，用于 v-model 双向绑定 */
-  'update:modelValue': [value: { username: string; bio: string }];
+  'update:modelValue': [value: { username: string; email: string; bio: string }];
   /** 提交按钮点击事件 */
   'submit': [formEl: any];
   /** 取消按钮点击事件 */
@@ -76,7 +93,7 @@ const emit = defineEmits<{
  * @param field 字段名
  * @param value 字段值
  */
-const handleChange = (field: 'username' | 'bio', value: string) => {
+const handleChange = (field: 'username' | 'email' | 'bio', value: string) => {
   emit('update:modelValue', {
     ...props.modelValue,
     [field]: value
@@ -100,7 +117,83 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
-.settings-form {
-  margin-top: 20px;
+.profile-form {
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.form-row .el-form-item {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-input {
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  padding: 12px 16px;
+  transition: border-color 0.2s linear;
+}
+
+.form-input:focus {
+  border-color: #1E3A8A;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.bio-input {
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.submit-btn {
+  background-color: #1E3A8A;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 10px 24px;
+  border: none;
+  transition: background-color 0.2s linear;
+}
+
+.submit-btn:hover {
+  background-color: #1E3A8A;
+  filter: brightness(0.9);
+}
+
+.cancel-btn {
+  border-radius: 6px;
+  padding: 10px 24px;
+  transition: background-color 0.2s linear;
+}
+
+.cancel-btn:hover {
+  background-color: #F3F4F6;
+}
+
+:deep(.el-form-item__error) {
+  font-size: 14px;
+  color: #EF4444;
+  margin-top: 6px;
+}
+
+@media (max-width: 1199px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-row .el-form-item {
+    width: 100%;
+  }
 }
 </style>

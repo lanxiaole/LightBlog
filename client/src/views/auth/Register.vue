@@ -1,11 +1,9 @@
 <template>
   <div class="register-container">
-    <el-card class="register-card">
-      <template #header>
-        <div class="register-header">
-          <h2>注册账号</h2>
-        </div>
-      </template>
+    <div class="register-card">
+      <div class="register-header">
+        <h2>注册</h2>
+      </div>
       <el-form
         ref="formRef"
         :model="form"
@@ -58,10 +56,10 @@
           </el-button>
         </el-form-item>
         <div class="login-link">
-          已有账号？<router-link to="/login">去登录</router-link>
+          已有账号？<router-link to="/login">立即登录</router-link>
         </div>
       </el-form>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -71,16 +69,10 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { register } from '@/api/auth';
 
-// 表单引用
 const formRef = ref();
-
-// 加载状态
 const loading = ref(false);
-
-// 路由实例
 const router = useRouter();
 
-// 表单数据
 const form = reactive({
   email: '',
   username: '',
@@ -88,7 +80,6 @@ const form = reactive({
   confirmPassword: ''
 });
 
-// 表单验证规则
 const rules = {
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
@@ -117,32 +108,18 @@ const rules = {
   ]
 };
 
-// 处理注册
 const handleRegister = async () => {
-  // 表单验证
   if (!formRef.value) return;
 
   formRef.value.validate(async (valid: boolean) => {
     if (valid) {
-      // 使用立即执行的 async 函数来处理异步操作
       (async () => {
         try {
           loading.value = true;
-
-          // 调用注册接口
-          await register(
-            form.email,
-            form.username,
-            form.password
-          );
-
-          // 注册成功
+          await register(form.email, form.username, form.password);
           ElMessage.success('注册成功');
-
-          // 跳转到登录页
           router.push('/login');
         } catch (error: any) {
-          // 注册失败
           ElMessage.error(error.message || '注册失败');
         } finally {
           loading.value = false;
@@ -157,54 +134,76 @@ const handleRegister = async () => {
 .register-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
-  background-color: #f5f7fa;
-  padding: 20px;
+  max-height: 100vh;
+  background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+  padding: 60px 20px 20px;
+  overflow-y: auto;
 }
 
 .register-card {
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  max-width: 380px;
+  background: #ffffff;
   border-radius: 8px;
-  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 28px;
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .register-header h2 {
   margin: 0;
-  color: #303133;
-  font-size: 20px;
+  color: #111827;
+  font-size: 22px;
   font-weight: 600;
 }
 
-.register-form {
-  padding: 0 20px 20px;
+.register-form :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
 }
 
 .register-button {
   width: 100%;
-  margin-top: 10px;
+  background-color: #1E3A8A;
+  border-color: #1E3A8A;
+  border-radius: 6px;
+}
+
+.register-button:hover {
+  background-color: #1E3A8A;
+  opacity: 0.92;
 }
 
 .login-link {
   text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
-  color: #606266;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #6B7280;
 }
 
 .login-link a {
-  color: #409eff;
+  color: #1E3A8A;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .login-link a:hover {
-  text-decoration: underline;
+  color: #1E40AF;
+}
+
+@media (max-width: 768px) {
+  .register-card {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .register-header h2 {
+    font-size: 20px;
+  }
 }
 </style>

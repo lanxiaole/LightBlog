@@ -1,11 +1,9 @@
 <template>
   <div class="login-container">
-    <el-card class="login-card">
-      <template #header>
-        <div class="login-header">
-          <h2>用户登录</h2>
-        </div>
-      </template>
+    <div class="login-card">
+      <div class="login-header">
+        <h2>登录</h2>
+      </div>
       <el-form
         ref="formRef"
         :model="form"
@@ -31,7 +29,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-checkbox v-model="form.rememberMe">记住我</el-checkbox>
+          <el-checkbox v-model="form.rememberMe">记住密码</el-checkbox>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -45,13 +43,13 @@
           </el-button>
         </el-form-item>
         <div class="register-link">
-          没有账号？<router-link to="/register">立即注册</router-link>
+          还没有账号？<router-link to="/register">前往注册</router-link>
         </div>
         <div class="admin-link">
           <router-link to="/admin-login">管理员登录</router-link>
         </div>
       </el-form>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -61,26 +59,17 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/user';
 
-// 表单引用
 const formRef = ref();
-
-// 加载状态
 const loading = ref(false);
-
-// 路由实例
 const router = useRouter();
-
-// 用户 store
 const userStore = useUserStore();
 
-// 表单数据
 const form = reactive({
   email: '',
   password: '',
   rememberMe: false
 });
 
-// 表单验证规则
 const rules = {
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
@@ -91,30 +80,21 @@ const rules = {
   ]
 };
 
-// 处理登录
 const handleLogin = async () => {
-  // 表单验证
   if (!formRef.value) return;
 
   formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
         loading.value = true;
-
-        // 调用 user store 的 login 方法
         await userStore.login({
           email: form.email,
           password: form.password,
           rememberMe: form.rememberMe
         });
-
-        // 登录成功
         ElMessage.success('登录成功');
-
-        // 跳转到首页
         router.push('/');
       } catch (error: any) {
-        // 登录失败
         ElMessage.error(error.message || '登录失败');
       } finally {
         loading.value = false;
@@ -128,71 +108,97 @@ const handleLogin = async () => {
 .login-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
-  background-color: #f5f7fa;
-  padding: 20px;
+  max-height: 100vh;
+  background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+  padding: 60px 20px 20px;
+  overflow-y: auto;
 }
 
 .login-card {
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  max-width: 380px;
+  background: #ffffff;
   border-radius: 8px;
-  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 28px;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .login-header h2 {
   margin: 0;
-  color: #303133;
-  font-size: 20px;
+  color: #111827;
+  font-size: 22px;
   font-weight: 600;
 }
 
-.login-form {
-  padding: 0 20px 20px;
+.login-form :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.login-form :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  background-color: #F97316;
+  border-color: #F97316;
 }
 
 .login-button {
   width: 100%;
-  margin-top: 10px;
+  background-color: #1E3A8A;
+  border-color: #1E3A8A;
+  border-radius: 6px;
+}
+
+.login-button:hover {
+  background-color: #1E3A8A;
+  opacity: 0.92;
 }
 
 .register-link {
   text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
-  color: #606266;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #6B7280;
 }
 
 .register-link a {
-  color: #409eff;
+  color: #1E3A8A;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .register-link a:hover {
-  text-decoration: underline;
+  color: #1E40AF;
 }
 
 .admin-link {
   text-align: center;
   margin-top: 10px;
   font-size: 12px;
-  color: #909399;
+  color: #9CA3AF;
 }
 
 .admin-link a {
-  color: #909399;
+  color: #9CA3AF;
   text-decoration: none;
 }
 
 .admin-link a:hover {
-  color: #409eff;
-  text-decoration: underline;
+  color: #1E3A8A;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .login-header h2 {
+    font-size: 20px;
+  }
 }
 </style>

@@ -53,8 +53,8 @@
 
           <!-- 登录后显示 -->
           <template v-if="userStore.isLoggedIn">
-            <el-dropdown>
-              <span class="user-dropdown">
+            <div class="user-dropdown-wrapper">
+              <div class="user-dropdown" @click="toggleUserMenu">
                 <el-avatar
                   size="small"
                   :src="userStore.userInfo?.avatar"
@@ -66,17 +66,32 @@
                 </el-avatar>
                 <span class="username">{{ userStore.userInfo?.username || '' }}</span>
                 <el-icon class="dropdown-arrow"><ArrowDown /></el-icon>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="router.push(`/user/${userStore.userInfo?.username || ''}`)">个人中心</el-dropdown-item>
-                  <el-dropdown-item @click="router.push('/write')">写文章</el-dropdown-item>
-                  <el-dropdown-item v-if="userStore.userInfo?.role === 'admin'" @click="router.push('/admin')">管理后台</el-dropdown-item>
-                  <el-dropdown-item @click="router.push('/settings')">设置</el-dropdown-item>
-                  <el-dropdown-item divided @click="userStore.logout()">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+              </div>
+              <!-- 用户下拉菜单 -->
+              <div class="user-menu" :class="{ 'menu-show': showUserMenu }">
+                <div class="menu-item" @click="router.push(`/user/${userStore.userInfo?.username || ''}`); showUserMenu = false">
+                  <el-icon><UserFilled /></el-icon>
+                  <span>个人中心</span>
+                </div>
+                <div class="menu-item" @click="router.push('/write'); showUserMenu = false">
+                  <el-icon><Edit /></el-icon>
+                  <span>写文章</span>
+                </div>
+                <div v-if="userStore.userInfo?.role === 'admin'" class="menu-item" @click="router.push('/admin'); showUserMenu = false">
+                  <el-icon><Setting /></el-icon>
+                  <span>管理后台</span>
+                </div>
+                <div class="menu-item" @click="router.push('/settings'); showUserMenu = false">
+                  <el-icon><Setting /></el-icon>
+                  <span>设置</span>
+                </div>
+                <div class="menu-divider"></div>
+                <div class="menu-item" @click="userStore.logout(); showUserMenu = false">
+                  <el-icon><ArrowRight /></el-icon>
+                  <span>退出登录</span>
+                </div>
+              </div>
+            </div>
           </template>
 
           <!-- 未登录显示 -->
@@ -163,7 +178,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { Search, UserFilled, ArrowDown, Menu, Message, Reading } from '@element-plus/icons-vue';
+import { Search, UserFilled, ArrowDown, Menu, Message, Reading, Edit, Setting, ArrowRight } from '@element-plus/icons-vue';
 import { ElBadge, ElInput } from 'element-plus';
 import 'element-plus/dist/index.css';
 import { useUserStore } from '@/stores/user';
@@ -182,6 +197,22 @@ const searchKeyword = ref<string>('');
 
 // 移动端菜单显示状态
 const mobileMenuVisible = ref(false);
+
+// 用户下拉菜单显示状态
+const showUserMenu = ref(false);
+
+// 切换用户菜单
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value;
+};
+
+// 点击外部关闭菜单
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.user-dropdown-wrapper')) {
+    showUserMenu.value = false;
+  }
+};
 
 // 轮询定时器
 let pollingTimer: number | null = null;
@@ -219,12 +250,16 @@ onMounted(() => {
   fetchUnreadCount();
   // 启动轮询
   startPolling();
+  // 添加点击外部关闭菜单监听
+  document.addEventListener('click', handleClickOutside);
 });
 
 // 组件卸载时清理
 onUnmounted(() => {
   // 停止轮询
   stopPolling();
+  // 移除点击外部关闭菜单监听
+  document.removeEventListener('click', handleClickOutside);
 });
 
 // 监听登录状态变化
@@ -414,6 +449,10 @@ $border-color: #E5E7EB;
 }
 
 // 用户下拉样式
+.user-dropdown-wrapper {
+  position: relative;
+}
+
 .user-dropdown {
   display: flex;
   align-items: center;
@@ -444,6 +483,50 @@ $border-color: #E5E7EB;
     font-size: 12px;
     color: $text-gray;
   }
+}
+
+// 用户下拉菜单
+.user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 160px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s linear;
+  z-index: 1000;
+}
+
+.menu-show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s linear;
+
+  &:hover {
+    background-color: #F3F4F6;
+  }
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #F3F4F6;
+  margin: 8px 0;
 }
 
 // 认证按钮样式

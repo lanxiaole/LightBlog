@@ -455,9 +455,9 @@ onUnmounted(() => {
 
 /* 用户下拉菜单 */
 .user-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  top: calc(60px + 16px);
+  right: 24px;
   width: 160px;
   background-color: #ffffff;
   border-radius: 8px;
@@ -467,6 +467,7 @@ onUnmounted(() => {
   visibility: hidden;
   transform: translateY(-8px);
   transition: all 0.2s linear;
+  z-index: 1000;
 }
 
 .menu-show {

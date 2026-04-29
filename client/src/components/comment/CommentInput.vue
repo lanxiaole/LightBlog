@@ -19,7 +19,7 @@
       />
       <div class="input-actions">
         <el-button
-          type="primary"
+          class="submit-btn"
           @click="emit('submit')"
           :loading="submitting"
           :disabled="!userStore.isLoggedIn || !modelValue.trim()"
@@ -32,34 +32,18 @@
 </template>
 
 <script setup lang="ts">
-/**
- * 评论输入组件
- * 用于输入评论内容和回复评论
- */
 import { ElAvatar, ElButton, ElInput } from 'element-plus';
 import { useUserStore } from '@/stores/user';
 
-/**
- * 组件属性
- */
 defineProps<{
-  /** 评论内容（双向绑定） */
   modelValue: string;
-  /** 回复的评论ID，为null时表示普通评论 */
   replyTo: number | null;
-  /** 提交状态 */
   submitting: boolean;
 }>();
 
-/**
- * 组件事件
- */
 const emit = defineEmits<{
-  /** 更新评论内容 */
   'update:modelValue': [value: string];
-  /** 提交评论 */
   submit: [];
-  /** 取消回复 */
   cancelReply: [];
 }>();
 
@@ -70,10 +54,11 @@ const userStore = useUserStore();
 .comment-input {
   display: flex;
   gap: 12px;
-  margin-bottom: 30px;
-  padding: 15px;
-  background-color: #f9f9f9;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #ffffff;
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .input-area {
@@ -81,23 +66,65 @@ const userStore = useUserStore();
 }
 
 .reply-info {
-  font-size: 14px;
-  color: #606266;
+  font-size: 13px;
+  color: #6B7280;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+.reply-info :deep(.el-button) {
+  color: #1E3A8A;
+  padding: 0;
+}
+
+.input-area :deep(.el-textarea__inner) {
+  border-radius: 6px;
+  border-color: #E5E7EB;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.input-area :deep(.el-textarea__inner:focus) {
+  border-color: #1E3A8A;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
 .input-actions {
   text-align: right;
-  margin-top: 10px;
+  margin-top: 12px;
+}
+
+.submit-btn {
+  padding: 7px 20px;
+  font-size: 14px;
+  background-color: #F97316;
+  border-color: #F97316;
+  border-radius: 6px;
+  color: #ffffff;
+  transition: all 0.2s linear;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #EA580C;
+  border-color: #EA580C;
+}
+
+.submit-btn:disabled {
+  background-color: #D1D5DB;
+  border-color: #D1D5DB;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
   .comment-input {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .submit-btn {
+    width: 100%;
   }
 }
 </style>

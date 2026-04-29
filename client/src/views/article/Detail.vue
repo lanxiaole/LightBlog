@@ -26,19 +26,17 @@
       @follow="toggleFollow"
     />
 
-    <!-- 点赞和收藏按钮 -->
-    <div v-if="!loading && !error && article" class="like-section">
+    <div v-if="!loading && !error && article" class="action-bar">
       <el-button
-        :type="liked ? 'primary' : 'default'"
+        :class="['action-btn', { 'active': liked }]"
         :loading="liking"
         @click="handleLike"
-        style="margin-right: 20px;"
       >
-        <span :class="liked ? 'icon-thumbs-up-filled' : 'icon-thumbs-up'" style="margin-right: 5px;"></span>
-        <span class="like-count">{{ likesCount }}</span>
+        <span :class="liked ? 'icon-thumbs-up-filled' : 'icon-thumbs-up'" style="margin-right: 6px;"></span>
+        <span>{{ likesCount }}</span>
       </el-button>
       <el-button
-        :type="favorited ? 'warning' : 'default'"
+        :class="['action-btn', { 'active': favorited }]"
         :loading="favoriting"
         @click="toggleFavorite"
       >
@@ -46,11 +44,14 @@
           <star-filled v-if="favorited" />
           <star v-else />
         </el-icon>
-        <span class="like-count">{{ favoritesCount }}</span>
+        <span style="margin-left: 6px;">{{ favoritesCount }}</span>
+      </el-button>
+      <el-button class="action-btn" @click="handleShare">
+        <el-icon><Share /></el-icon>
+        <span style="margin-left: 6px;">分享</span>
       </el-button>
     </div>
 
-    <!-- 评论区域 -->
     <CommentSection
       v-if="!loading && !error && article"
       v-model:new-comment="newComment"
@@ -69,7 +70,6 @@
       @page-change="handlePageChange"
     />
 
-    <!-- 返回顶部 -->
     <el-backtop :right="40" :bottom="40" />
   </div>
 </template>
@@ -78,7 +78,7 @@
 import { onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElButton, ElBacktop, ElIcon } from 'element-plus';
-import { Star, StarFilled } from '@element-plus/icons-vue';
+import { Star, StarFilled, Share } from '@element-plus/icons-vue';
 import { useArticle } from '@/composables/article/useArticle';
 import { useFavorite } from '@/composables/article/useFavorite';
 import { useComments } from '@/composables/comment/useComments';
@@ -97,16 +97,12 @@ const articleId = computed(() => {
 const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
 const { favorited, favoritesCount, favoriting, toggleFavorite, fetchFavoriteStatus } = useFavorite(articleId);
 
-// 计算目标用户 ID
 const targetUserId = computed(() => article.value?.author?.id || null);
 
-// 使用关注组合式函数
 const { isFollowing, loading: followLoading, toggleFollow, checkStatus } = useFollow(targetUserId);
 
-// 监听文章变化，确保关注状态正确更新
 watch(article, (newArticle) => {
   if (newArticle && newArticle.author?.id) {
-    // 当文章加载完成后，检查关注状态
     checkStatus();
   }
 }, { immediate: true });
@@ -135,9 +131,14 @@ const handleEdit = () => {
   }
 };
 
+const handleShare = () => {
+  if (article.value) {
+    navigator.clipboard.writeText(window.location.href);
+  }
+};
+
 onMounted(async () => {
   await fetchArticleDetail(articleId.value);
-  // 文章加载完成后，检查关注状态和收藏状态
   if (article.value && article.value.author?.id) {
     await checkStatus();
     await fetchFavoriteStatus();
@@ -150,29 +151,84 @@ onMounted(async () => {
 .article-detail {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px 20px;
 }
 
 .back-button {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-.like-section {
+.back-button :deep(.el-button) {
+  color: #6B7280;
+  font-size: 14px;
+}
+
+.back-button :deep(.el-button:hover) {
+  color: #1E3A8A;
+}
+
+.action-bar {
   display: flex;
   justify-content: center;
-  margin: 30px 0;
+  gap: 16px;
+  margin: 32px 0;
   padding: 20px 0;
-  border-top: 1px solid #e4e7ed;
-  border-bottom: 1px solid #e4e7ed;
+  border-top: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E5E7EB;
 }
 
-.like-count {
-  margin-left: 8px;
+.action-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  background-color: #ffffff;
+  color: #6B7280;
+  font-size: 14px;
+  transition: all 0.2s linear;
+}
+
+.action-btn:hover {
+  border-color: #1E3A8A;
+  color: #1E3A8A;
+}
+
+.action-btn.active {
+  background-color: #1E3A8A;
+  border-color: #1E3A8A;
+  color: #ffffff;
+}
+
+.action-btn.active :deep(.el-icon) {
+  color: #ffffff;
 }
 
 @media (max-width: 768px) {
   .article-detail {
-    padding: 10px;
+    padding: 20px 15px;
+  }
+
+  .action-bar {
+    gap: 12px;
+    padding: 16px 0;
+  }
+
+  .action-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+  .article-detail {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-detail {
+    max-width: 95%;
   }
 }
 </style>

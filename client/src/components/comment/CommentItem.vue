@@ -1,36 +1,38 @@
 <template>
   <div class="comment-item">
-    <div class="comment-header">
-      <el-avatar :src="comment.author?.avatar || undefined" size="small">
-        {{ comment.author?.username?.charAt(0) || 'U' }}
-      </el-avatar>
-      <div class="comment-meta">
-        <span class="comment-author">{{ comment.author?.username || '未知用户' }}</span>
-        <span class="comment-time">{{ new Date(comment.created_at).toLocaleString('zh-CN') }}</span>
+    <div class="comment-card">
+      <div class="comment-header">
+        <el-avatar :src="comment.author?.avatar || undefined" size="small">
+          {{ comment.author?.username?.charAt(0) || 'U' }}
+        </el-avatar>
+        <div class="comment-meta">
+          <span class="comment-author">{{ comment.author?.username || '未知用户' }}</span>
+          <span class="comment-time">{{ formatDate(comment.created_at) }}</span>
+        </div>
+        <div class="comment-actions">
+          <el-button
+            v-if="userStore.isLoggedIn"
+            class="reply-btn"
+            type="text"
+            size="small"
+            @click="onReply(comment.id)"
+          >
+            回复
+          </el-button>
+          <el-button
+            v-if="userStore.isLoggedIn && userStore.userInfo?.id === comment.user_id"
+            class="delete-btn"
+            type="text"
+            size="small"
+            @click="onDelete(comment.id)"
+          >
+            删除
+          </el-button>
+        </div>
       </div>
-      <div class="comment-actions">
-        <el-button
-          v-if="userStore.isLoggedIn"
-          type="text"
-          size="small"
-          @click="onReply(comment.id)"
-        >
-          回复
-        </el-button>
-        <el-button
-          v-if="userStore.isLoggedIn && userStore.userInfo?.id === comment.user_id"
-          type="text"
-          size="small"
-          @click="onDelete(comment.id)"
-          style="color: #f56c6c;"
-        >
-          删除
-        </el-button>
-      </div>
+      <div class="comment-content">{{ comment.content }}</div>
     </div>
-    <div class="comment-content">{{ comment.content }}</div>
 
-    <!-- 回复列表 -->
     <div v-if="allComments.filter(c => c.parent_id === comment.id).length > 0" class="replies">
       <div v-if="allComments.filter(c => c.parent_id === comment.id).length > 2" class="reply-toggle">
         <el-button type="text" size="small" @click="toggleExpand">
@@ -52,63 +54,56 @@
 </template>
 
 <script setup lang="ts">
-/**
- * 评论项组件
- * 用于显示单条评论及其回复，支持递归渲染多层回复
- */
 import { ref } from 'vue';
 import { ElAvatar, ElButton } from 'element-plus';
 import { useUserStore } from '@/stores/user';
 import type { Comment } from '@/api/comment';
 
-/**
- * 显式声明组件名称，支持递归渲染
- */
 defineOptions({
   name: 'CommentItem'
 });
 
-/**
- * 组件属性
- */
 defineProps<{
-  /** 评论数据 */
   comment: Comment;
-  /** 所有评论列表，用于过滤回复 */
   allComments: Comment[];
-  /** 回复回调函数 */
   onReply: (commentId: number) => void;
-  /** 删除回调函数 */
   onDelete: (commentId: number) => void;
 }>();
 
 const userStore = useUserStore();
 
-// 展开/收起回复
 const isExpanded = ref(true);
 
-/**
- * 切换展开/收起状态
- */
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
+};
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleString('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 </script>
 
 <style scoped>
 .comment-item {
-  padding: 15px 0;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 16px;
 }
 
-.comment-item:last-child {
-  border-bottom: none;
+.comment-card {
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .comment-header {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .comment-meta {
@@ -120,48 +115,78 @@ const toggleExpand = () => {
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: #111827;
   margin-bottom: 2px;
 }
 
 .comment-time {
   font-size: 12px;
-  color: #909399;
+  color: #9CA3AF;
 }
 
 .comment-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+}
+
+.reply-btn {
+  color: #6B7280;
+  font-size: 13px;
+  padding: 0;
+  transition: color 0.2s linear;
+}
+
+.reply-btn:hover {
+  color: #1E3A8A;
+}
+
+.delete-btn {
+  color: #EF4444;
+  font-size: 13px;
+  padding: 0;
+}
+
+.delete-btn:hover {
+  color: #DC2626;
 }
 
 .comment-content {
   font-size: 14px;
   line-height: 1.6;
-  color: #303133;
-  margin-bottom: 10px;
-  padding-left: 34px;
+  color: #374151;
+  margin-top: 8px;
 }
 
 .replies {
-  margin-top: 15px;
-  margin-left: 34px;
-  padding-left: 15px;
-  border-left: 2px solid #f0f0f0;
+  margin-top: 12px;
+  margin-left: 36px;
+  padding-left: 16px;
+  border-left: 2px solid #E5E7EB;
 }
 
 .reply-toggle {
   margin-bottom: 10px;
 }
 
+.reply-toggle :deep(.el-button) {
+  color: #6B7280;
+  font-size: 13px;
+}
+
+.reply-toggle :deep(.el-button:hover) {
+  color: #1E3A8A;
+}
+
 @media (max-width: 768px) {
   .comment-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    gap: 8px;
   }
 
   .comment-meta {
     margin-left: 0;
+    width: 100%;
   }
 
   .comment-actions {
@@ -169,13 +194,9 @@ const toggleExpand = () => {
     justify-content: flex-end;
   }
 
-  .comment-content {
-    padding-left: 0;
-  }
-
   .replies {
     margin-left: 0;
-    padding-left: 10px;
+    padding-left: 12px;
   }
 }
 </style>

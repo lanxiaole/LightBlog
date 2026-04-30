@@ -1,0 +1,85 @@
+@import '../../styles/variables.scss';
+
+.article-detail {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.back-button {
+  margin-bottom: 24px;
+}
+
+.back-button :deep(.el-button) {
+  color: #6B7280;
+  font-size: 14px;
+}
+
+.back-button :deep(.el-button:hover) {
+  color: #1E3A8A;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 32px 0;
+  padding: 20px 0;
+  border-top: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  background-color: #ffffff;
+  color: #6B7280;
+  font-size: 14px;
+  transition: all 0.2s linear;
+}
+
+.action-btn:hover {
+  border-color: #1E3A8A;
+  color: #1E3A8A;
+}
+
+.action-btn.active {
+  background-color: #1E3A8A;
+  border-color: #1E3A8A;
+  color: #ffffff;
+}
+
+.action-btn.active :deep(.el-icon) {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .article-detail {
+    padding: 20px 15px;
+  }
+
+  .action-bar {
+    gap: 12px;
+    padding: 16px 0;
+  }
+
+  .action-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+  .article-detail {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 767px) {
+  .article-detail {
+    max-width: 95%;
+  }
+}

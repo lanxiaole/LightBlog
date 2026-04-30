@@ -1,0 +1,54 @@
+@import './variables.scss';
+
+// 移动端适配
+@media (max-width: 767px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-left {
+    order: 2;
+  }
+
+  .filter-right {
+    order: 1;
+  }
+
+  .filter-select,
+  .filter-input {
+    width: 100%;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .dialog-footer {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .submit-btn {
+    width: 100%;
+  }
+
+  .pagination-container {
+    margin-top: 24px;
+  }
+}
+
+// 平板端适配
+@media (min-width: 768px) and (max-width: 1199px) {
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .main-content {
+    padding: 0 20px;
+  }
+}

@@ -1,0 +1,21 @@
+@import '../../styles/variables.scss';
+@import '../../styles/table.scss';
+@import '../../styles/pagination.scss';
+@import '../../styles/buttons.scss';
+@import '../../styles/empty-state.scss';
+@import '../../styles/dialog.scss';
+@import '../../styles/responsive.scss';
+
+.categories-page {
+  min-height: 100%;
+}
+
+.category-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.category-desc {
+  font-size: 14px;
+  color: #6B7280;
+}

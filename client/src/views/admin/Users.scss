@@ -1,0 +1,22 @@
+@import '../../styles/variables.scss';
+@import '../../styles/table.scss';
+@import '../../styles/pagination.scss';
+@import '../../styles/buttons.scss';
+@import '../../styles/empty-state.scss';
+@import '../../styles/tags.scss';
+@import '../../styles/responsive.scss';
+
+.users-page {
+  min-height: 100%;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+}

@@ -1,0 +1,66 @@
+@import './variables.scss';
+
+// 操作按钮基础样式
+.action-btn {
+  font-size: 13px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: background-color 0.2s linear;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+// 编辑按钮样式
+.action-edit {
+  color: $primary-color;
+  background-color: transparent;
+
+  &:hover {
+    background-color: #EEF2FF;
+  }
+}
+
+// 删除按钮样式
+.action-delete {
+  color: $danger-color;
+  background-color: transparent;
+
+  &:hover {
+    background-color: #FEF2F2;
+  }
+}
+
+// 状态切换按钮样式
+.action-status {
+  color: $secondary-color;
+  background-color: transparent;
+
+  &:hover {
+    background-color: #FFF7ED;
+  }
+}
+
+// 置顶按钮样式
+.action-pin {
+  color: $success-color;
+  background-color: transparent;
+
+  &:hover {
+    background-color: #ECFDF5;
+  }
+}
+
+// 重置按钮样式
+.action-reset {
+  color: $text-gray;
+  background-color: transparent;
+
+  &:hover {
+    background-color: $bg-light;
+  }
+}

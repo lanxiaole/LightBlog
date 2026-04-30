@@ -1,0 +1,19 @@
+@import '../../styles/variables.scss';
+@import '../../styles/table.scss';
+@import '../../styles/pagination.scss';
+@import '../../styles/buttons.scss';
+@import '../../styles/empty-state.scss';
+@import '../../styles/tags.scss';
+@import '../../styles/responsive.scss';
+
+.articles-admin {
+  min-height: 100%;
+}
+
+.article-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}

@@ -1,0 +1,38 @@
+@import './variables.scss';
+
+// 分页容器样式
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+
+  :deep(.el-pagination) {
+    display: flex;
+    align-items: center;
+    --el-pagination-button-bg-color: $white;
+    --el-pagination-hover-color: $primary-color;
+
+    .el-pagination__total,
+    .el-pagination__sizes {
+      color: $text-gray;
+    }
+
+    .el-pager li {
+      border-radius: 6px;
+      transition: all 0.2s linear;
+
+      &.is-active {
+        background-color: $primary-color;
+      }
+
+      &:hover:not(.is-active) {
+        color: $primary-color;
+      }
+    }
+
+    .btn-prev,
+    .btn-next {
+      border-radius: 6px;
+    }
+  }
+}

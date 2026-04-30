@@ -1,0 +1,62 @@
+@import './variables.scss';
+
+// 状态标签基础样式
+.status-tag {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+// 置顶标签
+.status-tag.pinned {
+  background-color: #FFF7ED;
+  color: $secondary-color;
+}
+
+// 已发布标签
+.status-tag.published {
+  background-color: #ECFDF5;
+  color: $success-color;
+}
+
+// 草稿标签
+.status-tag.draft {
+  background-color: $bg-light;
+  color: $text-light;
+}
+
+// 已下架标签
+.status-tag.banned {
+  background-color: #FEF2F2;
+  color: $danger-color;
+}
+
+// 角色标签
+.role-tag {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.role-tag.admin {
+  background-color: $primary-color;
+  color: $white;
+}
+
+.role-tag.user {
+  background-color: $bg-light;
+  color: $text-light;
+}
+
+// 账号状态标签
+.status-tag.active {
+  background-color: #ECFDF5;
+  color: $success-color;
+}
+
+.status-tag.disabled {
+  background-color: #FEF2F2;
+  color: $danger-color;
+}

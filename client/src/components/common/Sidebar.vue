@@ -77,34 +77,6 @@
       </div>
     </div>
 
-    <!-- 最新评论 -->
-    <div class="sidebar-section">
-      <div class="section-header">
-        <el-icon><ChatDotRound /></el-icon>
-        <span>最新评论</span>
-      </div>
-      <div class="recent-comments">
-        <div
-          v-for="comment in recentComments"
-          :key="comment.id"
-          class="comment-item"
-          @click="navigateToArticle(comment.article_id)"
-        >
-          <div class="comment-author">
-            <el-avatar :size="28" :src="comment.author?.avatar">
-              <el-icon><User /></el-icon>
-            </el-avatar>
-            <span class="author-name">{{ comment.author?.username || '匿名用户' }}</span>
-          </div>
-          <p class="comment-content">{{ truncateContent(comment.content) }}</p>
-          <span class="comment-time">{{ formatTime(comment.created_at) }}</span>
-        </div>
-        <p v-if="recentComments.length === 0" class="empty-hint">
-          暂无评论
-        </p>
-      </div>
-    </div>
-
     <!-- 分类 -->
     <div class="sidebar-section">
       <div class="section-header">
@@ -133,10 +105,9 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElInput } from 'element-plus';
-import { Search, UserFilled, CollectionTag, ChatDotRound, Folder, ArrowRight, User, Document, Star } from '@element-plus/icons-vue';
+import { Search, UserFilled, CollectionTag, Folder, ArrowRight, Document, Star } from '@element-plus/icons-vue';
 import type { Category } from '@/api/category';
 import type { Tag } from '@/api/tag';
-import type { Comment } from '@/api/comment';
 import { getUserArticles } from '@/api/user';
 import { useUserStore } from '@/stores/user';
 
@@ -176,9 +147,6 @@ const userStats = ref({
   totalFavorites: 0
 });
 
-// 最新评论数据
-const recentComments = ref<Comment[]>([]);
-
 // 计算属性：当前用户信息
 const currentUser = computed(() => userStore.userInfo);
 
@@ -189,41 +157,6 @@ const handleSearch = () => {
   if (searchKeyword.value.trim()) {
     router.push({ path: '/search', query: { keyword: searchKeyword.value.trim() } });
   }
-};
-
-/**
- * 跳转到文章详情
- * @param articleId 文章ID
- */
-const navigateToArticle = (articleId: number) => {
-  router.push(`/article/${articleId}`);
-};
-
-/**
- * 截断评论内容
- * @param content 评论内容
- */
-const truncateContent = (content: string): string => {
-  return content.length > 50 ? content.substring(0, 50) + '...' : content;
-};
-
-/**
- * 格式化时间
- * @param dateString 日期字符串
- */
-const formatTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
-  if (days < 7) return `${days}天前`;
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
 };
 
 /**

@@ -182,3 +182,20 @@ export async function deleteArticle(id: number): Promise<{ message: string }> {
     throw new Error('删除文章失败');
   }
 }
+
+/**
+ * 增加文章浏览量
+ * @param id 文章ID
+ * @returns 操作结果
+ */
+export async function incrementArticleViews(id: number): Promise<{ message: string }> {
+  try {
+    const response = await api.post<{ message: string }>(`/articles/${id}/views`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`增加浏览量失败: ${error.message}`);
+    }
+    throw new Error('增加浏览量失败');
+  }
+}

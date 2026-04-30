@@ -94,7 +94,7 @@ const articleId = computed(() => {
   return typeof id === 'string' ? parseInt(id) : 0;
 });
 
-const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, handleDelete, handleLike } = useArticle();
+const { article, loading, error, isAuthor, liked, likesCount, liking, fetchArticleDetail, incrementViews, handleDelete, handleLike } = useArticle();
 const { favorited, favoritesCount, favoriting, toggleFavorite, fetchFavoriteStatus } = useFavorite(articleId);
 
 const targetUserId = computed(() => article.value?.author?.id || null);
@@ -139,6 +139,8 @@ const handleShare = () => {
 
 onMounted(async () => {
   await fetchArticleDetail(articleId.value);
+  // 增加浏览量（异步执行，不阻塞页面渲染）
+  incrementViews(articleId.value);
   if (article.value && article.value.author?.id) {
     await checkStatus();
     await fetchFavoriteStatus();

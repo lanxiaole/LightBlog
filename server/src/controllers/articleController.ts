@@ -347,6 +347,39 @@ export async function unlikeArticle(req: Request, res: Response): Promise<void> 
   }
 }
 
+/**
+ * 增加文章浏览量
+ * @param req 请求对象
+ * @param res 响应对象
+ * @returns 操作结果
+ * @status 200 - 浏览量增加成功
+ * @status 400 - 无效的文章ID
+ * @status 404 - 文章不存在
+ * @status 500 - 服务器内部错误
+ */
+export async function incrementArticleViews(req: Request, res: Response): Promise<void> {
+  try {
+    const articleId = parseInt(req.params.id as string);
+
+    if (isNaN(articleId) || articleId <= 0) {
+      res.status(400).json({ message: '无效的文章ID' });
+      return;
+    }
+
+    const success = await ArticleService.incrementViews(articleId);
+
+    if (!success) {
+      res.status(404).json({ message: '文章不存在' });
+      return;
+    }
+
+    res.status(200).json({ message: '浏览量增加成功' });
+  } catch (error) {
+    console.error('增加浏览量失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
 
 
 

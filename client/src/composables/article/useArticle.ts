@@ -5,7 +5,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { getArticleDetail, deleteArticle } from '@/api/article';
+import { getArticleDetail, deleteArticle, incrementArticleViews } from '@/api/article';
 import { likeArticle, unlikeArticle } from '@/api/like';
 import type { Article } from '@/api/article';
 import { useUserStore } from '@/stores/user';
@@ -74,6 +74,24 @@ export function useArticle() {
   };
 
   /**
+   * 增加文章浏览量
+   * @param id 文章ID
+   */
+  const incrementViews = async (id: number) => {
+    if (id <= 0) return;
+
+    try {
+      await incrementArticleViews(id);
+      // 更新本地文章的浏览量
+      if (article.value) {
+        article.value.views += 1;
+      }
+    } catch (err: any) {
+      console.error('增加浏览量失败:', err.message);
+    }
+  };
+
+  /**
    * 删除文章
    */
   const handleDelete = async () => {
@@ -108,7 +126,7 @@ export function useArticle() {
    */
   const handleLike = async () => {
     if (!article.value) return;
-    
+
     // 检查是否已登录
     if (!isLoggedIn.value) {
       ElMessage.warning('请先登录');
@@ -121,7 +139,7 @@ export function useArticle() {
 
     try {
       liking.value = true;
-      
+
       if (liked.value) {
         // 取消点赞
         const result = await unlikeArticle(article.value.id);
@@ -153,6 +171,7 @@ export function useArticle() {
     liking,         // 点赞操作加载状态
     isLoggedIn,     // 是否已登录
     fetchArticleDetail,  // 获取文章详情
+    incrementViews,      // 增加浏览量
     handleDelete,        // 删除文章
     handleLike           // 处理点赞
   };

@@ -8,7 +8,8 @@ import {
   getArticlesByCategory,
   getArticlesByTag,
   updateArticle,
-  deleteArticle 
+  deleteArticle,
+  incrementArticleViews
 } from '../controllers/articleController';
 import {
   likeArticle,
@@ -46,5 +47,8 @@ router.post('/:id/like', authMiddleware, likeArticle);
 
 // DELETE /api/articles/:id/like - 取消点赞（需要登录）
 router.delete('/:id/like', authMiddleware, unlikeArticle);
+
+// POST /api/articles/:id/views - 增加浏览量（无需登录）
+router.post('/:id/views', incrementArticleViews);
 
 export default router;

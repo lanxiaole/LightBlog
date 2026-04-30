@@ -235,5 +235,14 @@ export const ArticleService = {
     return await ArticleModel.searchArticles(keyword, page, pageSize);
   },
 
+  /**
+   * 增加文章浏览量
+   * @param id 文章ID
+   * @returns 是否更新成功
+   */
+  async incrementViews(id: number): Promise<boolean> {
+    return await ArticleModel.incrementViews(id);
+  }
+
 
 };

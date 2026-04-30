@@ -199,3 +199,22 @@ export async function incrementArticleViews(id: number): Promise<{ message: stri
     throw new Error('增加浏览量失败');
   }
 }
+
+/**
+ * 获取热门文章列表
+ * @param limit 返回数量限制，默认 10
+ * @returns 热门文章列表
+ */
+export async function getHotArticles(limit: number = 10): Promise<{ list: Article[] }> {
+  try {
+    const response = await api.get<{ list: Article[] }>('/articles/hot', {
+      params: { limit }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`获取热门文章失败: ${error.message}`);
+    }
+    throw new Error('获取热门文章失败');
+  }
+}

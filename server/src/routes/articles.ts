@@ -9,7 +9,8 @@ import {
   getArticlesByTag,
   updateArticle,
   deleteArticle,
-  incrementArticleViews
+  incrementArticleViews,
+  getHotArticles
 } from '../controllers/articleController';
 import {
   likeArticle,
@@ -31,6 +32,9 @@ router.get('/category/:name', getArticlesByCategory);
 // GET /api/articles/tag/:name - 获取标签文章列表（无需登录）
 // 注意：这个路由必须在 /:id 之前定义，否则会被 /:id 匹配
 router.get('/tag/:name', getArticlesByTag);
+
+// GET /api/articles/hot - 获取热门文章列表（无需登录）
+router.get('/hot', getHotArticles);
 
 // GET /api/articles/:id - 获取文章详情（可选登录，登录后可获取点赞状态）
 router.get('/:id', optionalAuthMiddleware, getArticleById);

@@ -242,6 +242,15 @@ export const ArticleService = {
    */
   async incrementViews(id: number): Promise<boolean> {
     return await ArticleModel.incrementViews(id);
+  },
+
+  /**
+   * 获取热门文章列表
+   * @param limit 返回数量限制，默认 10
+   * @returns 热门文章列表
+   */
+  async getHotArticles(limit: number = 10): Promise<Article[]> {
+    return await ArticleModel.getHotArticles(limit);
   }
 
 

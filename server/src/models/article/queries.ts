@@ -289,6 +289,61 @@ export const ArticleQueryModel = {
   },
 
   /**
+   * 获取热门文章（基于浏览量、点赞数、收藏数综合排序）
+   * @param limit 返回数量限制，默认 10
+   * @returns 热门文章列表
+   */
+  async getHotArticles(limit: number = 10): Promise<Article[]> {
+    // 热度计算公式：热度 = 浏览量 * 1 + 点赞数 * 3 + 收藏数 * 5
+    // 给点赞和收藏更高的权重，因为这些是用户主动行为
+    
+    // 验证 limit 参数是有效的数字
+    const validLimit = Math.max(1, Math.min(100, limit));
+    
+    const sql = `
+      SELECT 
+        a.*, 
+        u.id as author_id, 
+        u.username, 
+        u.avatar,
+        u.role as author_role,
+        (SELECT COUNT(*) FROM likes WHERE article_id = a.id) as likesCount,
+        (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) as favoritesCount,
+        (a.views * 1 + (SELECT COUNT(*) FROM likes WHERE article_id = a.id) * 3 + (SELECT COUNT(*) FROM favorites WHERE article_id = a.id) * 5) as hotScore
+      FROM articles a
+      JOIN users u ON a.author_id = u.id
+      WHERE a.status = 'published'
+      ORDER BY hotScore DESC, a.created_at DESC
+      LIMIT ${validLimit}
+    `;
+
+    const [result] = await pool.execute<RowDataPacket[]>(sql);
+
+    return (result as any[]).map(article => ({
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      cover: article.cover,
+      author_id: article.author_id,
+      category_id: article.category_id,
+      status: article.status,
+      views: article.views,
+      likes: article.likes,
+      is_pinned: article.is_pinned,
+      created_at: article.created_at,
+      updated_at: article.updated_at,
+      likesCount: article.likesCount,
+      favoritesCount: article.favoritesCount,
+      author: {
+        id: article.author_id,
+        username: article.username,
+        avatar: article.avatar,
+        role: article.author_role
+      }
+    }));
+  },
+
+  /**
    * 获取所有文章（用于管理后台）
    * @param params 查询参数
    * @returns 包含文章列表和总记录数的对象

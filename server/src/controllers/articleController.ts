@@ -380,6 +380,27 @@ export async function incrementArticleViews(req: Request, res: Response): Promis
   }
 }
 
+/**
+ * 获取热门文章列表
+ * @param req 请求对象
+ * @param res 响应对象
+ * @returns 热门文章列表
+ * @status 200 - 成功
+ * @status 500 - 服务器内部错误
+ */
+export async function getHotArticles(req: Request, res: Response): Promise<void> {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const articles = await ArticleService.getHotArticles(limit);
+
+    res.status(200).json({ list: articles });
+  } catch (error) {
+    console.error('获取热门文章失败:', error);
+    res.status(500).json({ message: '服务器内部错误' });
+  }
+}
+
 
 
 

@@ -56,6 +56,34 @@
       </div>
     </div>
 
+    <!-- 热门文章 -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <el-icon><Star /></el-icon>
+        <span>热门文章</span>
+      </div>
+      <div class="hot-articles">
+        <div
+          v-for="(article, index) in hotArticles"
+          :key="article.id"
+          class="hot-article-item"
+          @click="navigateToArticle(article.id)"
+        >
+          <span class="hot-rank" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+          <div class="hot-article-content">
+            <span class="hot-article-title">{{ truncateTitle(article.title) }}</span>
+            <span class="hot-article-views">
+              <el-icon><View /></el-icon>
+              {{ formatViews(article.views) }}
+            </span>
+          </div>
+        </div>
+        <p v-if="hotArticles.length === 0" class="empty-hint">
+          暂无热门文章
+        </p>
+      </div>
+    </div>
+
     <!-- 热门标签 -->
     <div class="sidebar-section">
       <div class="section-header">
@@ -105,10 +133,12 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElInput } from 'element-plus';
-import { Search, UserFilled, CollectionTag, Folder, ArrowRight, Document, Star } from '@element-plus/icons-vue';
+import { Search, UserFilled, CollectionTag, Folder, ArrowRight, Document, Star, View } from '@element-plus/icons-vue';
 import type { Category } from '@/api/category';
 import type { Tag } from '@/api/tag';
+import type { Article } from '@/api/article';
 import { getUserArticles } from '@/api/user';
+import { getHotArticles } from '@/api/article';
 import { useUserStore } from '@/stores/user';
 
 /**
@@ -147,6 +177,9 @@ const userStats = ref({
   totalFavorites: 0
 });
 
+// 热门文章数据
+const hotArticles = ref<Article[]>([]);
+
 // 计算属性：当前用户信息
 const currentUser = computed(() => userStore.userInfo);
 
@@ -156,6 +189,48 @@ const currentUser = computed(() => userStore.userInfo);
 const handleSearch = () => {
   if (searchKeyword.value.trim()) {
     router.push({ path: '/search', query: { keyword: searchKeyword.value.trim() } });
+  }
+};
+
+/**
+ * 跳转到文章详情
+ * @param articleId 文章ID
+ */
+const navigateToArticle = (articleId: number) => {
+  router.push(`/article/${articleId}`);
+};
+
+/**
+ * 截断文章标题
+ * @param title 文章标题
+ */
+const truncateTitle = (title: string): string => {
+  return title.length > 20 ? title.substring(0, 20) + '...' : title;
+};
+
+/**
+ * 格式化浏览量
+ * @param views 浏览量
+ */
+const formatViews = (views: number): string => {
+  if (views >= 10000) {
+    return (views / 10000).toFixed(1) + 'w';
+  } else if (views >= 1000) {
+    return (views / 1000).toFixed(1) + 'k';
+  }
+  return views.toString();
+};
+
+/**
+ * 获取热门文章
+ */
+const fetchHotArticles = async () => {
+  try {
+    const result = await getHotArticles(8);
+    hotArticles.value = result.list;
+  } catch (error) {
+    console.error('获取热门文章失败:', error);
+    hotArticles.value = [];
   }
 };
 
@@ -224,7 +299,7 @@ const handleTagClick = (name: string) => {
 // 组件挂载时获取数据
 onMounted(async () => {
   await userStore.initUserInfo();
-  await fetchUserStats();
+  await Promise.all([fetchUserStats(), fetchHotArticles()]);
 });
 </script>
 

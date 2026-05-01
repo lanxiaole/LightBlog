@@ -312,7 +312,9 @@ lightblog/
 - prettier
 - vite
 
-##  项目截图演示
+## 📸 项目截图演示
+
+> ⚠️ 注意：截图资源位于 `assets/` 文件夹中，如需查看完整效果请确保该文件夹存在。
 
 ### 首页
 
@@ -357,8 +359,6 @@ lightblog/
 #### 标签列表
 
 ![77764358016](assets/1777643580160.png)
-
-
 
 ### 管理后台仪表盘
 
@@ -557,7 +557,6 @@ UPDATE users SET password = '你的哈希值' WHERE email = 'lanxiaole@admin.com
 3. 检查浏览器控制台的网络请求
 4. 确认没有被防火墙或杀毒软件拦截
 
-
 ### 如何查看完整的数据库初始化说明？
 
 详细说明请查看 [database/README.md](database/README.md)
@@ -565,6 +564,26 @@ UPDATE users SET password = '你的哈希值' WHERE email = 'lanxiaole@admin.com
 ### 项目启动后没有自动创建表结构？
 
 项目不会自动创建表结构，必须手动执行 `database/schema.sql` 来初始化数据库。
+
+---
+
+## 🔐 安全说明
+
+### 重要安全提醒
+
+1. **不要提交 `.env` 文件**：项目已在 `.gitignore` 中配置了忽略规则，确保 `.env` 文件不会被提交到 Git 仓库
+2. **生产环境请修改 JWT_SECRET**：务必在生产环境中修改 `JWT_SECRET` 为复杂的随机字符串
+3. **数据库密码安全**：不要使用弱密码，生产环境建议使用独立的数据库用户
+4. **定期备份数据库**：建议定期备份重要数据
+
+### .gitignore 已配置忽略
+
+- ✅ `.env` / `.env.local` / `.env.*.local` - 环境变量
+- ✅ `node_modules/` - 依赖包
+- ✅ `dist/` / `build/` - 构建产物
+- ✅ `*.db` / `*.sql.backup` - 数据库文件
+- ✅ `.vscode/` / `.idea/` - IDE 配置
+- ✅ `*.log` - 日志文件
 
 ---
 

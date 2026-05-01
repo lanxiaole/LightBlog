@@ -1,2 +1,41 @@
 # Trae rules
 .trae/rules
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment variables - NEVER commit these!
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database files (NEVER commit these!)
+*.db
+*.sql.backup
+*.dump
+
+# Temporary files
+tmp/
+temp/
+*.tmp

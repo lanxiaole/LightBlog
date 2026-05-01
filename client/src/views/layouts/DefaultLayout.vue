@@ -164,8 +164,6 @@
           <p class="footer-desc">轻量、简洁、优雅的博客平台，记录生活与技术的点滴</p>
           <div class="footer-links">
             <router-link to="/">首页</router-link>
-            <router-link to="/about">关于</router-link>
-            <a href="mailto:contact@lightblog.com">联系我们</a>
           </div>
         </div>
         <div class="footer-bottom">

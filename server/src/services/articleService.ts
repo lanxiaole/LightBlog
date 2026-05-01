@@ -151,10 +151,11 @@ export const ArticleService = {
    * 更新文章
    * @param id 文章ID
    * @param userId 当前用户ID（用于权限验证）
+   * @param userRole 当前用户角色（用于权限验证）
    * @param input 更新文章的输入数据
    * @returns 更新是否成功
    */
-  async updateArticle(id: number, userId: number, input: UpdateArticleInput): Promise<boolean> {
+  async updateArticle(id: number, userId: number, userRole: string | undefined, input: UpdateArticleInput): Promise<boolean> {
     const { title, content, cover, category_id, tags } = input;
 
     const article = await ArticleModel.getArticleById(id);
@@ -163,7 +164,7 @@ export const ArticleService = {
       return false;
     }
 
-    if (article.author_id !== userId) {
+    if (article.author_id !== userId && userRole !== 'admin') {
       return false;
     }
 
@@ -197,16 +198,17 @@ export const ArticleService = {
    * 删除文章
    * @param id 文章ID
    * @param userId 当前用户ID（用于权限验证）
+   * @param userRole 当前用户角色（用于权限验证）
    * @returns 删除是否成功
    */
-  async deleteArticle(id: number, userId: number): Promise<boolean> {
+  async deleteArticle(id: number, userId: number, userRole: string | undefined): Promise<boolean> {
     const article = await ArticleModel.getArticleById(id);
 
     if (!article) {
       return false;
     }
 
-    if (article.author_id !== userId) {
+    if (article.author_id !== userId && userRole !== 'admin') {
       return false;
     }
 

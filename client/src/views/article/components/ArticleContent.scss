@@ -54,7 +54,7 @@
   margin-bottom: 16px;
 }
 
-.article-body img {
+.article-body :deep(img) {
   max-width: 100%;
   height: auto;
   border-radius: 6px;

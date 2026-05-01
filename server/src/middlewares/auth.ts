@@ -30,13 +30,15 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
       id: number;
       email?: string;
       username?: string;
+      role?: string;
     };
     
     // 将解码后的用户信息附加到 req.user 上
     (req as any).user = {
       id: decoded.id,
       email: decoded.email,
-      username: decoded.username
+      username: decoded.username,
+      role: decoded.role
     };
     
     // 继续处理请求

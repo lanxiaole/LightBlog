@@ -105,7 +105,7 @@
             </button>
             <button
               class="action-btn action-edit"
-              @click="$router.push(`/article/edit/${scope.row.id}`)"
+              @click="$router.push(`/edit/${scope.row.id}`)"
             >
               编辑
             </button>

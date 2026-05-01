@@ -131,7 +131,7 @@ export const AuthService = {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, username: user.username },
+      { id: user.id, email: user.email, username: user.username, role: user.role },
       process.env.JWT_SECRET || 'default-secret-key',
       { expiresIn: '7d' }
     );

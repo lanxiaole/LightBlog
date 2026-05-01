@@ -5,6 +5,7 @@
 import { Request, Response } from 'express';
 import { ArticleService } from '../services/articleService';
 import { LikeService } from '../services/likeService';
+import { UserModel } from '../models/User';
 
 /**
  * 创建文章
@@ -182,6 +183,16 @@ export async function updateArticle(req: Request, res: Response): Promise<void> 
   try {
     const articleId = parseInt(req.params.id);
     const userId = (req as any).user?.id;
+    let userRole = (req as any).user?.role;
+    
+    // 如果 token 里没有 role，就从数据库查
+    if (!userRole) {
+      const user = await UserModel.findUserById(userId);
+      if (user) {
+        userRole = user.role;
+      }
+    }
+    
     const { title, content, cover, category_id, tags } = req.body;
     
     if (isNaN(articleId) || articleId <= 0) {
@@ -194,7 +205,7 @@ export async function updateArticle(req: Request, res: Response): Promise<void> 
       return;
     }
     
-    const success = await ArticleService.updateArticle(articleId, userId, {
+    const success = await ArticleService.updateArticle(articleId, userId, userRole, {
       title,
       content,
       cover,
@@ -235,6 +246,15 @@ export async function deleteArticle(req: Request, res: Response): Promise<void> 
   try {
     const articleId = parseInt(req.params.id);
     const userId = (req as any).user?.id;
+    let userRole = (req as any).user?.role;
+    
+    // 如果 token 里没有 role，就从数据库查
+    if (!userRole) {
+      const user = await UserModel.findUserById(userId);
+      if (user) {
+        userRole = user.role;
+      }
+    }
     
     if (isNaN(articleId) || articleId <= 0) {
       res.status(400).json({ message: '无效的文章ID' });
@@ -246,7 +266,7 @@ export async function deleteArticle(req: Request, res: Response): Promise<void> 
       return;
     }
     
-    const success = await ArticleService.deleteArticle(articleId, userId);
+    const success = await ArticleService.deleteArticle(articleId, userId, userRole);
     
     if (!success) {
       const article = await ArticleService.getArticleById(articleId);

@@ -13,7 +13,7 @@
         <AvatarUpload
           :avatar="userAvatar"
           :username="currentUsername"
-          @upload="handleAvatarUpload"
+          @upload-success="handleAvatarUploadSuccess"
         />
       </div>
 
@@ -42,11 +42,6 @@ import AvatarUpload from '@/components/user/AvatarUpload.vue';
 import ProfileForm from '@/components/user/ProfileForm.vue';
 import PasswordForm from '@/components/user/PasswordForm.vue';
 
-/**
- * 设置页面
- * 用于编辑用户资料和修改密码
- */
-
 const {
   form,
   loading,
@@ -55,7 +50,7 @@ const {
   currentUsername,
   handleSubmit,
   handleCancel,
-  handleAvatarUpload
+  handleAvatarUploadSuccess
 } = useSettings();
 </script>
 

@@ -8,13 +8,16 @@
       :on-remove="handleCoverRemove"
       :file-list="fileList"
       :limit="1"
+      :loading="uploading"
+      accept="image/jpeg,image/png,image/gif,image/webp"
     >
-      <el-button type="primary" icon="el-icon-upload">
-        选择封面
+      <el-button type="primary" :loading="uploading">
+        <el-icon v-if="!uploading"><Upload /></el-icon>
+        {{ uploading ? '上传中...' : '选择封面' }}
       </el-button>
       <template #tip>
         <div class="el-upload__tip">
-          请选择一张图片作为封面（可选）
+          请选择一张图片作为封面（可选，最大10MB）
         </div>
       </template>
     </el-upload>
@@ -25,53 +28,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { ElUpload, ElButton } from 'element-plus';
+import { computed, ref } from 'vue';
+import { ElUpload, ElButton, ElMessage, ElIcon } from 'element-plus';
+import { Upload } from '@element-plus/icons-vue';
+import { uploadImage } from '@/api/upload';
 
-/**
- * 封面上传组件
- * 封装了 Element Plus 的上传组件，提供封面图上传、预览和删除功能
- */
-
-// 组件属性定义
 interface Props {
-  /** 封面图URL，支持 v-model 双向绑定 */
   modelValue: string;
 }
 
-// 定义组件属性
 const props = defineProps<Props>();
 
-// 定义组件事件
 const emit = defineEmits<{
-  /** 封面图变化时触发的事件，用于 v-model 双向绑定 */
   'update:modelValue': [value: string];
 }>();
 
-/**
- * 计算上传组件的文件列表
- * 根据当前封面图URL生成文件列表
- */
+const uploading = ref(false);
+
 const fileList = computed(() => {
   return props.modelValue ? [{ url: props.modelValue, name: '封面图' }] : [];
 });
 
-/**
- * 上传封面图处理函数
- * @param file 上传的文件对象
- * @returns false 阻止自动上传
- */
-const handleCoverUpload = (file: any) => {
-  // 使用本地URL作为封面图（临时解决方案）
-  emit('update:modelValue', URL.createObjectURL(file.raw));
-  return false; // 阻止自动上传
+const handleCoverUpload = async (file: any) => {
+  uploading.value = true;
+  
+  try {
+    const result = await uploadImage(file.raw, 'cover');
+    
+    if (result.success) {
+      emit('update:modelValue', result.url);
+      ElMessage.success('封面上传成功！');
+    } else {
+      ElMessage.error(result.message || '上传失败');
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '上传失败');
+  } finally {
+    uploading.value = false;
+  }
 };
 
-/**
- * 移除封面图处理函数
- */
 const handleCoverRemove = () => {
-  // 清空封面图
   emit('update:modelValue', '');
 };
 </script>

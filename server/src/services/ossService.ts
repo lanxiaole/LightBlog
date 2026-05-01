@@ -1,4 +1,6 @@
 import { createOssClient, ossConfig } from '../config/oss';
+import path from 'path';
+import { randomUUID } from 'crypto';
 
 export class OssService {
   // 测试 OSS 连接
@@ -51,6 +53,55 @@ export class OssService {
       return {
         success: false,
         message: `文件上传失败: ${error.message}`,
+      };
+    }
+  }
+
+  // 上传图片到 OSS（自动生成文件名）
+  static async uploadImage(
+    file: Buffer,
+    originalName: string,
+    folder: string = 'images'
+  ): Promise<{ success: boolean; url?: string; fileName?: string; message: string }> {
+    try {
+      const client = createOssClient();
+      
+      const ext = path.extname(originalName) || '.jpg';
+      const uuid = randomUUID().replace(/-/g, '');
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const fileName = `${folder}/${date}/${uuid}${ext}`;
+      
+      await client.put(fileName, file);
+      
+      const url = `https://${ossConfig.bucket}.${ossConfig.region}.aliyuncs.com/${fileName}`;
+      
+      return {
+        success: true,
+        url,
+        fileName,
+        message: '图片上传成功！',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `图片上传失败: ${error.message}`,
+      };
+    }
+  }
+
+  // 删除文件从 OSS
+  static async deleteFile(fileName: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const client = createOssClient();
+      await client.delete(fileName);
+      return {
+        success: true,
+        message: '文件删除成功！',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `文件删除失败: ${error.message}`,
       };
     }
   }

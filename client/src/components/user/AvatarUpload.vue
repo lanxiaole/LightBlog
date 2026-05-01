@@ -1,19 +1,24 @@
 <template>
   <div class="avatar-upload-container">
     <div class="avatar-wrapper">
-      <ElAvatar :size="120" :src="avatar" class="avatar">
+      <el-avatar :size="120" :src="displayAvatar" class="avatar">
         {{ getFallbackText() }}
-      </ElAvatar>
+      </el-avatar>
+      <div v-if="uploading" class="uploading-overlay">
+        <el-icon class="is-loading" size="30">
+          <Loading />
+        </el-icon>
+      </div>
     </div>
     <div class="upload-btn-wrapper">
-      <ElButton type="primary" plain class="upload-btn" @click="handleUpload">
-        <ElIcon><Upload /></ElIcon>
-        上传头像
-      </ElButton>
+      <el-button type="primary" plain class="upload-btn" @click="handleUpload" :loading="uploading">
+        <el-icon><Upload /></el-icon>
+        {{ uploading ? '上传中...' : '上传头像' }}
+      </el-button>
     </div>
     <input
       type="file"
-      accept="image/jpeg,image/png,image/gif"
+      accept="image/jpeg,image/png,image/gif,image/webp"
       class="file-input"
       ref="fileInput"
       @change="handleFileChange"
@@ -22,53 +27,65 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { ElAvatar, ElButton, ElIcon } from 'element-plus';
-import { Upload } from '@element-plus/icons-vue';
+import { ref, computed } from 'vue';
+import { ElAvatar, ElButton, ElIcon, ElMessage } from 'element-plus';
+import { Upload, Loading } from '@element-plus/icons-vue';
+import { uploadImage } from '@/api/upload';
 
-/**
- * 头像上传组件
- * 展示用户头像和上传按钮
- */
-
-// 组件属性定义
 interface Props {
-  /** 头像URL */
   avatar: string;
-  /** 用户名（用于头像回退显示） */
   username: string;
 }
 
-// 定义组件属性
 const props = defineProps<Props>();
 
-// 定义组件事件
 const emit = defineEmits<{
-  /** 上传按钮点击事件 */
-  'upload': [event: Event];
+  'upload-success': [url: string];
 }>();
 
-// 文件输入引用
 const fileInput = ref<HTMLInputElement | null>(null);
+const uploading = ref(false);
+const previewUrl = ref<string | null>(null);
 
-/**
- * 处理上传按钮点击
- */
+const displayAvatar = computed(() => {
+  return previewUrl.value || props.avatar;
+});
+
 const handleUpload = () => {
   fileInput.value?.click();
 };
 
-/**
- * 处理文件选择
- */
-const handleFileChange = (event: Event) => {
-  emit('upload', event);
-};
+const handleFileChange = async (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
 
-/**
- * 获取头像回退文字
- * 当头像URL为空时显示用户名的首字母
- */
+    if (!file) return;
+
+    previewUrl.value = URL.createObjectURL(file);
+    uploading.value = true;
+
+    try {
+      const result = await uploadImage(file, 'avatar');
+
+      if (result.success) {
+        emit('upload-success', result.url);
+        ElMessage.success('头像上传成功！');
+        setTimeout(() => {
+          previewUrl.value = null;
+        }, 500);
+      } else {
+        ElMessage.error(result.message || '上传失败');
+        previewUrl.value = null;
+      }
+    } catch (error: any) {
+      ElMessage.error(error.message || '上传失败');
+      previewUrl.value = null;
+    } finally {
+      uploading.value = false;
+      target.value = '';
+    }
+  };
+
 const getFallbackText = () => {
   return props.username.charAt(0).toUpperCase();
 };
@@ -83,6 +100,7 @@ const getFallbackText = () => {
 
 .avatar-wrapper {
   margin-bottom: 20px;
+  position: relative;
 }
 
 .avatar {
@@ -95,6 +113,19 @@ const getFallbackText = () => {
 
 .avatar:hover {
   transform: scale(1.05);
+}
+
+.uploading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .upload-btn-wrapper {

@@ -4,31 +4,19 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/user';
 import { updateUserProfile } from '@/api/user';
 
-/**
- * 设置页面逻辑 Composable
- * 提供用户资料编辑页面的状态管理和操作方法
- */
 export function useSettings() {
-  // 获取路由实例
   const router = useRouter();
-  
-  // 获取用户 store
   const userStore = useUserStore();
 
-  /** 表单数据 */
   const form = ref({
     username: '',
     email: '',
     bio: ''
   });
 
-  /** 加载状态 */
   const loading = ref(false);
-
-  /** 表单引用 */
   const formRef = ref();
 
-  /** 表单验证规则 */
   const formRules = ref({
     username: [
       { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -37,19 +25,9 @@ export function useSettings() {
     ]
   });
 
-  /**
-   * 计算属性：当前用户头像
-   */
   const userAvatar = computed(() => userStore.userInfo?.avatar || '');
-
-  /**
-   * 计算属性：当前用户名
-   */
   const currentUsername = computed(() => userStore.userInfo?.username || '');
 
-  /**
-   * 初始化表单数据
-   */
   const initForm = () => {
     if (userStore.userInfo) {
       form.value = {
@@ -60,10 +38,6 @@ export function useSettings() {
     }
   };
 
-  /**
-   * 提交表单
-   * @param formEl 表单元素引用
-   */
   const handleSubmit = async (formEl: any) => {
     if (!formEl) return;
 
@@ -71,13 +45,11 @@ export function useSettings() {
       if (valid) {
         loading.value = true;
         try {
-          // 调用 API 更新用户资料
           await updateUserProfile({
             username: form.value.username,
             bio: form.value.bio
           });
 
-          // 更新 userStore 中的用户信息
           if (userStore.userInfo) {
             userStore.setUserInfo({
               ...userStore.userInfo,
@@ -86,13 +58,9 @@ export function useSettings() {
             });
           }
 
-          // 显示成功消息
           ElMessage.success('更新成功');
-
-          // 跳转到个人主页
           router.push(`/user/${form.value.username}`);
         } catch (error: any) {
-          // 显示错误消息
           ElMessage.error(error.message || '更新失败');
         } finally {
           loading.value = false;
@@ -103,21 +71,29 @@ export function useSettings() {
     });
   };
 
-  /**
-   * 取消编辑，返回个人主页
-   */
   const handleCancel = () => {
     router.push(`/user/${currentUsername.value}`);
   };
 
-  /**
-   * 处理头像上传（暂不实现具体上传功能）
-   */
-  const handleAvatarUpload = () => {
-    ElMessage.info('头像上传功能暂未实现');
+  const handleAvatarUploadSuccess = async (avatarUrl: string) => {
+    try {
+      await updateUserProfile({
+        avatar: avatarUrl
+      });
+
+      if (userStore.userInfo) {
+        userStore.setUserInfo({
+          ...userStore.userInfo,
+          avatar: avatarUrl
+        });
+      }
+
+      ElMessage.success('头像更新成功！');
+    } catch (error: any) {
+      ElMessage.error(error.message || '更新失败');
+    }
   };
 
-  // 组件挂载时初始化表单数据
   onMounted(() => {
     initForm();
   });
@@ -131,6 +107,6 @@ export function useSettings() {
     currentUsername,
     handleSubmit,
     handleCancel,
-    handleAvatarUpload
+    handleAvatarUploadSuccess
   };
 }

@@ -18,12 +18,16 @@ interface LoginCredentials {
   rememberMe: boolean;
 }
 
+// 从 localStorage 恢复 userInfo
+const savedUserInfo = localStorage.getItem('userInfo');
+const parsedUserInfo = savedUserInfo ? JSON.parse(savedUserInfo) : null;
+
 // 定义用户 store
 export const useUserStore = defineStore('user', {
   state: () => ({
     // 从 localStorage 或 sessionStorage 初始化 token
     token: localStorage.getItem('token') || sessionStorage.getItem('token') || null,
-    userInfo: null as UserInfo | null
+    userInfo: parsedUserInfo as UserInfo | null
   }),
 
   getters: {
@@ -51,11 +55,12 @@ export const useUserStore = defineStore('user', {
     },
 
     /**
-     * 保存用户信息到 state
+     * 保存用户信息到 state 和 localStorage
      * @param user 用户信息
      */
     setUserInfo(user: UserInfo) {
       this.userInfo = user;
+      localStorage.setItem('userInfo', JSON.stringify(user));
     },
 
     /**
@@ -74,14 +79,15 @@ export const useUserStore = defineStore('user', {
      * 当页面刷新后，从服务器获取用户信息
      */
     async initUserInfo() {
-      if (this.token && !this.userInfo) {
+      if (this.token) {
         try {
           const userInfo = await getCurrentUser();
           this.setUserInfo(userInfo);
         } catch (error) {
           console.error('初始化用户信息失败:', error);
-          // 如果获取失败，清除 token
-          this.logout();
+          if (!this.userInfo) {
+            this.logout();
+          }
         }
       }
     },
@@ -93,6 +99,7 @@ export const useUserStore = defineStore('user', {
       this.token = null;
       this.userInfo = null;
       localStorage.removeItem('token');
+      localStorage.removeItem('userInfo');
       sessionStorage.removeItem('token');
     }
   }

@@ -51,11 +51,12 @@ export function useSettings() {
           });
 
           if (userStore.userInfo) {
+            const isInLocalStorage = localStorage.getItem('token') === userStore.token;
             userStore.setUserInfo({
               ...userStore.userInfo,
               username: form.value.username,
               bio: form.value.bio
-            });
+            }, isInLocalStorage);
           }
 
           ElMessage.success('更新成功');
@@ -82,10 +83,11 @@ export function useSettings() {
       });
 
       if (userStore.userInfo) {
+        const isInLocalStorage = localStorage.getItem('token') === userStore.token;
         userStore.setUserInfo({
           ...userStore.userInfo,
           avatar: avatarUrl
-        });
+        }, isInLocalStorage);
       }
 
       ElMessage.success('头像更新成功！');

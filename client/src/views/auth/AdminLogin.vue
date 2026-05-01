@@ -98,9 +98,9 @@ const handleLogin = async () => {
         // 调用 adminLogin API
         const response = await adminLogin(form.email, form.password);
 
-        // 存储 token 和用户信息
-        userStore.setToken(response.token);
-        userStore.setUserInfo(response.user);
+        // 存储 token 和用户信息（管理员默认记住登录）
+        userStore.setToken(response.token, true);
+        userStore.setUserInfo(response.user, true);
 
         // 登录成功
         ElMessage.success('登录成功');

@@ -15,4 +15,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true, // 忽略依赖中的 Sass 警告
+      },
+    },
+  },
 })

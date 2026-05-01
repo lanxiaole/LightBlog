@@ -12,6 +12,7 @@ import followRouter from './routes/follow';
 import notificationRouter from './routes/notifications';
 import searchRouter from './routes/search';
 import adminRouter from './routes/admin';
+import ossRouter from './routes/oss';
 
 const app = express();
 
@@ -56,6 +57,9 @@ app.use('/api/search', searchRouter);
 
 // 管理员路由
 app.use('/api/admin', adminRouter);
+
+// OSS 路由
+app.use('/api/oss', ossRouter);
 
 // 测试路由
 app.get('/', (req, res) => {

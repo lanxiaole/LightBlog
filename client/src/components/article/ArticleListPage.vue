@@ -144,6 +144,7 @@ const navigateToArticle = (id: number) => {
  */
 const handleSizeChange = (size: number) => {
   pageSize.value = size;
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   loadData();
 };
 
@@ -153,6 +154,7 @@ const handleSizeChange = (size: number) => {
  */
 const handleCurrentChange = (current: number) => {
   currentPage.value = current;
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   loadData();
 };
 

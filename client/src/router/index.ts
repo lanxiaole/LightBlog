@@ -4,6 +4,14 @@ import { ElMessage } from 'element-plus'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    // 如果有保存的位置（比如按返回键），恢复到那个位置
+    if (savedPosition) {
+      return savedPosition
+    }
+    // 否则，滚动到页面顶部
+    return { top: 0, left: 0 }
+  },
   routes: [
     // 管理员登录页（独立路由）
     {

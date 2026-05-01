@@ -8,6 +8,9 @@ export interface Category {
   description: string | null;
   created_at: Date;
   articleCount?: number;
+  totalLikes?: number;
+  totalViews?: number;
+  totalFavorites?: number;
 }
 
 // 导出 CategoryModel 对象
@@ -23,6 +26,39 @@ export const CategoryModel = {
       LEFT JOIN articles a ON c.id = a.category_id AND a.status = 'published'
       GROUP BY c.id, c.name, c.description, c.created_at
       ORDER BY c.name ASC
+    `;
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(sql);
+    const categories = rows as Category[];
+    return categories;
+  },
+
+  /**
+   * 获取热门分类
+   * 按综合热度排序（文章数权重 30%，点赞数 30%，收藏数 20%，浏览数 20%）
+   * @param limit 返回数量限制
+   * @returns 热门分类列表
+   */
+  async getHotCategories(limit: number = 8): Promise<Category[]> {
+    const sql = `
+      SELECT 
+        c.id, 
+        c.name, 
+        c.description, 
+        c.created_at, 
+        COUNT(a.id) as articleCount,
+        SUM(IFNULL(a.likes, 0)) as totalLikes,
+        SUM(IFNULL(a.views, 0)) as totalViews,
+        (SELECT COUNT(*) FROM favorites f WHERE f.article_id IN (SELECT id FROM articles WHERE category_id = c.id AND status = 'published')) as totalFavorites,
+        (COUNT(a.id) * 0.3 + SUM(IFNULL(a.likes, 0)) * 0.3 + 
+         (SELECT COUNT(*) FROM favorites f WHERE f.article_id IN (SELECT id FROM articles WHERE category_id = c.id AND status = 'published')) * 0.2 + 
+         SUM(IFNULL(a.views, 0)) * 0.2) as hotScore
+      FROM categories c
+      LEFT JOIN articles a ON c.id = a.category_id AND a.status = 'published'
+      GROUP BY c.id, c.name, c.description, c.created_at
+      HAVING articleCount > 0
+      ORDER BY hotScore DESC
+      LIMIT ${limit}
     `;
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql);

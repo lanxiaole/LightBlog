@@ -5,31 +5,7 @@
     empty-text="该分类下暂无文章"
   >
     <template #sidebar>
-      <el-card class="sidebar-card">
-        <template #header>
-          <div class="sidebar-title">热门推荐</div>
-        </template>
-        <div class="sidebar-content">
-          <p>热门文章 1</p>
-          <p>热门文章 2</p>
-          <p>热门文章 3</p>
-          <p>热门文章 4</p>
-          <p>热门文章 5</p>
-        </div>
-      </el-card>
-
-      <el-card class="sidebar-card" style="margin-top: 20px;">
-        <template #header>
-          <div class="sidebar-title">分类</div>
-        </template>
-        <div class="sidebar-content">
-          <p>技术</p>
-          <p>生活</p>
-          <p>工作</p>
-          <p>学习</p>
-          <p>其他</p>
-        </div>
-      </el-card>
+      <Sidebar :show-search="false" :show-personal="false" :show-hot-articles="false" :show-hot-tags="false" :show-hot-categories="true" />
     </template>
   </ArticleListPage>
 </template>
@@ -38,6 +14,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import ArticleListPage from '@/components/article/ArticleListPage.vue';
+import Sidebar from '@/components/common/Sidebar.vue';
 import { getArticlesByCategory } from '@/api/article';
 
 /**
@@ -66,25 +43,3 @@ const fetchArticles = async (params: { page: number; pageSize: number }) => {
   };
 };
 </script>
-
-<style scoped>
-.sidebar-card {
-  margin-bottom: 20px;
-}
-
-.sidebar-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.sidebar-content {
-  padding: 10px 0;
-}
-
-.sidebar-content p {
-  margin: 10px 0;
-  font-size: 14px;
-  color: #606266;
-}
-</style>

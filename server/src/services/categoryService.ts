@@ -14,5 +14,14 @@ export const CategoryService = {
    */
   async getAllCategories() {
     return await CategoryModel.getAllCategories();
+  },
+
+  /**
+   * 获取热门分类
+   * @param limit 返回数量限制
+   * @returns 热门分类列表
+   */
+  async getHotCategories(limit?: number) {
+    return await CategoryModel.getHotCategories(limit);
   }
 };

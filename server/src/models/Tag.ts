@@ -7,6 +7,9 @@ export interface Tag {
   name: string;
   created_at: Date;
   articleCount?: number;
+  totalLikes?: number;
+  totalViews?: number;
+  totalFavorites?: number;
 }
 
 // 导出 TagModel 对象
@@ -23,6 +26,39 @@ export const TagModel = {
       LEFT JOIN articles a ON at.article_id = a.id AND a.status = 'published'
       GROUP BY t.id, t.name, t.created_at
       ORDER BY t.name ASC
+    `;
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(sql);
+    const tags = rows as Tag[];
+    return tags;
+  },
+
+  /**
+   * 获取热门标签
+   * 按综合热度排序（文章数权重 30%，点赞数 30%，收藏数 20%，浏览数 20%）
+   * @param limit 返回数量限制
+   * @returns 热门标签列表
+   */
+  async getHotTags(limit: number = 8): Promise<Tag[]> {
+    const sql = `
+      SELECT 
+        t.id, 
+        t.name, 
+        t.created_at, 
+        COUNT(at.article_id) as articleCount,
+        SUM(IFNULL(a.likes, 0)) as totalLikes,
+        SUM(IFNULL(a.views, 0)) as totalViews,
+        (SELECT COUNT(*) FROM favorites f WHERE f.article_id IN (SELECT at_inner.article_id FROM article_tags at_inner WHERE at_inner.tag_id = t.id)) as totalFavorites,
+        (COUNT(at.article_id) * 0.3 + SUM(IFNULL(a.likes, 0)) * 0.3 + 
+         (SELECT COUNT(*) FROM favorites f WHERE f.article_id IN (SELECT at_inner.article_id FROM article_tags at_inner WHERE at_inner.tag_id = t.id)) * 0.2 + 
+         SUM(IFNULL(a.views, 0)) * 0.2) as hotScore
+      FROM tags t
+      LEFT JOIN article_tags at ON t.id = at.tag_id
+      LEFT JOIN articles a ON at.article_id = a.id AND a.status = 'published'
+      GROUP BY t.id, t.name, t.created_at
+      HAVING articleCount > 0
+      ORDER BY hotScore DESC
+      LIMIT ${limit}
     `;
     
     const [rows] = await pool.execute<RowDataPacket[]>(sql);

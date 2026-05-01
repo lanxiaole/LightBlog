@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <!-- 搜索框 -->
-    <div class="sidebar-section">
+    <div v-if="props.showSearch" class="sidebar-section">
       <div class="search-widget">
         <ElInput
           v-model="searchKeyword"
@@ -19,7 +19,7 @@
     </div>
 
     <!-- 个人信息卡片 -->
-    <div class="sidebar-section">
+    <div v-if="props.showPersonal" class="sidebar-section">
       <div class="personal-card">
         <div class="personal-avatar">
           <el-avatar :size="72" :src="currentUser?.avatar">
@@ -39,7 +39,7 @@
             </div>
           </div>
           <div class="stat-item">
-            <el-icon class="stat-icon"><Like /></el-icon>
+            <el-icon class="stat-icon"><Top /></el-icon>
             <div class="stat-content">
               <span class="stat-num">{{ userStats.totalLikes }}</span>
               <span class="stat-label">获赞</span>
@@ -57,7 +57,7 @@
     </div>
 
     <!-- 热门文章 -->
-    <div class="sidebar-section">
+    <div v-if="props.showHotArticles" class="sidebar-section">
       <div class="section-header">
         <el-icon><Star /></el-icon>
         <span>热门文章</span>
@@ -85,44 +85,57 @@
     </div>
 
     <!-- 热门标签 -->
-    <div class="sidebar-section">
+    <div v-if="props.showHotTags" class="sidebar-section">
       <div class="section-header">
         <el-icon><CollectionTag /></el-icon>
         <span>热门标签</span>
       </div>
-      <div class="tags-cloud">
-        <span
-          v-for="tag in tags.slice(0, 15)"
+      <div class="hot-tags">
+        <div
+          v-for="(tag, index) in tags"
           :key="tag.id"
-          class="tag-item"
+          class="hot-tag-item"
           @click="handleTagClick(tag.name)"
         >
-          {{ tag.name }}
-        </span>
+          <span class="hot-rank" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+          <div class="hot-tag-content">
+            <span class="hot-tag-name">{{ tag.name }}</span>
+            <span class="hot-tag-count">
+              <el-icon><Document /></el-icon>
+              {{ tag.articleCount }}篇文章
+            </span>
+          </div>
+        </div>
         <p v-if="tags.length === 0" class="empty-hint">
-          暂无标签
+          暂无热门标签
         </p>
       </div>
     </div>
 
-    <!-- 分类 -->
-    <div class="sidebar-section">
+    <!-- 热门分类 -->
+    <div v-if="props.showHotCategories" class="sidebar-section">
       <div class="section-header">
         <el-icon><Folder /></el-icon>
-        <span>文章分类</span>
+        <span>热门分类</span>
       </div>
-      <div class="category-list">
+      <div class="hot-categories">
         <div
-          v-for="category in categories"
+          v-for="(category, index) in categories"
           :key="category.id"
-          class="category-item"
+          class="hot-category-item"
           @click="handleCategoryClick(category.name)"
         >
-          <span class="category-name">{{ category.name }}</span>
-          <el-icon><ArrowRight /></el-icon>
+          <span class="hot-rank" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+          <div class="hot-category-content">
+            <span class="hot-category-name">{{ category.name }}</span>
+            <span class="hot-category-count">
+              <el-icon><Document /></el-icon>
+              {{ category.articleCount }}篇文章
+            </span>
+          </div>
         </div>
         <p v-if="categories.length === 0" class="empty-hint">
-          暂无分类
+          暂无热门分类
         </p>
       </div>
     </div>
@@ -133,12 +146,14 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElInput } from 'element-plus';
-import { Search, UserFilled, CollectionTag, Folder, ArrowRight, Document, Star, View } from '@element-plus/icons-vue';
+import { Search, UserFilled, CollectionTag, Folder, Document, Star, View, Top } from '@element-plus/icons-vue';
 import type { Category } from '@/api/category';
 import type { Tag } from '@/api/tag';
 import type { Article } from '@/api/article';
 import { getUserArticles } from '@/api/user';
 import { getHotArticles } from '@/api/article';
+import { getHotCategories } from '@/api/category';
+import { getHotTags } from '@/api/tag';
 import { useUserStore } from '@/stores/user';
 
 /**
@@ -146,15 +161,32 @@ import { useUserStore } from '@/stores/user';
  * 展示博主信息、搜索框、热门标签、最新评论和分类
  */
 
-// 组件属性定义
+// 定义组件 props
 interface Props {
-  /** 分类列表 */
-  categories: Category[];
-  /** 标签列表 */
-  tags: Tag[];
+  /** 是否显示搜索框 */
+  showSearch?: boolean;
+  /** 是否显示个人信息 */
+  showPersonal?: boolean;
+  /** 是否显示热门文章 */
+  showHotArticles?: boolean;
+  /** 是否显示热门标签 */
+  showHotTags?: boolean;
+  /** 是否显示热门分类 */
+  showHotCategories?: boolean;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showSearch: true,
+  showPersonal: true,
+  showHotArticles: true,
+  showHotTags: true,
+  showHotCategories: true
+});
+
+// 热门分类列表
+const categories = ref<Category[]>([]);
+// 热门标签列表
+const tags = ref<Tag[]>([]);
 
 // 定义组件事件
 const emit = defineEmits<{
@@ -235,6 +267,30 @@ const fetchHotArticles = async () => {
 };
 
 /**
+ * 获取热门分类
+ */
+const fetchHotCategories = async () => {
+  try {
+    categories.value = await getHotCategories(8);
+  } catch (error) {
+    console.error('获取热门分类失败:', error);
+    categories.value = [];
+  }
+};
+
+/**
+ * 获取热门标签
+ */
+const fetchHotTags = async () => {
+  try {
+    tags.value = await getHotTags(8);
+  } catch (error) {
+    console.error('获取热门标签失败:', error);
+    tags.value = [];
+  }
+};
+
+/**
  * 获取用户统计信息
  */
 const fetchUserStats = async () => {
@@ -299,7 +355,7 @@ const handleTagClick = (name: string) => {
 // 组件挂载时获取数据
 onMounted(async () => {
   await userStore.initUserInfo();
-  await Promise.all([fetchUserStats(), fetchHotArticles()]);
+  await Promise.all([fetchUserStats(), fetchHotArticles(), fetchHotCategories(), fetchHotTags()]);
 });
 </script>
 

@@ -140,35 +140,17 @@
   margin-top: 2px;
 }
 
-// 标签云
-.tags-cloud {
-  padding: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tag-item {
-  padding: 6px 12px;
-  background: rgba($primary-color, 0.06);
-  color: $text-gray;
-  font-size: 13px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s linear;
-
-  &:hover {
-    background: $primary-color;
-    color: white;
-  }
-}
-
-// 热门文章
-.hot-articles {
+// 热门文章、热门标签、热门分类通用容器
+.hot-articles,
+.hot-tags,
+.hot-categories {
   padding: 8px 16px;
 }
 
-.hot-article-item {
+// 热门文章
+.hot-article-item,
+.hot-tag-item,
+.hot-category-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -220,12 +202,16 @@
   }
 }
 
-.hot-article-content {
+.hot-article-content,
+.hot-tag-content,
+.hot-category-content {
   flex: 1;
   min-width: 0;
 }
 
-.hot-article-title {
+.hot-article-title,
+.hot-tag-name,
+.hot-category-name {
   font-size: 13px;
   color: $text-dark;
   line-height: 1.5;
@@ -236,7 +222,9 @@
   margin-bottom: 4px;
 }
 
-.hot-article-views {
+.hot-article-views,
+.hot-tag-count,
+.hot-category-count {
   font-size: 11px;
   color: $text-light;
   display: flex;
@@ -246,45 +234,6 @@
   .el-icon {
     font-size: 12px;
   }
-}
-
-// 分类列表
-.category-list {
-  padding: 8px 0;
-}
-
-.category-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all 0.2s linear;
-
-  &:hover {
-    background-color: $bg-light;
-
-    .category-name {
-      color: $primary-color;
-    }
-
-    .el-icon {
-      color: $primary-color;
-      transform: translateX(2px);
-    }
-  }
-
-  .el-icon {
-    font-size: 14px;
-    color: $text-light;
-    transition: all 0.2s linear;
-  }
-}
-
-.category-name {
-  font-size: 14px;
-  color: $text-gray;
-  transition: color 0.2s linear;
 }
 
 // 空状态提示

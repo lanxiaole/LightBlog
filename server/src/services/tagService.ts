@@ -14,5 +14,14 @@ export const TagService = {
    */
   async getAllTags() {
     return await TagModel.getAllTags();
+  },
+
+  /**
+   * 获取热门标签
+   * @param limit 返回数量限制
+   * @returns 热门标签列表
+   */
+  async getHotTags(limit?: number) {
+    return await TagModel.getHotTags(limit);
   }
 };

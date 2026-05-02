@@ -203,11 +203,10 @@ INSERT INTO `tags` (`name`) VALUES
 
 -- --------------------------------------------------------
 -- 初始化数据：默认管理员账号
--- 注意：密码需要使用 bcrypt 加密！请运行 database/generate-password.js 生成密码哈希
--- 示例：lejiawei1 的 bcrypt 哈希为：$2b$10$dJfEdhmQNf7vB5JFkCfOi.QK/vzH.R4bILW3QZ4BJ/9ErOWGr4v0S
+-- 密码：123456（bcrypt 加密）
 -- --------------------------------------------------------
--- INSERT INTO `users` (`email`, `username`, `password`, `role`) VALUES
--- ('lanxiaole@admin.com', 'lanxiaole', '请替换为加密后的密码', 'admin'),
--- ('weijiale@admin.com', 'weijiale', '请替换为加密后的密码', 'admin');
+INSERT INTO `users` (`email`, `username`, `password`, `role`) VALUES
+('lanxiaole@admin.com', 'lanxiaole', '$2b$10$6f07y61UH.HHLyVsTl4uLeP9Wh9pHLxwl0HOG/qL.cRZbc3xfZY0G', 'admin'),
+('jiale@admin.com', 'jiale', '$2b$10$6f07y61UH.HHLyVsTl4uLeP9Wh9pHLxwl0HOG/qL.cRZbc3xfZY0G', 'admin');
 
 SET FOREIGN_KEY_CHECKS = 1;

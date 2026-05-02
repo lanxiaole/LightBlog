@@ -59,6 +59,7 @@
 - Node.js ^20.19.0 || >=22.12.0
 - MySQL 8.0+
 - 阿里云 OSS（可选，用于图片上传）
+- Docker & Docker Compose（Docker 部署需要）
 
 ### 1. 克隆项目
 
@@ -145,6 +146,171 @@ cd client
 npm install
 npm run dev
 # 运行在 http://localhost:5173
+```
+
+### 🐳 Docker 部署
+
+**推荐方式：一键启动所有服务，无需手动配置环境！**
+
+#### 1. 配置环境变量
+
+```bash
+# 复制环境变量示例（已预配置好，可直接使用）
+cp docker/.env.example .env
+
+# 可选：编辑 .env 自定义配置
+# .env 配置说明：
+# - DB_USER: MySQL 用户（默认 root）
+# - DB_PASSWORD: MySQL 密码（默认 lejiawei1）
+# - DB_NAME: 数据库名称（默认 lightblog）
+# - JWT_SECRET: JWT 密钥（生产环境务必修改）
+# - OSS_*: 阿里云 OSS 配置（已预配置）
+```
+
+#### 2. 一键启动服务
+
+```bash
+# 构建并启动所有服务（MySQL、后端、前端）
+docker-compose up -d --build
+```
+
+#### 3. 访问应用
+
+- **前端**: http://localhost:8080
+- **后端 API**: http://localhost:3000/api
+- **MySQL**: localhost:3307
+
+#### 4. 登录管理后台（无需额外设置密码！）
+
+> ⚠️ **安全警告**：
+>
+> - 数据库已预置管理员账号，密码是 `123456`，**生产环境请务必立即修改**
+> - MySQL 默认密码是 `lightblog123`，**生产环境请务必修改**
+> - JWT_SECRET 默认值是 `your-secret-key`，**生产环境请务必修改为复杂的随机字符串**
+
+数据库已预置管理员账号，直接登录即可：
+
+| 邮箱                | 用户名    | 密码   |
+| ------------------- | --------- | ------ |
+| lanxiaole@admin.com | lanxiaole | 123456 |
+| jiale@admin.com     | jiale     | 123456 |
+
+访问：http://localhost:8080/admin-login
+
+---
+
+\*\*（可选）想修改管理员密码？
+
+```bash
+# 1. 生成新密码哈希（将 newpassword123 替换为你想设置的密码）
+cd server
+npm install
+node ../database/generate-password.js newpassword123
+
+# 2. 进入 MySQL 容器
+docker exec -it lightblog-mysql mysql -u root -p
+# 输入密码：lightblog123
+
+# 3. 执行 SQL 更新密码
+USE lightblog;
+
+-- 将下面的哈希值替换为你刚刚生成的
+UPDATE users SET password = '$2b$10$你的真实哈希值' WHERE email = 'lanxiaole@admin.com';
+UPDATE users SET password = '$2b$10$你的真实哈希值' WHERE email = 'jiale@admin.com';
+```
+
+---
+
+\*\*（可选）想创建新的管理员账号？
+
+\*\*方法 1：直接插入 SQL（推荐）
+
+```bash
+# 1. 生成管理员密码哈希（将 yourpassword123 替换为你想设置的密码）
+cd server
+npm install
+node ../database/generate-password.js yourpassword123
+# 复制生成的哈希值
+
+# 2. 进入 MySQL 容器
+docker exec -it lightblog-mysql mysql -u root -p
+# 输入密码：lightblog123
+
+# 3. 执行 SQL 创建管理员
+USE lightblog;
+
+-- 将下面的邮箱、用户名、哈希值替换为你自己的
+INSERT INTO `users` (`email`, `username`, `password`, `role`) VALUES
+('zhangsan@admin.com', 'zhangsan', '$2b$10$你的真实哈希值', 'admin');
+```
+
+\*\*方法 2：先注册普通用户，再升级为管理员
+
+```bash
+# 1. 先在前端 http://localhost:8080/register 注册一个普通用户
+
+# 2. 进入 MySQL 容器
+docker exec -it lightblog-mysql mysql -u root -p
+# 输入密码：lightblog123
+
+# 3. 升级为管理员
+USE lightblog;
+UPDATE users SET role = 'admin' WHERE username = '你的用户名';
+```
+
+#### 5. 常用 Docker 命令
+
+| 命令                           | 说明                                       |
+| ------------------------------ | ------------------------------------------ |
+| `docker-compose up -d --build` | 构建并启动所有服务                         |
+| `docker-compose down`          | 停止并删除所有容器（数据保留在 volume 中） |
+| `docker-compose logs -f`       | 查看实时日志                               |
+| `docker-compose restart`       | 重启所有服务                               |
+| `docker-compose ps`            | 查看服务运行状态                           |
+
+#### 6. 删除 Docker 部署环境
+
+**场景 1：临时停止，保留数据**
+
+```bash
+# 停止并删除所有容器，数据（MySQL）保留在 volume 中
+docker-compose down
+```
+
+**场景 2：完全清理，删除所有数据**
+
+```bash
+# 停止并删除容器、网络、数据 volume
+docker-compose down -v
+
+# 可选：删除构建的镜像（释放磁盘空间）
+docker rmi lightblog-client lightblog-server
+
+# 可选：删除未使用的镜像（谨慎操作！）
+# docker image prune -a
+```
+
+**场景 3：只删除 .env 配置文件（重新配置时）**
+
+```bash
+# Windows
+del .env
+
+# Mac/Linux
+rm -f .env
+```
+
+#### Docker 项目结构
+
+```
+docker/
+├── .env.example          # Docker 环境变量示例
+├── README.md             # Docker 部署详细说明
+├── client/
+│   ├── Dockerfile        # 前端镜像构建文件
+│   └── nginx.conf        # Nginx 配置
+└── server/
+    └── Dockerfile        # 后端镜像构建文件
 ```
 
 ## 📁 项目结构
